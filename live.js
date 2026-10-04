@@ -7,7 +7,7 @@
  // Each engine has its own build of the same game, mounted side by side by preview.py.
  const engine=()=>window.ComposerTarget.engine;
  // The games that use Goat Road's tabbed shell: its panel, its windows, rules as a tab.
- const TABBED_GAMES=['road','boom','plinko','candy_cascade','mopyon_cascades'];
+ const TABBED_GAMES=['road','boom','plinko','candy_cascade','mopyon_cascades','hot_hands'];
  let timer,generation=0;
  const applied={};
  const presetSelect=document.querySelector('#presentation-preset');
@@ -81,8 +81,15 @@
    ui.showBetDetails(0);return;
   }
   if(kind){if(TABBED_GAMES.includes(game())&&kind==='rules')ui.rulesFrom='tab';ui.open(kind)}else ui.close()}
+ // The games with a debug panel (?debug=1): one Debug switch under Game, remembered across them.
+ const DEBUG_GAMES=['road','boom','candy_cascade','mopyon_cascades'],DEBUG_KEY='composer-road-debug';
+ const debugPanel=()=>{try{return localStorage.getItem(DEBUG_KEY)==='1'}catch{return false}};
+ const debugSwitch=document.querySelector('#composer-debug'),debugSection=document.querySelector('#debug-section');
+ const syncDebug=()=>{const shown=DEBUG_GAMES.includes(game())&&engine()==='pixi';debugSection.hidden=!shown;debugSwitch.checked=debugPanel()};
+ debugSwitch.onchange=()=>{try{localStorage.setItem(DEBUG_KEY,debugSwitch.checked?'1':'0')}catch{}load()};
+ window.addEventListener('composer-target',syncDebug);window.addEventListener('composer-engine',syncDebug);
  async function load(){
-  clearInterval(timer);const request=++generation;
+  clearInterval(timer);const request=++generation;syncDebug();
   presetSelect.value=savedPreset();presetSelect.disabled=live();syncInspector();
   document.querySelectorAll('[data-placeholder-only]').forEach(row=>row.hidden=live());
 
@@ -100,7 +107,7 @@
   syncInspector();
   document.querySelector('#modal-controls').hidden=false;
   const url='games/'+engine()+'/'+game()+'/index.html';
-  try{const response=await fetch(url,{method:'HEAD'});if(request!==generation)return;if(!response.ok)throw Error('missing');frame.src=url+'?ui-kit=1&api='+((game()==='road'&&engine()==='pixi'&&window.Lotomobil?.connected&&!applied[game()])?'1':'0')+'&revision='+request+'&build='+encodeURIComponent(window.ComposerHosting?.revision||'local')+(applied[game()]?'&difficulty=0#math='+encodeURIComponent(JSON.stringify(applied[game()])):'')}
+  try{const response=await fetch(url,{method:'HEAD'});if(request!==generation)return;if(!response.ok)throw Error('missing');frame.src=url+'?ui-kit=1&api='+((game()==='road'&&engine()==='pixi'&&window.Lotomobil?.connected&&!applied[game()])?'1':'0')+(DEBUG_GAMES.includes(game())&&engine()==='pixi'&&debugPanel()?'&debug=1':'')+'&revision='+request+'&build='+encodeURIComponent(window.ComposerHosting?.revision||'local')+(applied[game()]?'&difficulty=0#math='+encodeURIComponent(JSON.stringify(applied[game()])):'')}
   catch{if(request!==generation)return;frame.src='about:blank';status.textContent='No '+window.ComposerTarget.engineTitle()+' build for this game yet. Build it, then rebuild the preview.'}
  }
  window.ComposerMath={

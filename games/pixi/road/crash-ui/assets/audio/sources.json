@@ -65,6 +65,156 @@
       "flow_url": "https://elevenlabs.io/app/flows/QZDp8zzXUhtra4FrhbF2",
       "prompt": "One natural handheld paper party popper. A satisfying rounded cork-like pop immediately followed by a soft short puff of air and delicate falling paper rustle. Warm, playful and dry, close microphone. Total duration 0.6 seconds. No firework crackling, no explosion boom, no metallic sounds, no coins, no bells, no music or voices.",
       "processing": "Trim leading silence; max 0.7s; 150ms tail fade; mono 24kHz Vorbis quality 2. 4dB headroom before encoding."
+    },
+    {
+      "file": "big_win_0.ogg",
+      "provider": "ElevenLabs",
+      "model": "eleven_text_to_sound_v2",
+      "generation_id": "uXLlpXHO1aeyv4i6YZM3",
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "generated": "2026-10-03",
+      "processing": {
+        "channels": 1,
+        "sample_rate": 24000,
+        "codec": "Vorbis",
+        "quality": 4,
+        "loudnorm": true,
+        "fade_out": true
+      },
+      "from": "Goat Road win_big_kompa_a.ogg"
+    },
+    {
+      "file": "big_win_1.ogg",
+      "provider": "ElevenLabs",
+      "model": "eleven_text_to_sound_v2",
+      "generation_id": "lBoKiYzGVHiFF5tbLlJp",
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "generated": "2026-10-03",
+      "processing": {
+        "channels": 1,
+        "sample_rate": 24000,
+        "codec": "Vorbis",
+        "quality": 4,
+        "loudnorm": true,
+        "fade_out": true
+      },
+      "from": "Goat Road win_big_kompa_b.ogg"
+    },
+    {
+      "file": "mega_win_0.ogg",
+      "provider": "ElevenLabs",
+      "model": "eleven_text_to_sound_v2",
+      "generation_id": "okhJ60CeHNDogRBrsOJM",
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "generated": "2026-10-03",
+      "processing": {
+        "channels": 1,
+        "sample_rate": 24000,
+        "codec": "Vorbis",
+        "quality": 4,
+        "loudnorm": true,
+        "fade_out": true
+      },
+      "from": "Goat Road win_mega_street_d.ogg"
+    },
+    {
+      "file": "mega_win_1.ogg",
+      "provider": "ElevenLabs",
+      "model": "eleven_text_to_sound_v2",
+      "generation_id": "qIywNKOKQBqdp8FlnY6h",
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "generated": "2026-10-03",
+      "processing": {
+        "channels": 1,
+        "sample_rate": 24000,
+        "codec": "Vorbis",
+        "quality": 4,
+        "loudnorm": true,
+        "fade_out": true,
+        "excerpt": "first 2.6 s of an 18 s kompa groove"
+      },
+      "from": "Goat Road win_mega_kompa_a.ogg"
+    },
+    {
+      "file": "epic_win_0.ogg",
+      "provider": "ElevenLabs",
+      "model": "eleven_text_to_sound_v2",
+      "generation_id": "Tu7w4uqShUtQ47Sy4uyU",
+      "layers": [
+        {
+          "generation_id": "nMDk61061TrGPNPANfLw",
+          "at": 1.0,
+          "what": "coin shower"
+        },
+        {
+          "generation_id": "k0UW1iKlh9ZtgjA2QLT3",
+          "at": 1.5,
+          "what": "coin shower"
+        }
+      ],
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "generated": "2026-10-03",
+      "processing": {
+        "channels": 1,
+        "sample_rate": 24000,
+        "codec": "Vorbis",
+        "quality": 4,
+        "loudnorm": true,
+        "length": 2.9
+      },
+      "from": "Goat Road win_epic_kompa_b.ogg"
+    },
+    {
+      "file": "epic_win_1.ogg",
+      "provider": "ElevenLabs",
+      "model": "eleven_text_to_sound_v2",
+      "generation_id": "ELWkC7blIuVzOg59O7DW",
+      "layers": [
+        {
+          "generation_id": "nMDk61061TrGPNPANfLw",
+          "at": 0.9,
+          "what": "coin shower"
+        },
+        {
+          "generation_id": "JZVvkeULBUPE1bwDWKQ8",
+          "at": 1.4,
+          "what": "fireworks"
+        },
+        {
+          "generation_id": "k0UW1iKlh9ZtgjA2QLT3",
+          "at": 1.6,
+          "what": "coin shower"
+        }
+      ],
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "generated": "2026-10-03",
+      "processing": {
+        "channels": 1,
+        "sample_rate": 24000,
+        "codec": "Vorbis",
+        "quality": 4,
+        "loudnorm": true,
+        "length": 3.6,
+        "fade_out": "3.0–3.6 s, to silence"
+      },
+      "from": "Goat Road win_epic_0.ogg"
+    },
+    {
+      "file": "big_win_count_0.ogg",
+      "provider": "ElevenLabs",
+      "model": "eleven_text_to_sound_v2",
+      "generation_id": "2dmPfwfBN0cDzEybYwdw",
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "generated": "2026-10-03",
+      "processing": {
+        "channels": 1,
+        "sample_rate": 24000,
+        "codec": "Vorbis",
+        "quality": 4,
+        "loudnorm": true,
+        "fade_out": true
+      },
+      "from": "Goat Road win_tick_0.ogg"
     }
   ]
 }

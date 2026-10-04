@@ -17,7 +17,8 @@ const TARGETS=[
  {id:'sky_tap_tap',title:'Sky Tap-Tap',live:true,math:false},
  {id:'candy_cascade',title:'Candy Cascade',live:true,math:false},
  {id:'plinko',title:'Plinko',live:true,math:false},
- {id:'mopyon_cascades',title:'Mòpyon Cascades',live:true,math:false}
+ {id:'mopyon_cascades',title:'Mòpyon Cascades',live:true,math:false},
+ {id:'hot_hands',title:'Hot Hands',live:true,math:false}
 ];
 // Off, the list keeps the shared kit, the two featured games and whatever is selected.
 const KEYS={target:'crash-composer-target',engine:'crash-composer-engine'};
@@ -27,9 +28,9 @@ const KEYS={target:'crash-composer-target',engine:'crash-composer-engine'};
 const ENGINES=[{id:'pixi',title:'PixiJS'}];
 const DEFAULT_ENGINE='pixi';
 const select=$('#target');
-// Slots (Candy Cascade, Mòpyon Cascades), crash games, and instant games (a single drop
-// settles the round: Plinko).
-const category=id=>['candy_cascade','mopyon_cascades'].includes(id)?'slots':id==='plinko'?'instant':'crash';
+// Slots (Candy Cascade, Mòpyon Cascades), crash games, and instant games (a single drop or
+// call settles the round: Plinko, Hot Hands).
+const category=id=>['candy_cascade','mopyon_cascades'].includes(id)?'slots':['plinko','hot_hands'].includes(id)?'instant':'crash';
 const engineRow=$('#engine-row'),engineSelect=$('#engine');
 const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
 const known=id=>TARGETS.some(t=>t.id===id);

@@ -11,14 +11,14 @@ const current=()=>drafts.get(target);
 // The slots and Plinko build their own bet panel. Each exposes a handle on window with its own
 // preview hooks (previewWindow, previewTranslation, clearTranslationPreview), and the crash games'
 // sample history and PLAY / CASH OUT buttons mean nothing to them.
-const OWN_PANEL={candy_cascade:'candyCascade',plinko:'plinko',mopyon_cascades:'mopyonCascades'};
+const OWN_PANEL={candy_cascade:'candyCascade',plinko:'plinko',mopyon_cascades:'mopyonCascades',hot_hands:'hotHands'};
 const ownPanel=()=>Object.hasOwn(OWN_PANEL,target);
 const gameHandle=()=>{try{return ownPanel()?frame.contentWindow?.[OWN_PANEL[target]]:null}catch{return null}};
 let saving=false,activeKey='',cellLang='en',previousDevice=null,previousZoom=null,importReview=null;
 const live=()=>$('#translates-tab').getAttribute('aria-pressed')==='true';
 function previewData(d){const result=structuredClone(d);for(const [key,edit] of Object.entries(d.edits||{})){if(edit.custom)result.overrides[key]=texts(edit);else{delete result.overrides[key];Object.assign(result.catalog.entries[key],texts(edit))}}return result}
 function apply(){bindPreviewDismiss();if(live())ensureHistoryPreview();const d=current();try{const api=frame.contentWindow.CrashI18n;if(api){if(d)api.setDraft(previewData(d));api.setLanguage(language.value);if(live())highlightText()}}catch{}}
-const windowNames={autoSpin:'Auto Spin',candyPays:'Candy payouts',linePays:'Line pays',award:'Free games award',summary:'Free games summary',plinkoRows:'Rows',stake:'Bet amount',menu:'Settings',account:'Account',rules:'How to play',topbets:'Top bets',mybets:'My bets',betDetails:'My bet details',topBetDetails:'Top bet details',wins:'Live wins',win:'Win',difficulty:'Difficulty','limit:theme':'Atmosphere','limit:auto_steps':'Auto steps','limit:auto_cashout':'Auto cash out','notice:funds':'Notice · not enough funds','notice:offline':'Notice · no connection','notice:error':'Notice · something went wrong','notice:wallet':'Notice · top up balance'};
+const windowNames={bigWin:'Big wins',autoSpin:'Auto Spin',candyPays:'Candy payouts',linePays:'Line pays',award:'Free games award',summary:'Free games summary',plinkoRows:'Rows',stake:'Bet amount',menu:'Settings',account:'Account',rules:'How to play',topbets:'Top bets',mybets:'My bets',betDetails:'My bet details',topBetDetails:'Top bet details',wins:'Live wins',win:'Win',difficulty:'Difficulty','limit:theme':'Atmosphere','limit:auto_steps':'Auto steps','limit:auto_cashout':'Auto cash out','notice:funds':'Notice · not enough funds','notice:offline':'Notice · no connection','notice:error':'Notice · something went wrong','notice:wallet':'Notice · top up balance'};
 function highlightText(){
  const api=frame.contentWindow?.CrashI18n,entry=current()?.catalog.entries[activeKey];
  api?.highlight?.(activeKey);const info=api?.describe?.(activeKey);
@@ -46,6 +46,9 @@ function previewWindow(kind){
  if(kind&&![...$('#translation-preview-view').options].some(option=>option.value===kind))kind='';
  try{const ui=frame.contentWindow.CrashUI?.instance;if(!ui)return;
  const focused=document.activeElement;
+ // The big-win window is the kit's in every game: it is held open at a tier, and any other window closes it.
+ if(kind==='bigWin'){if(ui.modal)ui.close();if(!ui.host?.querySelector('.big-win.is-preview'))ui.previewBigWin?.(bigWinTier);$('#translation-preview-view').value=kind;apply();return}
+ ui.closeBigWinPreview?.();
  const custom=gameHandle()?.previewWindow?.(kind);
  if(custom){if(ui.modal)ui.close();$('#translation-preview-view').value=kind;apply();if(focused?.matches('textarea,.translation-row'))frame.contentWindow.requestAnimationFrame(()=>setTimeout(()=>focused.isConnected&&focused.focus({preventScroll:true}),0));return}
  if(kind==='betDetails'||kind==='topBetDetails'){const parent=kind==='topBetDetails'?'topbets':'mybets';if(ui.modal!==parent)ui.open(parent);if(ui.betRows?.length&&!ui.betDetail)ui.showBetDetails(0)}
@@ -138,7 +141,7 @@ document.addEventListener('pointerdown',event=>{
  if(event.target.closest('.translation-row'))return;
  clearSelection();
 },true);
-let revealTimer;
+let revealTimer,bigWinTier='epic';
 function focusText(key,lang){
  const entry=available().find(([id])=>id===key)?.[1];if(!entry)return;
  clearTimeout(revealTimer);
@@ -147,6 +150,9 @@ function focusText(key,lang){
   // The preview speaks the language of the cell being edited; the table stays as it is.
   window.ComposerLanguagePaint?.();for(const n of report.querySelectorAll('.tx-table [lang]'))n.closest('th,td')?.classList.toggle('is-lang',n.getAttribute('lang')===lang)}
  stopStateInspection();inspectAction(entry.source,entry);
+ // A tier's title shows the window at that tier; the window's other texts keep the tier on screen.
+ const tier=frame.contentWindow?.CrashUI?.GameUI?.BIG_WINS?.find(t=>t.name===entry.source);
+ if(entry.previewWindow==='bigWin'&&tier&&tier.key!==bigWinTier){bigWinTier=tier.key;frame.contentWindow.CrashUI.instance?.closeBigWinPreview?.()}
  previewWindow(entry.previewWindow||'');
  gameHandle()?.previewTranslation?.(entry.source,entry);
  apply();
@@ -199,7 +205,7 @@ const windowGroup=e=>e.group==='Scene'?'Game scene':windowNames[e.previewWindow]
 // The order a player meets them: the screen and the sheets its panel opens, then the windows as
 // the tab bar and the header open them (each list followed by its details), then the rest.
 const SHEETS=['Bet amount','Difficulty','Rows','Auto Spin'],DETAILS={'Top bet details':'Top bets','My bet details':'My bets'};
-const windowOrder=[...new Set(['Main screen',...SHEETS,'Game scene','Top bets','Top bet details','My bets','My bet details','How to play','Account','Settings',...Object.values(windowNames)])];
+const windowOrder=[...new Set(['Main screen',...SHEETS,'Game scene','Big wins','Top bets','Top bet details','My bets','My bet details','How to play','Account','Settings',...Object.values(windowNames)])];
 const compareWindows=(a,b)=>windowOrder.indexOf(a)-windowOrder.indexOf(b);
 // The panel moves around the texts: interface or game scene (only when a game has both), then the
 // main screen, its windows and its notices. The panel reads top down: the text type is picked first

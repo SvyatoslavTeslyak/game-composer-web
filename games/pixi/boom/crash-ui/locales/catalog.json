@@ -1717,9 +1717,7 @@
       "en": "Cashed out",
       "fr": "Encaissé",
       "group": "Bet panel & messages",
-      "games": [
-        "road"
-      ],
+      "games": [],
       "ht": "Lajan pran",
       "usage": [
         "unused"
@@ -5101,7 +5099,9 @@
       "group": "Bet panel & messages",
       "games": [
         "candy_cascade",
-        "mopyon_cascades"
+        "mopyon_cascades",
+        "road",
+        "boom"
       ],
       "usage": [
         "text"
@@ -5110,7 +5110,7 @@
         "tabbed-shell-v1"
       ],
       "previewState": "round-dependent",
-      "unusedReason": "Candy Cascade renders the complete win caption with its multiplier; edit that caption instead."
+      "previewWindow": "bigWin"
     },
     "candy_0c68cbc0d9eb": {
       "source": "EPIC WIN",
@@ -5120,7 +5120,9 @@
       "group": "Bet panel & messages",
       "games": [
         "candy_cascade",
-        "mopyon_cascades"
+        "mopyon_cascades",
+        "road",
+        "boom"
       ],
       "usage": [
         "text"
@@ -5129,7 +5131,7 @@
         "tabbed-shell-v1"
       ],
       "previewState": "round-dependent",
-      "unusedReason": "Candy Cascade renders the complete win caption with its multiplier; edit that caption instead."
+      "previewWindow": "bigWin"
     },
     "candy_78e92f5612ab": {
       "source": "CASCADES",
@@ -5192,7 +5194,9 @@
       "group": "Bet panel & messages",
       "games": [
         "candy_cascade",
-        "mopyon_cascades"
+        "mopyon_cascades",
+        "road",
+        "boom"
       ],
       "usage": [
         "text"
@@ -5201,7 +5205,7 @@
         "tabbed-shell-v1"
       ],
       "previewState": "round-dependent",
-      "unusedReason": "Candy Cascade renders the complete win caption with its multiplier; edit that caption instead."
+      "previewWindow": "bigWin"
     },
     "candy_abd20c69e9b1": {
       "source": "AMOUNT",
@@ -5449,12 +5453,13 @@
       ],
       "group": "Bet panel & messages",
       "usage": [
-        "text"
+        "unused"
       ],
       "presets": [
         "tabbed-shell-v1"
       ],
-      "previewState": "round-dependent"
+      "previewState": "round-dependent",
+      "unusedReason": "The win toast writes its label as its own text, so BIG WIN, MEGA WIN and EPIC WIN translate it; the multiple beside it is a number."
     },
     "candy_e2204e18fa4b": {
       "source": "MEGA WIN · {value}×",
@@ -5467,12 +5472,13 @@
       ],
       "group": "Bet panel & messages",
       "usage": [
-        "text"
+        "unused"
       ],
       "presets": [
         "tabbed-shell-v1"
       ],
-      "previewState": "round-dependent"
+      "previewState": "round-dependent",
+      "unusedReason": "The win toast writes its label as its own text, so BIG WIN, MEGA WIN and EPIC WIN translate it; the multiple beside it is a number."
     },
     "candy_0a04916e8a11": {
       "source": "EPIC WIN · {value}×",
@@ -5485,12 +5491,13 @@
       ],
       "group": "Bet panel & messages",
       "usage": [
-        "text"
+        "unused"
       ],
       "presets": [
         "tabbed-shell-v1"
       ],
-      "previewState": "round-dependent"
+      "previewState": "round-dependent",
+      "unusedReason": "The win toast writes its label as its own text, so BIG WIN, MEGA WIN and EPIC WIN translate it; the multiple beside it is a number."
     },
     "candy_12a6d25279bf": {
       "source": "Successful cash outs",
@@ -7426,6 +7433,22 @@
       ],
       "previewWindow": "rules"
     },
+    "hot_hands_rules_document": {
+      "source": "Someone in the crowd secretly slapped Ti Jo's hand. Catch the hitter for the top prize, or clear the innocent ones one by one and cash out when you like.\n\n## How to play\n\n1. Choose a group of 8, 12 or 16 players and your bet, then press **PLAY**. Both stay the same for the whole game.\n2. Tap anyone in the crowd.\n3. Make your call: **It's him / It's her** or **Not him / Not her**.\n\n## The calls\n\n- **It's him / It's her**: you say they did it. Right, and you win the top prize. Wrong, and you lose.\n- **Not him / Not her**: you say they did not. Right, and they leave the game and your win grows. Wrong, and you lose.\n\n## Cash out or continue\n\nAfter every right **Not him / Not her** you choose:\n\n- **Cash out**: take your win now.\n- **Continue**: Ti Jo is slapped again. The new hitter is drawn from the players still in and can be the same one as before. A wrong call now loses what you could have cashed out.\n\n## Payouts\n\nThe fewer players left, the more a cash out pays. A right **It's him / It's her** always pays the top prize.\n\n[[multipliers]]\n\n## Fair play\n\nBefore every game the server locks in a secret seed and shows you its fingerprint (SHA-256). Every hitter is drawn from that seed. After the game the seed is revealed, so you can check that nothing was changed.\n\n[[fairness]]\n\n-# Return to player: 94%.",
+      "en": "Someone in the crowd secretly slapped Ti Jo's hand. Catch the hitter for the top prize, or clear the innocent ones one by one and cash out when you like.\n\n## How to play\n\n1. Choose a group of 8, 12 or 16 players and your bet, then press **PLAY**. Both stay the same for the whole game.\n2. Tap anyone in the crowd.\n3. Make your call: **It's him / It's her** or **Not him / Not her**.\n\n## The calls\n\n- **It's him / It's her**: you say they did it. Right, and you win the top prize. Wrong, and you lose.\n- **Not him / Not her**: you say they did not. Right, and they leave the game and your win grows. Wrong, and you lose.\n\n## Cash out or continue\n\nAfter every right **Not him / Not her** you choose:\n\n- **Cash out**: take your win now.\n- **Continue**: Ti Jo is slapped again. The new hitter is drawn from the players still in and can be the same one as before. A wrong call now loses what you could have cashed out.\n\n## Payouts\n\nThe fewer players left, the more a cash out pays. A right **It's him / It's her** always pays the top prize.\n\n[[multipliers]]\n\n## Fair play\n\nBefore every game the server locks in a secret seed and shows you its fingerprint (SHA-256). Every hitter is drawn from that seed. After the game the seed is revealed, so you can check that nothing was changed.\n\n[[fairness]]\n\n-# Return to player: 94%.",
+      "fr": "Quelqu'un dans la foule a tapé en secret la main de Ti Jo. Démasquez le coupable pour le gros lot, ou innocentez les autres un par un et encaissez quand vous voulez.\n\n## Comment jouer\n\n1. Choisissez un groupe de 8, 12 ou 16 joueurs et votre mise, puis appuyez sur **JOUER**. Les deux restent les mêmes pendant toute la partie.\n2. Touchez n'importe qui dans la foule.\n3. Donnez votre réponse : **C'est lui / C'est elle** ou **Pas lui / Pas elle**.\n\n## Les réponses\n\n- **C'est lui / C'est elle** : vous dites que c'est cette personne. Juste : vous gagnez le gros lot. Faux : vous perdez.\n- **Pas lui / Pas elle** : vous dites que ce n'est pas elle. Juste : elle quitte la partie et votre gain augmente. Faux : vous perdez.\n\n## Encaisser ou continuer\n\nAprès chaque **Pas lui / Pas elle** juste, vous choisissez :\n\n- **Encaisser** : prenez votre gain tout de suite.\n- **Continuer** : Ti Jo reçoit une nouvelle tape. Le nouveau coupable est tiré parmi les joueurs restants et peut être le même qu'avant. Une mauvaise réponse fait alors perdre ce que vous auriez pu encaisser.\n\n## Gains\n\nMoins il reste de joueurs, plus l'encaissement rapporte. Un **C'est lui / C'est elle** juste rapporte toujours le gros lot.\n\n[[multipliers]]\n\n## Jeu équitable\n\nAvant chaque partie, le serveur fixe une graine secrète et vous montre son empreinte (SHA-256). Chaque coupable est tiré de cette graine. Après la partie, la graine est révélée : vous pouvez vérifier que rien n'a changé.\n\n[[fairness]]\n\n-# Taux de retour au joueur : 94 %.",
+      "ht": "Yon moun nan foul la frape men Ti Jo an kachèt. Jwenn moun ki frape a pou gwo pri a, oswa inosante lòt yo youn apre lòt epi pran lajan ou lè ou vle.\n\n## Kijan pou jwe\n\n1. Chwazi yon gwoup 8, 12 oswa 16 jwè ak mize ou, epi peze **JWE**. Toude rete menm jan pou tout pati a.\n2. Tape nenpòt moun nan foul la.\n3. Bay repons ou: **Se li** oswa **Se pa li**.\n\n## Repons yo\n\n- **Se li**: ou di se moun sa a ki frape. Bon: ou genyen gwo pri a. Pa bon: ou pèdi.\n- **Se pa li**: ou di se pa li. Bon: li soti nan jwèt la epi sa ou genyen ap monte. Pa bon: ou pèdi.\n\n## Pran lajan oswa kontinye\n\nApre chak **Se pa li** ki bon, ou chwazi:\n\n- **Pran lajan**: pran sa ou genyen kounye a.\n- **Kontinye**: yo frape Ti Jo ankò. Nouvo moun ki frape a soti nan jwè ki rete yo, e li ka menm moun nan ankò. Yon move repons fè ou pèdi sa ou te ka pran an.\n\n## Peman\n\nMwens jwè ki rete, plis pran lajan an peye. Yon **Se li** ki bon toujou peye gwo pri a.\n\n[[multipliers]]\n\n## Jwèt onèt\n\nAnvan chak pati, sèvè a fikse yon grenn sekrè epi li montre ou anprent li (SHA-256). Chak moun ki frape soti nan grenn sa a. Apre pati a, yo montre grenn nan pou ou ka verifye anyen pa chanje.\n\n[[fairness]]\n\n-# To retou pou jwè a: 94%.",
+      "label": "How to play · Content",
+      "format": "markdown",
+      "group": "Rules",
+      "games": [
+        "hot_hands"
+      ],
+      "usage": [
+        "text"
+      ],
+      "previewWindow": "rules"
+    },
     "catch_rules_document": {
       "source": "1. **Wait for PLACE YOUR BET.** Choose an amount, then press BET on any position. You can choose one, two or all three.\n2. **Left / Right:** predict the winning fisherman. These bets settle automatically when the round ends.\n3. **Main Catch:** press CASHOUT while the catch grows, before the round ends. If the round ends before you cash out, Main loses.\n\nCANCEL returns your entire stake before the countdown finishes. Once the round starts, betting is closed until the next round.\n\nLeft and Right settle when the round ends; only one side wins. Main must be cashed out before the round ends. Cashing out Main does not end the duel.\n\n**Main is not a third winner.** Left or Right always wins the duel. Main is an independent cash-out bet.\n\n**Payout includes your stake.** For example, $5 on Left at 2.37× returns $11.85 ($6.85 profit) if Left wins. $8 on Main cashed out at 1.50× returns $12 ($4 profit). Main without a cashout loses even if your chosen side wins.\n\nStake: $1–$1,000 per position. Main is automatically cashed out at the 1,000× ceiling. Local demo credits.",
       "en": "1. **Wait for PLACE YOUR BET.** Choose an amount, then press BET on any position. You can choose one, two or all three.\n2. **Left / Right:** predict the winning fisherman. These bets settle automatically when the round ends.\n3. **Main Catch:** press CASHOUT while the catch grows, before the round ends. If the round ends before you cash out, Main loses.\n\nCANCEL returns your entire stake before the countdown finishes. Once the round starts, betting is closed until the next round.\n\nLeft and Right settle when the round ends; only one side wins. Main must be cashed out before the round ends. Cashing out Main does not end the duel.\n\n**Main is not a third winner.** Left or Right always wins the duel. Main is an independent cash-out bet.\n\n**Payout includes your stake.** For example, $5 on Left at 2.37× returns $11.85 ($6.85 profit) if Left wins. $8 on Main cashed out at 1.50× returns $12 ($4 profit). Main without a cashout loses even if your chosen side wins.\n\nStake: $1–$1,000 per position. Main is automatically cashed out at the 1,000× ceiling. Local demo credits.",
@@ -7582,7 +7605,7 @@
       ]
     },
     "value_your_bet_f7a9f1": {
-      "group": "Scene",
+      "group": "Bet panel & messages",
       "usage": [
         "text"
       ],
@@ -7596,11 +7619,14 @@
       "ht": "{value}× miz ou",
       "games": [
         "candy_cascade",
-        "mopyon_cascades"
-      ]
+        "mopyon_cascades",
+        "road",
+        "boom"
+      ],
+      "previewWindow": "bigWin"
     },
     "tap_to_continue_cbaabf": {
-      "group": "Scene",
+      "group": "Bet panel & messages",
       "usage": [
         "text"
       ],
@@ -7614,8 +7640,11 @@
       "ht": "Touche pou kontinye",
       "games": [
         "candy_cascade",
-        "mopyon_cascades"
-      ]
+        "mopyon_cascades",
+        "road",
+        "boom"
+      ],
+      "previewWindow": "bigWin"
     },
     "game_number_value_7fb62a": {
       "group": "Scene",

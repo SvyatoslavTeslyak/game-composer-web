@@ -165,6 +165,14 @@ class BettingSound {
   clip.playbackRate=(own?1:action==='minus'?0.92:action==='plus'?1.08:1)*spread;
   clip.play().catch(()=>{});
  }
+ // A named cue outside the panel's presses: the big win's tiers and its count. Each file has its
+ // own pool, so the count's clicks never cut a tier's fanfare short.
+ cue(event){
+  if(!this.enabled||document.hidden)return;
+  const spec=this.plan[event];if(!spec||!spec.file||spec.volume===0)return;
+  const pool=this.pool(spec.file,spec.volume),clip=pool[this.next++%pool.length];
+  clip.currentTime=0;clip.volume=spec.volume;clip.playbackRate=1+(Math.random()*2-1)*(spec.jitter||0);clip.play().catch(()=>{});
+ }
  destroy(){this.setEnabled(false);for(const pool of Object.values(this.pools))for(const clip of pool){clip.removeAttribute('src');clip.load()}}
 }
 // Confetti announces the popup; coin clinks belong only to the wallet transfer.
@@ -318,6 +326,9 @@ class MultiBetControls {
 class GameUI {
  /** The brands tokens.css carries, by id; the page-level data-brand attribute selects one. Panels and UI only: the game scene is the game's. */
  static get brands(){return CrashTokens.BRANDS}
+ // The big-win tiers every game shares, lowest first: the title, the colour (data-tier) and the
+ // sound event in assets/audio/sounds.json. A game says only where each starts.
+ static BIG_WINS=[{key:'big',name:'BIG WIN',sound:'big_win'},{key:'mega',name:'MEGA WIN',sound:'mega_win'},{key:'epic',name:'EPIC WIN',sound:'epic_win'}];
  static setBrand(name){if(!(name in CrashTokens.BRANDS))name='default';if(name==='default')delete document.documentElement.dataset.brand;else document.documentElement.dataset.brand=name;return name}
  static get brand(){return document.documentElement.dataset.brand||'default'}
  /** Seasonal accent overlay over the brand; '' means none. */
@@ -537,7 +548,7 @@ class GameUI {
   toast.style.setProperty('--win-flip-at',WIN_FLIP_AT+'ms');toast.style.setProperty('--win-flip-ms',WIN_FLIP_MS+'ms');
   // Splashes: a dozen drops thrown out from the centre as the card lands, each on its own bearing.
   const splash=Array.from({length:16},(_,i)=>{const a=(i/16)*Math.PI*2+(i%2?.2:0),d=(i%3?120:170);return '<i'+(i%4===3?' class="win-splash-star"':'')+' style="--dx:'+Math.round(Math.cos(a)*d)+'px;--dy:'+Math.round(Math.sin(a)*d*.7)+'px;--win-splash-delay:'+(i%4)*35+'ms">'+(i%4===3?'✦':'')+'</i>'}).join('');
-  toast.innerHTML='<span class="win-splash" aria-hidden="true">'+splash+'</span><div class="win-toast-card"><span class="win-flip" aria-hidden="true"><img class="win-mark" src="'+base+'assets/icons/'+pick('cashed-out.webp')+version+'" alt=""><img class="win-coin" src="'+base+'assets/icons/'+pick('coin.png')+'" alt=""></span><div><strong>'+esc(s.winToastLabel||'Cashed out')+(Number.isFinite(multiplier)?' · '+Number(multiplier).toFixed(2)+'×':'')+'</strong><span>+'+money(amount)+'</span></div></div>';
+  toast.innerHTML='<span class="win-splash" aria-hidden="true">'+splash+'</span><div class="win-toast-card"><span class="win-flip" aria-hidden="true"><img class="win-mark" src="'+base+'assets/icons/'+pick('cashed-out.webp')+version+'" alt=""><img class="win-coin" src="'+base+'assets/icons/'+pick('coin.png')+'" alt=""></span><div><strong>'+esc(s.winToastLabel||'Cashed out')+(Number.isFinite(multiplier)?'<span class="win-multiple" data-no-translate> · '+Number(multiplier).toFixed(2)+'×</span>':'')+'</strong><span>+'+money(amount)+'</span></div></div>';
   this.host.append(toast);this.winToast=toast;
   const id=s.winId;
   queueMicrotask(()=>{if(this.state.win&&this.state.winId===id)this.send('dismissWin',{})});
@@ -552,8 +563,10 @@ class GameUI {
   toast.classList.remove('is-leaving');toast.classList.toggle('is-progress',progress);
   const content=toast.querySelector('.win-toast-card>div');
   const multiplier=s.history?.[0]?.multiplier;
-  content.querySelector('strong').textContent=(s.winToastLabel||'WIN')+(Number.isFinite(multiplier)?' · '+Number(multiplier).toFixed(2)+'×':'');
-  content.querySelector('span').textContent='+'+money(s.winToastAmount??s.winAmount);
+  // The label is its own text, so the catalog's plain "BIG WIN" or "Cashed out" translates it;
+  // the multiple beside it is a number and is left alone.
+  {const strong=content.querySelector('strong'),parts=[document.createTextNode(s.winToastLabel||'WIN')];if(Number.isFinite(multiplier)){const m=document.createElement('span');m.className='win-multiple';m.dataset.noTranslate='';m.textContent=' · '+Number(multiplier).toFixed(2)+'×';parts.push(m)}strong.replaceChildren(...parts)}
+  content.querySelector(':scope>span').textContent='+'+money(s.winToastAmount??s.winAmount);
   let detail=content.querySelector('.win-detail');
   if(!detail){detail=document.createElement('small');detail.className='win-detail';content.append(detail)}
   detail.textContent=s.winToastDetail||'';detail.hidden=!s.winToastDetail;
@@ -568,15 +581,21 @@ class GameUI {
   toast.classList.add('is-leaving');
   this.toastHideTimer=setTimeout(()=>{if(this.winToast===toast)this.finishWinToast()},300);
  }
- // A big win's celebration over the whole game. The amount counts up from nothing and the title
- // climbs through every tier it passes (BIG WIN, then MEGA, then EPIC), each with its own colour,
- // a burst and a shake; coins and the game's own symbols rain behind it. A first tap jumps to the
- // final tier and amount; a second tap, or a moment's wait, closes it. Games give their tiers
- // (lowest first, `from` as a multiple of the bet), the images for the rain and their sounds.
- // Resolves once it has closed.
- celebrate({amount,bet,tiers,rain=[],hurried=false,onTier=()=>{},onTick=()=>{}}){
-  const multiple=bet>0?amount/bet:0,reached=(tiers||[]).filter(t=>multiple>=t.from);
-  if(!reached.length)return Promise.resolve();
+ // A big win's celebration over the whole game, the same in every game. The amount counts up from
+ // nothing and the title climbs through every tier it passes (BIG WIN, then MEGA, then EPIC), each
+ // with its own colour, a burst and its own sound; the game's symbols rain behind it. A first tap
+ // jumps to the final tier and amount; a second tap, or a moment's wait, closes it. The kit owns
+ // the tiers' names, colours and sounds (GameUI.BIG_WINS); a game gives only where each starts,
+ // `from` as a multiple of the bet, lowest first, and its rain (or config.bigWinRain). onTier and
+ // onTick are extra hooks; the sounds are the kit's. Resolves, once closed, with the top tier
+ // reached. `hold` keeps it up after the count has landed until it is tapped, as Composer's
+ // translation preview shows it; `silent` plays no sound.
+ celebrate({amount,bet,tiers,rain,hurried=false,hold=false,silent=false,preview=false,onTier=()=>{},onTick=()=>{}}){
+  const ladder=(tiers||[]).map((t,i)=>{const base=GameUI.BIG_WINS.find(b=>b.key===t.key)||GameUI.BIG_WINS[Math.min(i,GameUI.BIG_WINS.length-1)];return {...base,...t,name:t.name||base.name,key:t.key||base.key}});
+  const multiple=bet>0?amount/bet:0,reached=ladder.filter(t=>multiple>=t.from);
+  if(!reached.length)return Promise.resolve(null);
+  rain=rain&&rain.length?rain:this.config.bigWinRain||[];
+  const cue=event=>{if(!silent)this.bettingSound.cue(event)};
   const reduced=this.state.settings?.reduced_motion||matchMedia('(prefers-reduced-motion: reduce)').matches;
   // The game's symbols tumble down with confetti in the brand's colours; no coins, which belong to
   // the win toast that carries them to the balance afterwards. Every tier climbed throws in
@@ -585,14 +604,14 @@ class GameUI {
   const confettiColours=['var(--gold)','var(--success)','var(--cyan)','var(--danger)','var(--highlight)','var(--action-go-edge)'];
   const shower=(symbols,confetti,delay)=>Array.from({length:symbols},(_,i)=>'<img class="big-win-drop" src="'+esc(images[Math.floor(Math.random()*images.length)])+'" alt="" style="--x:'+Math.round(Math.random()*100)+'%;--d:'+(delay+Math.random()*1.4).toFixed(2)+'s;--t:'+(1.6+Math.random()*1.6).toFixed(2)+'s;--s:'+Math.round(28+Math.random()*34)+'px;--r:'+Math.round(Math.random()*720-360)+'deg">').join('')
    +Array.from({length:confetti},()=>'<i class="big-win-confetti" style="--x:'+Math.round(Math.random()*100)+'%;--d:'+(delay+Math.random()*1.8).toFixed(2)+'s;--t:'+(2.4+Math.random()*2).toFixed(2)+'s;--c:'+confettiColours[Math.floor(Math.random()*confettiColours.length)]+';--w:'+Math.round(6+Math.random()*6)+'px;--h:'+Math.round(10+Math.random()*8)+'px;--sway:'+Math.round(20+Math.random()*40)+'px;--spin:'+Math.round(360+Math.random()*720)+'deg"></i>').join('');
-  const drops=reduced?'':shower(44,60,0);
-  const root=document.createElement('div');root.className='big-win';root.setAttribute('role','dialog');root.setAttribute('aria-live','polite');
+  const drops=reduced?'':shower(44,110,0);
+  const root=document.createElement('div');root.className='big-win'+(preview?' is-preview':'');root.setAttribute('role','dialog');root.setAttribute('aria-live','polite');
   root.innerHTML='<div class="big-win-rays" aria-hidden="true"></div><div class="big-win-rain" aria-hidden="true">'+drops+'</div><div class="big-win-card"><div class="big-win-title"></div><div class="big-win-amount">'+esc(money(0))+'</div><div class="big-win-x">'+esc(multiple.toFixed(2))+'× your bet</div><div class="big-win-tap">Tap to continue</div></div><div class="big-win-flash" aria-hidden="true"></div>';
   this.host.append(root);
   const title=root.querySelector('.big-win-title'),figure=root.querySelector('.big-win-amount');
   let level=-1;
   const showers=root.querySelector('.big-win-rain');
-  const show=i=>{if(i===level)return;level=i;const t=reached[i];root.dataset.tier=t.key||String(i);root.setAttribute('aria-label',t.name);title.textContent=t.name;title.style.removeProperty('--big-win-fit');const room=root.clientWidth-32,wide=Math.max(title.offsetWidth,title.scrollWidth);if(wide>room)title.style.setProperty('--big-win-fit',(room/wide).toFixed(3));if(i>0&&!reduced){root.classList.remove('tier-up');void root.offsetWidth;root.classList.add('tier-up');showers.insertAdjacentHTML('beforeend',shower(18,40,0))}onTier(t,i)};
+  const show=i=>{if(i===level)return;level=i;const t=reached[i];root.dataset.tier=t.key||String(i);root.setAttribute('aria-label',t.name);title.textContent=t.name;title.style.removeProperty('--big-win-fit');const room=root.clientWidth-32,wide=Math.max(title.offsetWidth,title.scrollWidth);if(wide>room)title.style.setProperty('--big-win-fit',(room/wide).toFixed(3));if(i>0&&!reduced){root.classList.remove('tier-up');void root.offsetWidth;root.classList.add('tier-up');showers.insertAdjacentHTML('beforeend',shower(18,70,0))}cue(t.sound);onTier(t,i)};
   // Each tier gets its stretch of the count: the first runs up to the next threshold, the last
   // slows to the final figure so its digits land one by one.
   const stretch=hurried?.9:1.7,last=hurried?1.1:2.2;
@@ -600,17 +619,27 @@ class GameUI {
   const total=marks.reduce((sum,m)=>sum+m.seconds,0);
   return new Promise(resolve=>{
    const started=performance.now();let finished=false,closed=false,lastTick=0,frameId=0;
-   const close=()=>{if(closed)return;closed=true;cancelAnimationFrame(frameId);root.classList.add('is-leaving');setTimeout(()=>{root.remove();resolve()},reduced?0:280)};
-   const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frameId);show(reached.length-1);figure.textContent=money(amount);root.classList.add('is-done');setTimeout(close,hurried?1200:2600)};
+   const close=()=>{if(closed)return;closed=true;cancelAnimationFrame(frameId);root.classList.add('is-leaving');setTimeout(()=>{root.remove();resolve(reached[reached.length-1])},reduced?0:280)};
+   const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frameId);show(reached.length-1);figure.textContent=money(amount);root.classList.add('is-done');if(!hold)setTimeout(close,hurried?1200:2600)};
    const frame=now=>{if(finished)return;let t=(now-started)/1000,i=0;while(i<marks.length-1&&t>marks[i].seconds){t-=marks[i].seconds;i++}
     const m=marks[i],k=Math.min(1,t/m.seconds),eased=i===marks.length-1?1-Math.pow(1-k,2.2):k;
     show(i);figure.textContent=money(m.from+(m.to-m.from)*eased);
-    if(now-lastTick>90){lastTick=now;onTick()}
+    if(now-lastTick>90){lastTick=now;cue('big_win_count');onTick()}
     if((now-started)/1000>=total)finish();else frameId=requestAnimationFrame(frame)};
-   if(reduced)finish();else frameId=requestAnimationFrame(frame);
+   // Held for a preview, it opens on its final tier and amount, ready to read.
+   if(reduced||hold)finish();else frameId=requestAnimationFrame(frame);
    root.addEventListener('click',()=>finished?close():finish());
   });
  }
+ // Composer's Translates: the big-win window held at one tier with a sample win at the current
+ // bet, silent; nothing about the round changes. Any other window closes it.
+ previewBigWin(key='epic'){
+  this.closeBigWinPreview();
+  const index=Math.max(0,GameUI.BIG_WINS.findIndex(t=>t.key===key)),bet=Number(this.state.bet)||1,starts=[20,50,100];
+  const tiers=GameUI.BIG_WINS.slice(0,index+1).map((t,i)=>({key:t.key,from:starts[i]}));
+  this.celebrate({amount:Math.round(bet*starts[index]*1.2*100)/100,bet,tiers,hold:true,hurried:true,silent:true,preview:true});
+ }
+ closeBigWinPreview(){for(const open of this.host.querySelectorAll('.big-win.is-preview'))open.remove()}
  finishWinToast(){
   clearTimeout(this.toastFlightTimer);clearTimeout(this.toastEndTimer);clearTimeout(this.toastHideTimer);
   if(this.winToast){this.clearWinCoins();this.winToast.remove();this.winToast=null}

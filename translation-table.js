@@ -6,19 +6,21 @@ const langs=['en','fr','ht'],headers=['game','preset','key','area','section','so
 const context=(entry,game)=>({...entry,usage:entry.usageByGame?.[game]||entry.usage,group:entry.groupByGame?.[game]||entry.group,presets:entry.presetsByGame?.[game]||entry.presets,previewWindow:entry.previewWindowByGame?.[game]??entry.previewWindow});
 // Goat Road lands every win as the kit's toast ("Cashed out · 2.04×"), never the win window, so
 // that window and its "NICE WIN!" are not Goat Road's texts.
-const roadWindows=new Set(['','menu','account','rules','topbets','mybets','betDetails','topBetDetails','stake','notice:funds','notice:offline','notice:error','notice:wallet']);
+const roadWindows=new Set(['','menu','account','rules','topbets','mybets','betDetails','topBetDetails','stake','notice:funds','notice:offline','notice:error','notice:wallet','bigWin']);
 // The games that build their own bet panel: the windows each one has, and the kit's shared texts
 // it never shows (crash-game panels, records, the round-history strip), so neither is listed.
 const crashOnly=['Your best','Top','Live Wins','See all ›','by','Round history','{value} ONLINE','Cashed out · {value}×','NICE WIN!','Well played!','No wins yet.','Player and records','LVL {value}','RESULT'];
 const ownWindows={
  candy_cascade:new Set([...roadWindows].concat(['autoSpin','candyPays'])),
- mopyon_cascades:new Set(['','menu','account','rules','topbets','mybets','betDetails','topBetDetails','notice:wallet','autoSpin','stake','linePays','award','summary']),
- plinko:new Set(['','menu','account','rules','topbets','mybets','betDetails','topBetDetails','stake','plinkoRows'])
+ mopyon_cascades:new Set(['','menu','account','rules','topbets','mybets','betDetails','topBetDetails','notice:wallet','autoSpin','stake','linePays','award','summary','bigWin']),
+ plinko:new Set(['','menu','account','rules','topbets','mybets','betDetails','topBetDetails','stake','plinkoRows']),
+ hot_hands:new Set(['','menu','account','rules','topbets','mybets','betDetails','topBetDetails','stake','notice:wallet'])
 };
 const ownExcluded={
  candy_cascade:new Set(['Bet panels','Your best','Top','Live Wins','See all ›','Round history','{value} ONLINE','Cashed out · {value}×']),
  mopyon_cascades:new Set([...crashOnly,'← Back to menu','Settings','Menu','Your account']),
- plinko:new Set([...crashOnly,'ONLINE','Reduce motion','Back','Cancel','Collect','Ready','steps','slices','sec','{value} growth','Settings'])
+ plinko:new Set([...crashOnly,'ONLINE','Reduce motion','Back','Cancel','Collect','Ready','steps','slices','sec','{value} growth','Settings']),
+ hot_hands:new Set([...crashOnly,'Reduce motion','Collect','Ready','steps','slices','sec','{value} growth'])
 };
 const windowAllowed=(game,kind)=>ownWindows[game]?ownWindows[game].has(kind||''):game!=='road'||roadWindows.has(kind||'');
 const obsoleteRoadText=new Set(['Normal','Expert','Extreme','Insane','Reduce motion']);

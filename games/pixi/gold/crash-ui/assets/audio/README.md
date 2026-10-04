@@ -6,6 +6,8 @@ Owned and played by `BettingSound` in the UI kit's `web/ui.js`.
 - `confirm.ogg`: ascending cashout-ready tone, once on the inactive-to-active edge.
 - `win.ogg`: the Market Stack ElevenLabs coin-tray jingle, shared across all Win popups. `WinSound` plays once per popup/payout, then a quieter and slightly faster coin sound at the wallet-transfer signal. Both voices reuse win.ogg and respect Sound off. Native games load the same asset for Win/collect.
 
+- `big_win_*.ogg`, `mega_win_*.ogg`, `epic_win_*.ogg`, `big_win_count_0.ogg`: the big-win celebration's cue for each tier (kompa: guitar, brass and percussion, growing from a 1.5 s sting to a 2.9 s finale with coin showers) and the count's coin click. Played by `ui.celebrate`, the same in every game; the second takes are disabled alternatives in Sound Studio.
+
 Standard panels, the single CASH OUT action, and three-position controls use the same files. UI state (`settings.sound`, `canCash`, `showCash`/`goTitle`) controls playback. The bridge forwards intents without playing game-local UI sounds. Native HUD click callbacks are silent while the browser UI is active.
 
 Mono 24 kHz Vorbis; combined audio size 18443 bytes. No generated variations or original masters are bundled. `sources.json` records ElevenLabs generation IDs and prompts. Local filtering and gain changes use no generation credits.

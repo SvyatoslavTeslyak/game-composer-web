@@ -2,7 +2,7 @@
   "version": 1,
   "game": "kit",
   "title": "Shared UI sounds",
-  "owner": "web/ui.js (BettingSound, WinSound). Every game plays these; a game never overrides them.",
+  "owner": "web/ui.js (BettingSound, WinSound, the big-win celebration). Every game plays these; a game never overrides them.",
   "events": [
     {
       "id": "click",
@@ -372,6 +372,89 @@
       "fallback": "click",
       "pitch_jitter": 0,
       "takes": []
+    },
+    {
+      "id": "big_win",
+      "label": "Big win · BIG WIN",
+      "trigger": "The big-win window opens on BIG WIN.",
+      "volume_db": -6.0,
+      "pitch_jitter": 0,
+      "generator": "ElevenLabs eleven_text_to_sound_v2",
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "prompt": "A short bright Haitian kompa win sting: a quick sparkling kompa guitar lick and a punchy brass stab over a cowbell and shaker, landing on a happy major chord. Clean, joyful, about one and a half seconds. Guitar, brass and percussion only: no bamboo trumpets, no flutes, no animals, no voices.",
+      "takes": [
+        {
+          "file": "web/assets/audio/big_win_0.ogg",
+          "enabled": true,
+          "source": "elevenlabs"
+        },
+        {
+          "file": "web/assets/audio/big_win_1.ogg",
+          "enabled": false,
+          "source": "elevenlabs"
+        }
+      ]
+    },
+    {
+      "id": "mega_win",
+      "label": "Big win · MEGA WIN",
+      "trigger": "The big-win window climbs to MEGA WIN.",
+      "volume_db": -5.0,
+      "pitch_jitter": 0,
+      "generator": "ElevenLabs eleven_text_to_sound_v2",
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "prompt": "A three second festive Haitian kompa celebration: a bright kompa guitar riff and punchy brass stabs over tanbou drums and a gwiro scraper, a tap-tap bus horn honking along in rhythm, ending on a cheerful brass hit. Joyful street party. Instruments only: no animals, no animal sounds, no voices, no singing.",
+      "takes": [
+        {
+          "file": "web/assets/audio/mega_win_0.ogg",
+          "enabled": true,
+          "source": "elevenlabs"
+        },
+        {
+          "file": "web/assets/audio/mega_win_1.ogg",
+          "enabled": false,
+          "source": "elevenlabs"
+        }
+      ]
+    },
+    {
+      "id": "epic_win",
+      "label": "Big win · EPIC WIN",
+      "trigger": "The big-win window climbs to EPIC WIN: the kompa band's final hit with coin showers layered after it.",
+      "volume_db": -4.0,
+      "pitch_jitter": 0,
+      "generator": "ElevenLabs eleven_text_to_sound_v2",
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "prompt": "A four second Haitian kompa jackpot finale: a full kompa band with bright guitars, a big brass section and timbales plays a rising triumphant phrase, a fast timbale roll builds up and the whole band hits a huge final chord with a crash cymbal, followed by a shower of gold coins. Joyful and grand. Guitar, brass, drums and coins only: no bamboo trumpets, no flutes, no whistles, no animals, no voices.",
+      "takes": [
+        {
+          "file": "web/assets/audio/epic_win_0.ogg",
+          "enabled": true,
+          "source": "elevenlabs"
+        },
+        {
+          "file": "web/assets/audio/epic_win_1.ogg",
+          "enabled": false,
+          "source": "elevenlabs"
+        }
+      ]
+    },
+    {
+      "id": "big_win_count",
+      "label": "Big win · count",
+      "trigger": "The amount counting up in the big-win window, about ten times a second.",
+      "volume_db": -16.0,
+      "pitch_jitter": 0.05,
+      "generator": "ElevenLabs eleven_text_to_sound_v2",
+      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
+      "prompt": "One tiny soft bright coin tick, a single short metallic click like a gold coin counter, crisp and gentle, extremely short, dry, no reverb, no music",
+      "takes": [
+        {
+          "file": "web/assets/audio/big_win_count_0.ogg",
+          "enabled": true,
+          "source": "elevenlabs"
+        }
+      ]
     }
   ]
 }
