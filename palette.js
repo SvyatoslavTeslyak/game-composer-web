@@ -19,7 +19,7 @@ const css=`
 .palette .empty{padding:14px;color:var(--inspector-muted,#98a5b5)}`;
 document.head.append(Object.assign(document.createElement('style'),{textContent:css}));
 const sources=[];
-const TABS=[['look','Brands'],['library','Library'],['layout','Game'],['translates','Texts'],['sound','Sounds']];
+const TABS=[['look','Tenants'],['library','Library'],['layout','Game'],['translates','Texts'],['sound','Sounds']];
 const LANGS=[['en','English'],['fr','Français'],['ht','Kreyòl']];
 sources.push(()=>{
  const T=window.ComposerTarget,out=[];
@@ -27,8 +27,8 @@ sources.push(()=>{
  for(const [id,title] of TABS){const tab=$('#'+id+'-tab');if(tab&&!tab.hidden)out.push({title,kind:'Tab',go:()=>tab.click()})}
  const cat=window.ComposerLook?.catalog;
  if(cat)for(const [bid,b] of Object.entries(cat.brands)){
-  out.push({title:b.title,kind:'Brand',swatch:b.roles?.primary,go:()=>window.ComposerLook.pick({brand:bid,theme:''})});
-  for(const [tid,t] of Object.entries(b.themes||{}))out.push({title:t.title,kind:'Season · '+b.title,swatch:t.roles?.primary||b.roles?.primary,go:()=>window.ComposerLook.pick({brand:bid,theme:tid})});
+  out.push({title:b.title,kind:'Tenant',swatch:b.roles?.primary,go:()=>window.ComposerLook.pick({brand:bid,theme:''})});
+  for(const [tid,t] of Object.entries(b.themes||{}))out.push({title:t.title,kind:'Theme · '+b.title,swatch:t.roles?.primary||b.roles?.primary,go:()=>window.ComposerLook.pick({brand:bid,theme:tid})});
  }
  const lang=$('#language');
  if(lang)for(const [id,title] of LANGS)out.push({title,kind:'Preview language',go:()=>{lang.value=id;lang.dispatchEvent(new Event('change',{bubbles:true}))}});
@@ -40,7 +40,7 @@ function open(){
  if(scrim)return;
  const items=sources.flatMap(f=>{try{return f()||[]}catch{return []}});
  scrim=document.createElement('div');scrim.className='palette-scrim';
- scrim.innerHTML='<div class="palette" role="dialog" aria-label="Find"><input id="palette-q" type="text" placeholder="Find a game, tab, brand, season or text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-list"><ul id="palette-list" role="listbox"></ul></div>';
+ scrim.innerHTML='<div class="palette" role="dialog" aria-label="Find"><input id="palette-q" type="text" placeholder="Find a game, tab, tenant, theme or text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-list"><ul id="palette-list" role="listbox"></ul></div>';
  document.body.append(scrim);
  const input=$('#palette-q'),list=$('#palette-list');let shown=[],on=0;
  const draw=()=>{

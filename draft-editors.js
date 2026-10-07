@@ -155,23 +155,23 @@
     return json(catalog);
    }
    if(path.startsWith('brands/')&&['POST','DELETE'].includes(method)){
-    const parts=path.split('/');if(!/^[a-z][a-z0-9-]{1,30}$/.test(parts[1])||(parts.length>2&&(parts.length!==4||parts[2]!=='themes'||!/^[a-z][a-z0-9-]{1,30}$/.test(parts[3]))))throw Error('Invalid brand or theme');
+    const parts=path.split('/');if(!/^[a-z][a-z0-9-]{1,30}$/.test(parts[1])||(parts.length>2&&(parts.length!==4||parts[2]!=='themes'||!/^[a-z][a-z0-9-]{1,30}$/.test(parts[3]))))throw Error('Invalid tenant or theme');
     const body=options.body?JSON.parse(options.body):{},id=parts[1],theme=parts[3];
     {
-     const gameOld=snapshots.get(key(g,'design')),sharedOld=layered?snapshots.get(key(SHARED,'design')):null;if(!gameOld||(layered&&!sharedOld))throw Error('Reload Brands before saving.');
+     const gameOld=snapshots.get(key(g,'design')),sharedOld=layered?snapshots.get(key(SHARED,'design')):null;if(!gameOld||(layered&&!sharedOld))throw Error('Reload Tenants before saving.');
      const catalog=sharedOld?mergeShared(await original('brands/'),sharedOld.payload.design):await original('brands/');
      const own=ownDesign(gameOld.payload.design,catalog),mine=own.brands[id]||{};
      // The game's own: a season only it has, or the faces it sets for itself.
      const forGame=url.searchParams.get('scope')==='game'||(!!theme&&!!mine.themes?.[theme]);
      if(forGame){
-      if(!catalog.brands[id])throw Error('This brand is not shared yet. Save the brand first.');
+      if(!catalog.brands[id])throw Error('This tenant is not shared yet. Save the tenant first.');
       if(theme){
-       if(catalog.brands[id].themes?.[theme])throw Error('Every game already has a season with this name. Give this one another title.');
+       if(catalog.brands[id].themes?.[theme])throw Error('Every game already has a theme with this name. Give this one another title.');
        mine.themes={...(mine.themes||{})};if(method==='DELETE')delete mine.themes[theme];else mine.themes[theme]={title:body.title,roles:body.roles};
        if(!Object.keys(mine.themes).length)delete mine.themes;
       }else{
-       if(method==='DELETE')throw Error('A brand belongs to every game and cannot be removed for one.');
-       if(Object.keys(body).some(k=>k!=='fonts'))throw Error('Only a brand’s faces can be set for one game.');
+       if(method==='DELETE')throw Error('A tenant belongs to every game and cannot be removed for one.');
+       if(Object.keys(body).some(k=>k!=='fonts'))throw Error('Only a tenant’s faces can be set for one game.');
        // No faces, or the shared ones again, means the game follows the shared brand.
        if(body.fonts&&!sameFaces({...catalog.brands[id].fonts,...body.fonts},catalog.brands[id].fonts))mine.fonts=Object.fromEntries(Object.entries(body.fonts).map(([k,f])=>[k,face(f)]));else delete mine.fonts;
        const allowedFonts=catalog.fonts.map(f=>(typeof f==='string'?f:f.file).split('/').pop());
@@ -180,12 +180,12 @@
       if(Object.keys(mine).length)own.brands[id]=mine;else delete own.brands[id];
       await save(g,'design',own);return json({saved:true,cloud:true,scope:'game'});
      }
-     if(!sharedOld)throw Error('Brands belong to every game, and your role cannot change them. You can add a season for this game only.');
+     if(!sharedOld)throw Error('Tenants belong to every game, and your role cannot change them. You can add a theme for this game only.');
      const design=clone(sharedOld.payload.design||{brands:{}});design.brands||={};
-     if(method==='DELETE'&&!theme){if(id==='default')throw Error('Cannot remove default brand');design.brands[id]=null}
+     if(method==='DELETE'&&!theme){if(id==='default')throw Error('Cannot remove the default tenant');design.brands[id]=null}
      else{
       const originalBrand=catalog.brands[id]||catalog.brands[body.from]||catalog.brands.default,b=editableBrand(originalBrand);
-      if(theme){if(method==='DELETE')delete b.themes[theme];else{if(mine.themes?.[theme])throw Error('This game already has its own season with this name.');b.themes[theme]={title:body.title,roles:body.roles}}}
+      if(theme){if(method==='DELETE')delete b.themes[theme];else{if(mine.themes?.[theme])throw Error('This game already has its own theme with this name.');b.themes[theme]={title:body.title,roles:body.roles}}}
       else{for(const field of ['title','roles','overrides','fonts'])if(field in body&&body[field])b[field]=clone(body[field])}
       const allowedFonts=new Set(catalog.fonts.map(f=>typeof f==='string'?f:f.file));
       for(const f of Object.values(b.fonts))if(!allowedFonts.has(f.file)&&!catalog.fonts.some(x=>(typeof x==='string'?x:x.file)?.split('/').pop()===f.file))throw Error('Choose a font from the shared library.');

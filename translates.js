@@ -404,7 +404,7 @@ const blockLabel=name=>({paytable:'Pay table',paylines:'Pay lines',linepays:'Lin
 function gameBlocks(){try{return Object.keys(frame.contentWindow?.CrashUI?.instance?.config?.rulesBlocks||{})}catch{return []}}
 // The colours a document may use: the brand's own roles, so they follow every brand and theme.
 // The hex values only paint them in the editor; the game draws them from its tokens.
-const DOC_COLOURS={brand:['Brand','#ffba2c'],green:['Green','#4ace68'],red:['Red','#ff9a9a'],blue:['Blue','#00d7ff'],grey:['Grey','#a4a4a4']};
+const DOC_COLOURS={brand:['Primary','#ffba2c'],green:['Green','#4ace68'],red:['Red','#ff9a9a'],blue:['Blue','#00d7ff'],grey:['Grey','#a4a4a4']};
 const colourName=value=>{const hex=String(value||'').trim().toLowerCase();const rgb=hex.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);const norm=rgb?'#'+rgb.slice(1).map(n=>Number(n).toString(16).padStart(2,'0')).join(''):hex;return Object.entries(DOC_COLOURS).find(([,[,h]])=>h===norm)?.[0]||''};
 // The document's text → the editor's HTML (every piece the editor knows, nothing else).
 function docToHtml(value){

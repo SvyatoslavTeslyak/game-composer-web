@@ -17,7 +17,7 @@ const SHARED='shared';let scope='game',sharedThere=false,sharedExists=false,shar
 // without switching the stage: that game is "inspected" while the dialog shows it.
 let view='game',inspected='';
 const game=()=>scope===SHARED?SHARED:(inspected||window.ComposerTarget.value);
-const titleOf=id=>id===SHARED?'Brands · all games':(window.ComposerTarget.targets||[]).find(t=>t.id===id)?.title||ComposerTarget.entry().title;
+const titleOf=id=>id===SHARED?'Tenants · all games':(window.ComposerTarget.targets||[]).find(t=>t.id===id)?.title||ComposerTarget.entry().title;
 const scopeTitle=()=>titleOf(game());
 const check=result=>{if(result.error)throw Error(result.error.message);return result.data};
 async function rpc(name,args){return check(await client.rpc(name,args))}
@@ -211,7 +211,7 @@ function stateList(){
  const count=review?versions.filter(v=>v.status==='submitted').length+(canSubmit()?1:0):myChanges().reduce((sum,g)=>sum+g.rows.length,0);
  const flag=releaseFlag(),list=[];
  if(flag)list.push(['release',flag.label+': '+flag.title]);
- if(scope==='game'&&sharedState)list.push(['shared','Brands · all games: '+sharedState.label]);
+ if(scope==='game'&&sharedState)list.push(['shared','Tenants · all games: '+sharedState.label]);
  if(awaiting)list.push(['awaiting',awaiting+' awaiting review']);
  if(count)list.push(['saved',count+(review?' to review':' saved '+(count===1?'change':'changes')+', not sent')]);
  const unread=unreadNotices().length;if(unread)list.push(['notice',unread+(unread===1?' update':' updates')]);
@@ -236,7 +236,7 @@ function renderProgress(){
   if(tone){lead=[tone,'',''];n=all.filter(f=>order.includes(f[0])).reduce((sum,f)=>sum+(+(f[1].match(/^\d+/)?.[0]||0)),0)}else{lead=states.find(x=>x[0]==='notice')||null;n=lead?+(lead[1].match(/\d+/)?.[0]||0):0}}
  button.innerHTML=(lead||(!inbox&&count)?'<span class="changes-dot '+(lead?.[0]||'saved')+(n?' has-count':'')+'" aria-hidden="true">'+(n?(n>99?'99+':n):'')+'</span>':'')+'<span>Changes</span>';
  window.ComposerUX?.refresh();
- button.setAttribute('aria-label','Changes'+(own?', '+own+(review?' to review':own===1?' saved change':' saved changes')+' in '+ComposerTarget.entry().title:'')+(shared?', '+shared+' in Brands · all games':'')+(awaiting?', '+awaiting+' awaiting review':''));
+ button.setAttribute('aria-label','Changes'+(own?', '+own+(review?' to review':own===1?' saved change':' saved changes')+' in '+ComposerTarget.entry().title:'')+(shared?', '+shared+' in Tenants · all games':'')+(awaiting?', '+awaiting+' awaiting review':''));
  // Read aloud as the hover card shows it: each game and what waits there.
  if(inbox)button.setAttribute('aria-label','Changes'+(inbox.length?', '+inbox.map(r=>r.title+': '+r.flags.map(f=>f[1]).join(', ')).join('; '):', nothing waiting'));
  button.disabled=busy;
@@ -246,8 +246,8 @@ function renderProgress(){
 }
 // The road from a saved edit to the sites, for whoever opens Changes and finds nothing waiting.
 function howItWorks(){
- const where=scope===SHARED?'the shared draft of the brands':'the cloud draft of '+esc(scopeTitle());
- return '<ol class="review-help"><li>Save an edit in Brands, Texts or Sounds. It lands in '+where+', shared with your team.</li><li>Send changes to Admin. An Admin reviews saved changes here, before or after they are sent.</li><li>Apply locally, on the Admin’s computer, writes the accepted state to <code>configurations/'+esc(scope===SHARED?SHARED:game())+'.json</code>.</li><li>Commit and push that file. GitHub rebuilds the game and publishes Composer web and Showcase.</li></ol>';
+ const where=scope===SHARED?'the shared draft of the tenants':'the cloud draft of '+esc(scopeTitle());
+ return '<ol class="review-help"><li>Save an edit in Tenants, Texts or Sounds. It lands in '+where+', shared with your team.</li><li>Send changes to Admin. An Admin reviews saved changes here, before or after they are sent.</li><li>Apply locally, on the Admin’s computer, writes the accepted state to <code>configurations/'+esc(scope===SHARED?SHARED:game())+'.json</code>.</li><li>Commit and push that file. GitHub rebuilds the game and publishes Composer web and Showcase.</li></ol>';
 }
 // Something happened to a version since Changes was last opened: the button says so until it is.
 function unreadNotices(){return notices.filter(n=>!n.read_at)}
@@ -262,7 +262,7 @@ function reviewGroup(section,row,payload,baseline){
  const brand=payload?.design?.brands?.[p[1]]||baseline?.design?.brands?.[p[1]],title=brand?.title||labels?.brands?.[p[1]]||pretty(p[1]);
  const theme=p[2]==='themes',tail=p.slice(theme?4:2),themeId=p[3];
  const category=({roles:'Colors',overrides:'Component styles',fonts:'Fonts'})[tail[0]]||'General';
- return {key:p.slice(0,theme?4:2).join('/'),title:title+(theme?' · '+(brand?.themes?.[themeId]?.title||baseline?.design?.brands?.[p[1]]?.themes?.[themeId]?.title||pretty(themeId)):' · Brand'),category,label:tail.slice(['roles','overrides','fonts'].includes(tail[0])?1:0).map(pretty).join(' · ')||'Brand'};
+ return {key:p.slice(0,theme?4:2).join('/'),title:title+(theme?' · '+(brand?.themes?.[themeId]?.title||baseline?.design?.brands?.[p[1]]?.themes?.[themeId]?.title||pretty(themeId)):' · Tenant'),category,label:tail.slice(['roles','overrides','fonts'].includes(tail[0])?1:0).map(pretty).join(' · ')||'Tenant'};
 }
 // A sound the team added shows as a player, so a reviewer hears it before accepting it.
 const ADDED_SOUND=/^[a-z][a-z0-9_]*\/[a-z][a-z0-9_]*\/[a-z0-9_-]+-[0-9a-f]{16}\.(wav|ogg|mp3)$/;
@@ -527,7 +527,7 @@ function render(){
  const sent=mySent(),teamSent=sentVersions().length-sent.length,newCount=myChanges().reduce((sum,g)=>sum+g.rows.length,0),others=othersChanges(),otherCount=others.reduce((sum,g)=>sum+g.rows.length,0);
  dialog.innerHTML='<header><div><div class="review-heading"><h2 id="cloud-title">Changes</h2>'+(!isReviewer()?['submitted','approved'].map(status=>{const count=sent.filter(v=>v.status===status).length;return count?reviewStatus(status,count):''}).join(''):'')+'</div></div><div class="review-header-actions"><button class="wb-button" id="cloud-refresh" aria-label="Refresh" title="Refresh">'+icon('reload')+'</button><button class="wb-button" data-close aria-label="Close">'+icon('close')+'</button></div></header>'+
  adminTabs()+
- (false?'<div class="scope-tabs" role="group" aria-label="Whose changes"><button type="button" class="wb-button" data-scope="game" aria-pressed="'+(scope==='game')+'" title="This game’s own texts, sounds, and the seasons or faces only it has">'+esc(titleOf(inspected||ComposerTarget.value))+tabFlag(gameFlag(),scope==='game'?standing()?.tone:undefined)+'</button><button type="button" class="wb-button" data-scope="'+SHARED+'" aria-pressed="'+(scope===SHARED)+'" title="Brands and the texts every game shares, reviewed and published once for all">Brands · all games'+tabFlag(sharedState?.label)+'</button></div>':'')+
+ (false?'<div class="scope-tabs" role="group" aria-label="Whose changes"><button type="button" class="wb-button" data-scope="game" aria-pressed="'+(scope==='game')+'" title="This game’s own texts, sounds, and the themes or faces only it has">'+esc(titleOf(inspected||ComposerTarget.value))+tabFlag(gameFlag(),scope==='game'?standing()?.tone:undefined)+'</button><button type="button" class="wb-button" data-scope="'+SHARED+'" aria-pressed="'+(scope===SHARED)+'" title="Tenants and the texts every game shares, reviewed and published once for all">Tenants · all games'+tabFlag(sharedState?.label)+'</button></div>':'')+
  standingHTML()+localBanner()+
  
  (ComposerAuth.member?.role==='admin'&&ComposerAuth.has('releases.publish',game())&&!localRelease()?'<p class="changes-meta">Publishing is done in local Composer: Apply locally there, then commit and push.</p>':'')+

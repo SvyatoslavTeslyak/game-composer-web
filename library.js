@@ -94,17 +94,17 @@ function typographySection(){
  }).join('');
  flushFaces();
  // One library card: the families it holds, and the two ways to put another one in it.
- const toBrand=window.ComposerAuth?.has('design.edit')?`<button type="button" class="wb-button" id="library-to-brand">Choose ${esc(catalog.brands[brand].title)}’s fonts in Brands…</button>`:'';
- return head('Fonts','The families a brand can be set in. Add or remove them here; which one a brand uses is chosen in Brands.',toBrand)
+ const toBrand=window.ComposerAuth?.has('design.edit')?`<button type="button" class="wb-button" id="library-to-brand">Choose ${esc(catalog.brands[brand].title)}’s fonts in Tenants…</button>`:'';
+ return head('Fonts','The families a tenant can be set in. Add or remove them here; which one a tenant uses is chosen in Tenants.',toBrand)
 +card('Font library',`<div class="font-list">${rows||'<p class="lib-note">Nothing matches.</p>'}</div>
 <div class="lib-foot"><h4>Add a font</h4><div class="add-font">
  <div class="add-way"><b>From Google Fonts</b><p>Open the family on fonts.google.com and paste the link. Its latin cut and licence land in the kit.</p>
   <div class="add-row"><input id="library-google" type="text" placeholder="https://fonts.google.com/specimen/Inter" autocomplete="off" spellcheck="false"><button id="library-google-add" type="button" class="wb-button">Add</button></div></div>
  <div class="add-way"><b>From files</b><p>A .ttf, .otf, .woff or .woff2 for each weight, or one .zip of the whole family with its licence.</p>
   <div class="add-row"><button id="library-upload" type="button" class="wb-button">Choose files…</button><input id="library-file" type="file" accept=".ttf,.otf,.woff,.woff2,.zip" multiple hidden></div></div>
-</div></div>`,`<p class="lib-sub">On the right: the brands set in each family. A family a brand is set in cannot be removed.</p>`)
+</div></div>`,`<p class="lib-sub">On the right: the tenants set in each family. A family a tenant is set in cannot be removed.</p>`)
 +card('UI type scale',`<p class="lib-sub">${steps.map(px=>px+' px').join(' · ')}</p><details><summary>Size roles & responsive rules</summary><table class="lib-table"><thead><tr><th>Size</th><th>Use</th></tr></thead><tbody>${steps.map(px=>`<tr><th scope="row">${px} px</th><td>${TYPE_ROLES[px]||''}</td></tr>`).join('')}</tbody></table><p class="lib-note">Use the same size for the same content in both presets. On smaller screens, switch between scale steps; keep text at least 12 px. All highlighted values in a card group use the same size.</p></details>`)
-+card('How '+esc(catalog.brands[brand].title)+' reads',cards,'<p class="lib-sub">The two fonts of the brand picked in the top bar, at every step of the type scale. Body is every label; numbers is amounts and multipliers.</p>');
++card('How '+esc(catalog.brands[brand].title)+' reads',cards,'<p class="lib-sub">The two fonts of the tenant picked in the top bar, at every step of the type scale. Body is every label; numbers is amounts and multipliers.</p>');
 }
 
 function colourSection(){
@@ -121,9 +121,9 @@ function colourSection(){
   const ratio=contrast(a,b),ok=ratio>=min;
   return `<tr class="${ok?'':'bad'}"><td>${esc(where)}</td><td><i class="chip" style="background:${b};color:${a}">Aa</i></td><td>${ratio.toFixed(1)}:1</td><td>${min}:1</td><td>${ok?'passes':'fails'}</td></tr>`;
  }).join('');
- return head('Colour tokens','Read-only · colours are edited in Brands. '+esc(catalog.brands[brand].title)+(theme?' · '+esc(catalog.brands[brand].themes[theme].title):'')+'. The dozen roles a brand is described with, everything they derive, and how every pair a player reads holds up against WCAG AA.')
+ return head('Colour tokens','Read-only · colours are edited in Brands. '+esc(catalog.brands[brand].title)+(theme?' · '+esc(catalog.brands[brand].themes[theme].title):'')+'. The dozen roles a tenant is described with, everything they derive, and how every pair a player reads holds up against WCAG AA.')
 +card('Roles',`<div class="swatches">${roles}</div>`,'<p class="lib-sub">Click a swatch to copy its value.</p>')
-+card('Derived tokens',`<div class="swatches">${derived}</div>`,'<p class="lib-sub">Every token the roles above produce, and where a player meets it. None of these is set by hand; Brands · Advanced can override one.</p>')
++card('Derived tokens',`<div class="swatches">${derived}</div>`,'<p class="lib-sub">Every token the roles above produce, and where a player meets it. None of these is set by hand; Tenants · Advanced can override one.</p>')
 +card('Contrast',`<table class="lib-table"><thead><tr><th>Where</th><th>Sample</th><th>Ratio</th><th>Needs</th><th></th></tr></thead><tbody>${rows}</tbody></table>`);
 }
 
@@ -144,7 +144,7 @@ function scaleBlocks(){
 }
 function scalesSection(){
  const {measures}=scaleBlocks();
- return head('Scales','The measurements every panel and control is laid out on. They belong to the kit, not to a brand: a brand changes colour and type, never geometry, so the seven games keep one layout.')
+ return head('Scales','The measurements every panel and control is laid out on. They belong to the kit, not to a tenant: a tenant changes colour and type, never geometry, so the seven games keep one layout.')
  +measures.map(([title,body])=>card(title,body)).join('');
 }
 function effectsSection(){
@@ -174,7 +174,7 @@ function iconsSection(){
  const tile=i=>`<figure class="${i.used?'':'is-spare'}"><img src="crash-ui/assets/icons/${i.name}?v=${iconSeq}" alt="">
 <figcaption>${esc(i.name)}<small>${i.bytes>102400?Math.round(i.bytes/1024)+' KB · heavy':i.used?'drawn by the UI':'spare'}</small></figcaption>
 <span class="icon-actions"><button type="button" data-replace="${i.name}">Replace…</button>${i.used?'':`<button type="button" class="lib-remove" data-drop="${i.name}">Delete</button>`}</span></figure>`;
- return head('Icons','The shared artwork every game draws from, as files: replacing one keeps its name, so every game picks it up; the ones nothing names can go. The glyphs that recolour with the brand — the back arrow, the speaker, the bet-detail marks — are drawn inline by the UI and are not files here.')
+ return head('Icons','The shared artwork every game draws from, as files: replacing one keeps its name, so every game picks it up; the ones nothing names can go. The glyphs that recolour with the tenant — the back arrow, the speaker, the bet-detail marks — are drawn inline by the UI and are not files here.')
  +card('',`<div class="icon-grid">${list.map(tile).join('')||'<p class="lib-note">Nothing matches.</p>'}</div>`)
  +card('Add an icon',`<div class="add-way"><b>A new name</b><p>An .svg, .png or .webp under 512 KB. Only a game that draws it by name will show it.</p>
  <div class="add-row"><button id="icon-add" type="button" class="wb-button">Choose a file…</button><input id="icon-file" type="file" accept=".svg,.png,.webp" hidden></div></div>`);
@@ -259,7 +259,7 @@ async function useFamily(fam,role){
  const data=await response.json().catch(()=>({}));
  if(!response.ok){window.ComposerUX?.status('error',data.message||('HTTP '+response.status));return note(data.message||('HTTP '+response.status),true)}
  window.ComposerUX?.status('saved');catalog=await (await fetch('brands/')).json();draw();
- note(b.title+'’s '+role+' is now '+fam.title+'. Weight and italic are set in Brands.'+(window.ComposerDraftEditors?.enabled?' Saved to the brands draft · see Changes.':''));
+ note(b.title+'’s '+role+' is now '+fam.title+'. Weight and italic are set in Brands.'+(window.ComposerDraftEditors?.enabled?' Saved to the tenants draft · see Changes.':''));
  window.dispatchEvent(new CustomEvent('composer-brand-fonts',{detail:{brand,fonts}}));
 }
 async function removeFamily(fam){
@@ -278,12 +278,12 @@ function note(text,error){const n=$('#library-note');n.textContent=text;n.classL
 function controls(){
  const item=(k,title,about)=>`<button type="button" class="wb-button lib-nav" data-section="${k}"><b>${title}</b><small>${about}</small></button>`;
  panel.innerHTML=`<section class="wb-section"><h2>Library</h2><div class="lib-navs">
-${item('typography','Fonts','Add and remove the families brands are set in')}
+${item('typography','Fonts','Add and remove the families tenants are set in')}
 ${item('icons','Icons','Replace the shared artwork')}
 ${item('sounds','Sounds','Every take the games can be set to')}</div>
 <small>Shared by every game.</small></section>
 <section class="wb-section"><h2>Reference · read-only</h2><div class="lib-navs">
-${item('colour','Colour tokens','Every colour a brand produces, with contrast')}
+${item('colour','Colour tokens','Every colour a tenant produces, with contrast')}
 ${item('scales','Scales','Spacing, radius, type and stroke steps')}
 ${item('effects','Effects','Translucency, shadows and motion')}</div></section>
 <section class="wb-section" id="library-look-block"><h2>Shown for</h2><small></small></section>
@@ -302,7 +302,7 @@ function buildLook(){
  // The brand and season are the top bar's; Typography reads the brand alone.
  const picked=window.ComposerLookPicker;brand=catalog.brands[picked?.brand]?picked.brand:'default';theme=wantThemes&&picked?.theme in (catalog.brands[brand].themes||{})?picked.theme:'';
  const note=$('#library-look-block small'),b=catalog.brands[brand];
- if(note)note.textContent=b.title+(theme?' · '+b.themes[theme].title:'')+' — the '+(wantThemes?'brand and season':'brand')+' picked in the top bar.';
+ if(note)note.textContent=b.title+(theme?' · '+b.themes[theme].title:'')+' — the '+(wantThemes?'tenant and theme':'tenant')+' picked in the top bar.';
 }
 async function open(){
  // With a game's draft open the brands can change between visits (another tab edits them, or

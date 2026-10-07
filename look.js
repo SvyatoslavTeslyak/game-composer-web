@@ -47,7 +47,7 @@ function inkFor(hex){const dark='#0f1720',light='#ffffff';return contrastOf(dark
 // How much of the primary the neutrals carry: Lab chroma of the surface and of the text on it,
 // and `accent` the chroma of the tertiary. Plain keeps both greys at chroma 0, so the brand
 // shows only where it acts: the PLAY button, the amounts and the cash-out.
-const STYLES={plain:{title:'Plain',about:'grey surfaces, the brand only on the buttons',surface:0,button:0,ink:0,tone:7,accent:12},neutral:{title:'Neutral',about:'Material: near-grey surfaces with a hint of the brand',surface:4,button:10,ink:4,tone:6},tinted:{title:'Tinted',about:'surfaces lean towards the brand',surface:14,button:18,ink:8,tone:8},branded:{title:'Branded',about:'surfaces are the brand colour, deep and dark',surface:30,button:30,ink:10,tone:10}};
+const STYLES={plain:{title:'Plain',about:'grey surfaces, the tenant colour only on the buttons',surface:0,button:0,ink:0,tone:7,accent:12},neutral:{title:'Neutral',about:'Material: near-grey surfaces with a hint of the tenant colour',surface:4,button:10,ink:4,tone:6},tinted:{title:'Tinted',about:'surfaces lean towards the tenant colour',surface:14,button:18,ink:8,tone:8},branded:{title:'Branded',about:'surfaces are the tenant colour, deep and dark',surface:30,button:30,ink:10,tone:10}};
 function fromPrimary(primary,style='neutral'){
  const st=STYLES[style]||STYLES.neutral;
  const [,,hue]=lch(primary);
@@ -136,30 +136,30 @@ function paintFaces(){
 // --- render ---------------------------------------------------------------------------------
 function render(){
  panel.innerHTML=`
-<section class="wb-section look-card" id="look-brand-card"><h2>Brand</h2>
+<section class="wb-section look-card" id="look-brand-card"><h2>Tenant</h2>
 <div class="look-card-head look-view"><p class="look-current" id="look-current"></p><button type="button" class="wb-button" id="look-edit-brand">Edit</button></div>
 <small class="look-view" id="look-brand-note"></small>
 <div class="look-part look-view"><em class="note">Colours</em><div class="look-strip" id="look-strip"></div></div>
 <div class="look-part look-view"><em class="note">Fonts</em><div class="look-faces-view" id="look-faces-view"></div></div>
-<button type="button" class="wb-button add look-view" id="look-add-brand">+ New brand</button></section>
-<section class="wb-section look-card look-view" id="look-season-card"><h2>Season</h2>
+<button type="button" class="wb-button add look-view" id="look-add-brand">+ New tenant</button></section>
+<section class="wb-section look-card look-view" id="look-season-card"><h2>Theme</h2>
 <div class="look-card-head"><p class="look-current" id="look-current-theme"></p><button type="button" class="wb-button" id="look-edit-theme">Edit</button></div>
 <small id="look-season-note"></small>
 <div class="look-part" id="look-theme-part"><em class="note">Colours it changes</em><div class="look-strip" id="look-theme-strip"></div></div>
-<button type="button" class="wb-button add" id="look-add-theme">+ New season</button></section>
-<small class="look-view look-hint">Pick the brand and season in the top bar; they stay on the stage in every tab.</small>
+<button type="button" class="wb-button add" id="look-add-theme">+ New theme</button></section>
+<small class="look-view look-hint">Pick the tenant and theme in the top bar; they stay on the stage in every tab.</small>
 <div id="look-editor" hidden></div>`;
  sheet=$('#look-editor');
  sheet.innerHTML=`
 <h2 id="sheet-title"><span></span><small></small></h2>
 <div class="toolbar" id="look-head"><label class="property">Title <input id="look-title" type="text" placeholder="Numba Kenya"></label><small id="look-id-hint"></small></div>
-<div class="toolbar" id="look-scope" aria-label="Season scope" hidden><strong>This season is for</strong><div class="look-row" role="group" aria-label="Season scope"><button type="button" class="wb-button" data-theme-scope="shared">All games</button><button type="button" class="wb-button" data-theme-scope="game"></button></div><small id="look-scope-hint"></small></div>
-<div class="toolbar" id="look-season" aria-label="Season" hidden><strong>Season</strong><div class="season-row" id="look-seasons"></div><small>A season sets the play and cash-out colours and two accents over the brand; surfaces and text stay the brand\'s. Or set the primary below and generate.</small></div>
+<div class="toolbar" id="look-scope" aria-label="Theme scope" hidden><strong>This theme is for</strong><div class="look-row" role="group" aria-label="Theme scope"><button type="button" class="wb-button" data-theme-scope="shared">All games</button><button type="button" class="wb-button" data-theme-scope="game"></button></div><small id="look-scope-hint"></small></div>
+<div class="toolbar" id="look-season" aria-label="Theme preset" hidden><strong>Preset</strong><div class="season-row" id="look-seasons"></div><small>A preset sets the play and cash-out colours and two accents over the tenant; surfaces and text stay the tenant\'s. Or set the primary below and generate.</small></div>
 <div class="toolbar" id="look-primary" aria-label="Primary"><strong>Primary</strong><div class="role-pair">${['primary','onPrimary'].map(k=>roleRow(k)).join('')}</div>
 <div class="generate-row"><select id="look-style" aria-label="Palette style"></select><button id="look-generate" type="button" class="wb-button">Generate the palette</button></div></div>
 <div class="toolbar" id="look-colours" aria-label="Colours"><strong>Colours</strong>
 ${pairs().filter(([a])=>a!=='primary').map(([a,b])=>`<div class="role-pair">${[a,b].filter(Boolean).map(k=>roleRow(k)).join('')}</div>`).join('')}
-<small>Twelve colours describe a brand; panels, borders, switches and shadows derive from them.</small></div>
+<small>Twelve colours describe a tenant; panels, borders, switches and shadows derive from them.</small></div>
 <div class="toolbar" id="look-faces" aria-label="Faces"><strong>Fonts</strong>
 ${catalog.roles.map(role=>`<div class="face" data-role="${role}"><b>${role==='body'?'Body':'Numbers'}</b>
 <select data-family="${role}" aria-label="${role} font" title="The family every ${role==="body"?"label":"amount and multiplier"} is set in">${catalog.families.map(f=>`<option value="${f.id}">${esc(f.title)}</option>`).join('')}</select>
@@ -170,8 +170,8 @@ ${catalog.roles.map(role=>`<div class="face" data-role="${role}"><b>${role==='bo
 <details class="toolbar look-group" id="look-advanced"><summary>Advanced · derived tokens<span class="count"></span></summary>
 ${Object.keys(derive(catalog.brands.default.roles)).map(k=>`<label class="look-colour"><span>${nice(k)}</span><input type="color" data-key="${k}"><input type="text" data-hex="${k}" maxlength="7" spellcheck="false"><button type="button" class="wb-button reset" data-reset="${k}" title="Back to the derived value">↺</button></label>`).join('')}
 <small>Each one follows the roles above until you set it here.</small></details>
-<div class="toolbar look-danger" id="look-danger"><button id="look-delete" type="button">Delete brand</button></div>
-<div class="toolbar" id="look-actions" aria-label="Actions"><button id="look-save" type="button">Save brand</button><button id="look-revert" type="button">Cancel</button><small id="look-message" role="status"></small></div>`;
+<div class="toolbar look-danger" id="look-danger"><button id="look-delete" type="button">Delete tenant</button></div>
+<div class="toolbar" id="look-actions" aria-label="Actions"><button id="look-save" type="button">Save tenant</button><button id="look-revert" type="button">Cancel</button><small id="look-message" role="status"></small></div>`;
  const editActions=$('#look-actions'),scroll=document.createElement('div');scrollBox=scroll;
  scroll.className='look-scroll';editActions.remove();scroll.append(...panel.childNodes);panel.append(scroll,editActions);
  const pickerState=window.ComposerLookPicker;
@@ -217,7 +217,7 @@ function highlightRole(key){
  const probe=doc.createElement('span');probe.style.color=roles[key];doc.body.append(probe);const color=doc.defaultView.getComputedStyle(probe).color;probe.remove();
  for(const el of doc.body.querySelectorAll('button,label,input,select,h1,h2,h3,p,span,svg')){const rect=el.getBoundingClientRect();if(!rect.width||!rect.height)continue;const css=doc.defaultView.getComputedStyle(el);if([css.color,css.backgroundColor,css.borderTopColor].includes(color))el.setAttribute('data-composer-highlight','')}
 }
-function roleRow(k){const r=catalog.colorRoles.find(x=>x.key===k);return `<label class="role" data-role="${k}"><span class="role-title">${esc(r.title)}<em class="ratio"></em></span><span class="role-about">${esc(r.about)}</span><span class="role-swatch"><input type="color" data-role-key="${k}"><input type="text" data-role-hex="${k}" maxlength="7" spellcheck="false"><button type="button" class="wb-button reset" data-role-reset="${k}" title="Back to the brand colour">↺</button></span></label>`}
+function roleRow(k){const r=catalog.colorRoles.find(x=>x.key===k);return `<label class="role" data-role="${k}"><span class="role-title">${esc(r.title)}<em class="ratio"></em></span><span class="role-about">${esc(r.about)}</span><span class="role-swatch"><input type="color" data-role-key="${k}"><input type="text" data-role-hex="${k}" maxlength="7" spellcheck="false"><button type="button" class="wb-button reset" data-role-reset="${k}" title="Back to the tenant colour">↺</button></span></label>`}
 const CYR={а:'a',б:'b',в:'v',г:'h',ґ:'g',д:'d',е:'e',є:'ie',ж:'zh',з:'z',и:'y',і:'i',ї:'i',й:'i',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'kh',ц:'ts',ч:'ch',ш:'sh',щ:'shch',ь:'',ю:'iu',я:'ia',ы:'y',э:'e',ё:'io',ъ:''};
 const slug=t=>{let v=t.toLowerCase().replace(/[а-яёґєіїъы]/g,c=>CYR[c]??'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,30);if(v&&!/^[a-z]/.test(v))v='brand-'+v;return v};
 // --- the top bar's pick ------------------------------------------------------------------------
@@ -228,14 +228,14 @@ function paintBar(){
  const brand=catalog.brands[brandId]||catalog.brands.default,season=themeId&&brand.themes[themeId];
  bar.button.querySelector('.swatch').style.background=(season&&season.roles?.primary)||brand.roles.primary;
  bar.button.querySelector('strong').textContent=brand.title;
- bar.button.querySelector('small').textContent=season?season.title:'No season';
+ bar.button.querySelector('small').textContent=season?season.title:'No theme';
  // An edit in progress belongs to one brand; it is saved or cancelled before another is picked.
- bar.button.disabled=editing;bar.button.title=editing?'Save or cancel the edit before picking another brand':'Brand and season on the stage';if(editing)openBar(false);
+ bar.button.disabled=editing;bar.button.title=editing?'Save or cancel the edit before picking another tenant':'Tenant and theme on the stage';if(editing)openBar(false);
  const can=!!window.ComposerAuth?.has('design.edit');
  const current=$('#look-current');if(!current)return;
  const dot=c=>'<i class="swatch" style="background:'+esc(c)+'"></i>';
  current.innerHTML=dot(brand.roles.primary)+'<b>'+esc(brand.title)+'</b>';
- $('#look-current-theme').innerHTML=season?dot(season.roles?.primary||brand.roles.primary)+'<b>'+esc(season.title)+'</b>':'<b class="none">No season</b>';
+ $('#look-current-theme').innerHTML=season?dot(season.roles?.primary||brand.roles.primary)+'<b>'+esc(season.title)+'</b>':'<b class="none">No theme</b>';
  const own=brand.own||{},mine=!!season&&(own.themes||[]).includes(themeId);
  // Brands and their shared seasons are changed only by those who may edit Brands · all games;
  // anyone who may edit this game's design can still add and change a season of its own.
@@ -259,7 +259,7 @@ const gf={own:false,fonts:{},dirty:false,box:null};
 let scrollBox=null,stageBefore=null;
 function lookRoom(){
  let room=$('#look-room');
- if(!room){room=document.createElement('div');room.id='look-room';room.hidden=true;room.setAttribute('aria-label','Brand editor');const fit=$('#fit');fit.parentElement.insertBefore(room,fit)}
+ if(!room){room=document.createElement('div');room.id='look-room';room.hidden=true;room.setAttribute('aria-label','Tenant editor');const fit=$('#fit');fit.parentElement.insertBefore(room,fit)}
  return room;
 }
 // Where the editor sits: in the room while editing on the Brands tab, back in the panel otherwise.
@@ -318,7 +318,7 @@ function paintGameFonts(preview){
  $('#game-fonts-summary').textContent=(gf.own?gameTitle()+'’s own':brand.title+'’s')+' · '+faceName('body')+' / '+faceName('numbers');
  if(gf.own||gf.dirty)$('#game-fonts-more').open=true;
  const note=$('#game-fonts-note');note.classList.remove('sound-error');
- note.textContent=gf.own?'Only '+gameTitle()+' is set in these, in '+brand.title+'. The other games keep the brand’s fonts.':gameTitle()+' is set in the fonts of '+brand.title+', like every game. They are changed in Brands.';
+ note.textContent=gf.own?'Only '+gameTitle()+' is set in these, in '+brand.title+'. The other games keep the tenant’s fonts.':gameTitle()+' is set in the fonts of '+brand.title+', like every game. They are changed in Brands.';
  box.querySelector('.game-fonts-actions').hidden=!gf.dirty;
  if(preview){fonts=JSON.parse(JSON.stringify(gf.fonts));const root=frame.contentDocument?.documentElement;if(root)applyFaces(root)}
 }
@@ -367,18 +367,18 @@ function mode(){
  panel.querySelectorAll('.look-view').forEach(n=>n.hidden=false);$('#look-brand-card').classList.toggle('editing',editing);
  for(const id of ['look-edit-brand','look-add-brand','look-edit-theme','look-add-theme']){const b=$('#'+id);if(b)b.disabled=editing}
  paintBar();
- panel.querySelector('h2').textContent=editing?(editingTheme?'Season':'Brand'):'Brand';
- $('#sheet-title span').textContent=editingTheme?(creating?'New season':brand.themes[themeId]?.title||''):(creating?'New brand':brand.title);
- $('#sheet-title small').textContent=editingTheme?'season of '+brand.title:(creating?'from '+brand.title:'brand')+(!editingTheme?(layered()?' · all games':cloudDrafts()?' · '+gameTitle()+' only':''):'');
+ panel.querySelector('h2').textContent=editing?(editingTheme?'Theme':'Tenant'):'Tenant';
+ $('#sheet-title span').textContent=editingTheme?(creating?'New theme':brand.themes[themeId]?.title||''):(creating?'New tenant':brand.title);
+ $('#sheet-title small').textContent=editingTheme?'theme of '+brand.title:(creating?'from '+brand.title:'tenant')+(!editingTheme?(layered()?' · all games':cloudDrafts()?' · '+gameTitle()+' only':''):'');
  // Where a season lives: every game, or this one. Chosen for a new season, fixed afterwards.
  const scopeBox=$('#look-scope');scopeBox.hidden=!editingTheme||!layered();
  scopeBox.querySelectorAll('[data-theme-scope]').forEach(n=>{if(n.dataset.themeScope==='game')n.textContent='Only '+gameTitle();n.setAttribute('aria-pressed',String(n.dataset.themeScope===themeScope));n.disabled=!creating||(n.dataset.themeScope!=='game'&&catalog.scope?.canEditShared===false)});
- $('#look-scope-hint').textContent=themeScope==='game'?'Only '+gameTitle()+' offers this season; the other games do not.':'Every game offers this season.';
+ $('#look-scope-hint').textContent=themeScope==='game'?'Only '+gameTitle()+' offers this theme; the other games do not.':'Every game offers this season.';
  // A brand's faces are shared; a game may set its own.
  $('#look-fonts-own').hidden=true;
  const facesHint=$('#look-fonts-hint');facesHint.hidden=editingTheme||!layered();facesHint.textContent='Every game is set in these fonts'+(brand.own?.fonts?', except '+gameTitle()+', which has its own: see Fonts in '+gameTitle()+'.':'. One game can have its own, set below.');
  $('#look-faces').hidden=editingTheme;$('#look-advanced').hidden=editingTheme;
- $('#look-save').textContent=editingTheme?'Save season':'Save brand';$('#look-delete').textContent=editingTheme?'Delete season':'Delete brand';
+ $('#look-save').textContent=editingTheme?'Save theme':'Save tenant';$('#look-delete').textContent=editingTheme?'Delete theme':'Delete tenant';
  $('#look-delete').hidden=creating||(!editingTheme&&brandId==='default');$('#look-danger').hidden=$('#look-delete').hidden;
  $('#look-title').placeholder=editingTheme?'Christmas':'Numba Kenya';
  sheet.classList.toggle('theme-mode',editingTheme);
@@ -472,7 +472,7 @@ function say(text,error){if(error)window.ComposerUX?.status('error',text);const 
 function targetId(){if(editingTheme)return creating?slug($('#look-title').value):themeId;return creating?slug($('#look-title').value):brandId}
 async function save(){
  const id=targetId();
- if(!id){const t=$('#look-title');t.setAttribute('aria-invalid','true');t.focus();const m=$('#look-message');m.textContent=editingTheme?'Give the season a title first':'Give the brand a title first';m.classList.add('sound-error');return}
+ if(!id){const t=$('#look-title');t.setAttribute('aria-invalid','true');t.focus();const m=$('#look-message');m.textContent=editingTheme?'Give the theme a title first':'Give the tenant a title first';m.classList.add('sound-error');return}
  window.ComposerUX?.status('saving');say('Saving…');
  let response;
  if(editingTheme){
@@ -498,21 +498,21 @@ async function save(){
  try{sessionStorage.setItem('crash-composer-look',savedBrand);sessionStorage.setItem('crash-composer-look-theme',savedTheme)}catch{}
  const p=new URLSearchParams(location.hash.slice(1));p.set('tab','look');p.set('brand',savedBrand);if(savedTheme)p.set('theme',savedTheme);else p.delete('theme');
  // The page comes back without this module's memory; the toast is left for it to show.
- try{sessionStorage.setItem('composer-toast','Saved to '+(layered()&&!(editingTheme&&themeScope==='game')?'the brands draft of every game':gameTitle()+'’s draft')+' · see Changes')}catch{}
+ try{sessionStorage.setItem('composer-toast','Saved to '+(layered()&&!(editingTheme&&themeScope==='game')?'the tenants draft of every game':gameTitle()+'’s draft')+' · see Changes')}catch{}
  location.hash='#'+p;location.reload();
 }
 async function remove(){
  if(creating)return;
  if(editingTheme){
   const own=layered()&&catalog.brands[brandId].own?.themes?.includes(themeId);
-  if(!await ask('Remove season '+catalog.brands[brandId].themes[themeId].title+' from '+catalog.brands[brandId].title+(layered()?(own?' in '+gameTitle():' in every game'):'')+'?'))return;
+  if(!await ask('Remove theme '+catalog.brands[brandId].themes[themeId].title+' from '+catalog.brands[brandId].title+(layered()?(own?' in '+gameTitle():' in every game'):'')+'?'))return;
   const r=await fetch('brands/'+brandId+'/themes/'+themeId+(own?'?scope=game':''),{method:'DELETE'});
   if(!r.ok)return say('Could not remove: HTTP '+r.status,true);
   try{sessionStorage.setItem('crash-composer-look',brandId);sessionStorage.setItem('crash-composer-look-theme','')}catch{}
   const p=new URLSearchParams(location.hash.slice(1));p.set('tab','look');p.delete('theme');location.hash='#'+p;location.reload();return;
  }
  if(brandId==='default')return;
- if(!await ask('Remove brand '+catalog.brands[brandId].title+(layered()?' from every game?':' from the kit?')))return;
+ if(!await ask('Remove tenant '+catalog.brands[brandId].title+(layered()?' from every game?':' from the kit?')))return;
  const response=await fetch('brands/'+brandId,{method:'DELETE'});
  if(!response.ok)return say('Could not remove: HTTP '+response.status,true);
  try{sessionStorage.setItem('crash-composer-look','default')}catch{}

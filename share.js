@@ -7,7 +7,7 @@ const dialog=document.createElement('dialog');dialog.className='share-dialog';di
 dialog.innerHTML=`<header><div><small>PUBLISHED GAME</small><h2 id="share-title">Embed game</h2></div><button class="wb-button" type="button" data-close aria-label="Close share window">${icon('close')}</button></header>
 <p id="share-description">Embed the game on your website, without Composer controls.</p><p class="share-note">Shares the published game, not your current draft. Changes appear here only after publication.</p>
 <p id="share-release" class="share-note"></p><p id="share-draft" class="share-note"></p><div class="share-choice"><span id="share-language-label">Language</span><div id="share-language" class="look-row" role="group" aria-labelledby="share-language-label"></div></div>
-<div class="share-choice"><span id="share-brand-label">Brand</span><div id="share-brand" class="look-row" role="group" aria-labelledby="share-brand-label"></div></div><div class="share-choice"><span id="share-theme-label">Season</span><div id="share-theme" class="look-row" role="group" aria-labelledby="share-theme-label"></div></div>
+<div class="share-choice"><span id="share-brand-label">Tenant</span><div id="share-brand" class="look-row" role="group" aria-labelledby="share-brand-label"></div></div><div class="share-choice"><span id="share-theme-label">Theme</span><div id="share-theme" class="look-row" role="group" aria-labelledby="share-theme-label"></div></div>
 <div data-share-iframe><label>Game link<input id="share-url" readonly></label><div class="share-actions"><button type="button" class="wb-button" data-copy="url">Copy link</button><a class="wb-button" id="share-open" target="_blank" rel="noopener">Open game ${icon('external')}</a></div></div>
 <div id="share-player"><label>Lotomobil account link<input id="share-player-url" readonly></label><button type="button" class="wb-button" data-copy="player-url">Copy login link</button><small id="share-player-note"></small></div>
 <div data-share-iframe><label>Iframe code<textarea id="share-code" rows="7" readonly spellcheck="false"></textarea></label><small>Fills its container. The example uses 85% of the viewport height; adjust the container height in your site’s CSS.</small>
@@ -46,10 +46,10 @@ function chips(key,items){
 function fillThemes(selected=''){
  const available=themes[selection.brand]||{};
  selection.theme=Object.hasOwn(available,selected)?selected:'';
- chips('theme',{'':'No season',...available});
+ chips('theme',{'':'No theme',...available});
 }
 function render(){
- const url=new URL('games/'+encodeURIComponent(game)+'/index.html',root);url.searchParams.set('lang',selection.language);url.searchParams.set('brand',selection.brand);url.searchParams.set('theme',selection.theme);
+ const url=new URL('games/'+encodeURIComponent(game)+'/index.html',root);url.searchParams.set('lang',selection.language);const tenant=window.Workbench?.tenantOf?.(selection.brand);if(tenant)url.searchParams.set('tenantId',tenant);else url.searchParams.set('brand',selection.brand);url.searchParams.set('theme',selection.theme);
  const playerConfig=window.LotomobilPlayerConfig,playerReady=!!(playerConfig?.authBaseUrl&&playerConfig?.apiBaseUrl);
  $('#share-player').hidden=shareMode!=='api';dialog.querySelectorAll('[data-share-iframe]').forEach(n=>n.hidden=shareMode==='api');const playerUrl=new URL('player.html',window.ComposerCloudConfig.workspaceUrl);playerUrl.search=url.search;playerUrl.searchParams.set('game',game);
  $('#share-player-url').value=playerReady?playerUrl.href:'';dialog.querySelector('[data-copy=player-url]').disabled=!playerReady;$('#share-player-note').textContent=playerReady?'Login with a Lotomobil account to play through the API (QA).':'Lotomobil login is not configured yet.';

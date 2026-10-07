@@ -125,7 +125,7 @@ if(ENGINES.some(e=>e.id===wantedEngine))engine=wantedEngine;
 options();engineOptions();
 select.onchange=()=>{const wanted=select.value;if(!set(wanted))select.value=value};
 if(engineSelect)engineSelect.onchange=()=>{const wanted=engineSelect.value;if(!setEngine(wanted))engineSelect.value=engine};
-window.addEventListener('composer-workspace',event=>{workspace=event.detail;$('#workspace-title').textContent=({layout:'Game',look:'Brands',library:'Library',math:'Math',sound:'Sounds',translates:'Texts'})[workspace]||'Game';options();writeHash()});
+window.addEventListener('composer-workspace',event=>{workspace=event.detail;$('#workspace-title').textContent=({layout:'Game',look:'Tenants',library:'Library',math:'Math',sound:'Sounds',translates:'Texts'})[workspace]||'Game';options();writeHash()});
 window.addEventListener('hashchange',()=>{
  const opened=hash();
  if(opened.tab==='math')opened.tab='layout';

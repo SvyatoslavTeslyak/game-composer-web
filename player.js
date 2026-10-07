@@ -23,7 +23,7 @@ function restoreSession(){
 function openGame(){
  const url=new URL(config.gameUrl);url.searchParams.set('api','1');
  if(params.get('debug')==='1')url.searchParams.set('debug','1');
- for(const key of ['lang','brand','theme']){const value=params.get(key);if(value&&/^[a-zA-Z0-9_-]{1,80}$/.test(value))url.searchParams.set(key,value)}
+ for(const key of ['lang','tenantId','brand','theme']){const value=params.get(key);if(value&&/^[a-zA-Z0-9_-]{1,80}$/.test(value))url.searchParams.set(key,value)}
  $('login').hidden=true;$('credentials').elements.pin.value='';$('game').src=url.href;$('game').hidden=false;$('game-stage').hidden=false;fitGame();
 }
 function controls(){document.querySelectorAll('button').forEach(b=>b.disabled=busy||!ready);document.querySelectorAll('input').forEach(i=>i.readOnly=busy)}

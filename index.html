@@ -1,28 +1,28 @@
 <!doctype html>
 <html lang="en">
 <meta charset="utf-8">
-<meta name="composer-version" content="ux-20260923.1-3bb3ed353c48">
+<meta name="composer-version" content="ux-20260923.1-63b7a9bf761f">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Game Composer</title>
-<script src="cloud-config.js?v=1791374707"></script>
-<script src="hosted.js?v=1791374709657886312"></script>
-<script type="module" src="roles.js?v=1791374707"></script>
-<script type="module" src="lotomobil.js?v=1791374707"></script>
-<script src="session.js?v=1791374707"></script>
-<link rel="icon" type="image/png" sizes="64x64" href="composer-icon-64.png?v=1791374707">
-<link rel="apple-touch-icon" href="composer-icon-180.png?v=1791374707">
-<link rel="stylesheet" href="crash-ui/tokens.css?v=1791374707">
-<link rel="stylesheet" href="inspector.css?v=1791374707">
-<link rel="stylesheet" href="workbench.css?v=1791374707">
-<link rel="stylesheet" href="translates.css?v=1791374707">
-<link rel="stylesheet" href="share.css?v=1791374707">
-<script src="crash-ui/tokens.js?v=1791374707"></script>
-<script src="icons.js?v=1791374707"></script>
-<script src="appearance.js?v=1791374707"></script>
-<script src="ask.js?v=1791374707"></script>
-<script src="workbench.js?v=1791374707"></script>
-<link rel="stylesheet" href="math.css?v=1791374707">
-<link rel="stylesheet" href="sound.css?v=1791374707">
+<script src="cloud-config.js?v=1791376426"></script>
+<script src="hosted.js?v=1791376427327346032"></script>
+<script type="module" src="roles.js?v=1791376426"></script>
+<script type="module" src="lotomobil.js?v=1791376426"></script>
+<script src="session.js?v=1791376426"></script>
+<link rel="icon" type="image/png" sizes="64x64" href="composer-icon-64.png?v=1791376426">
+<link rel="apple-touch-icon" href="composer-icon-180.png?v=1791376426">
+<link rel="stylesheet" href="crash-ui/tokens.css?v=1791376426">
+<link rel="stylesheet" href="inspector.css?v=1791376426">
+<link rel="stylesheet" href="workbench.css?v=1791376426">
+<link rel="stylesheet" href="translates.css?v=1791376426">
+<link rel="stylesheet" href="share.css?v=1791376426">
+<script src="crash-ui/tokens.js?v=1791376426"></script>
+<script src="icons.js?v=1791376426"></script>
+<script src="appearance.js?v=1791376426"></script>
+<script src="ask.js?v=1791376426"></script>
+<script src="workbench.js?v=1791376426"></script>
+<link rel="stylesheet" href="math.css?v=1791376426">
+<link rel="stylesheet" href="sound.css?v=1791376426">
 <style>
 #lotomobil-section p{margin:0;color:var(--inspector-muted);font-size:var(--inspector-type-base);line-height:1.5}#lotomobil-section .wb-button{width:100%;max-width:100%;align-self:stretch;justify-self:stretch;flex:none;height:var(--tap-min);min-height:var(--tap-min);padding:0 var(--space-12);font-size:var(--inspector-type-sm);line-height:1.4}.lotomobil-mode{font-size:var(--inspector-type-base);color:var(--inspector-accent)}.share-dialog.lotomobil-dialog{width:min(var(--inspector-size-420),calc(100vw - var(--space-32)));padding:var(--type-20);border-radius:var(--space-16)}.lotomobil-dialog h2{font-size:var(--type-20);margin:var(--space-4) 0 var(--inspector-type-base)}.lotomobil-dialog>p{margin:0 0 var(--space-16);font-size:var(--inspector-type-md)}.lotomobil-dialog form{display:grid;gap:var(--inspector-type-base)}.lotomobil-dialog label{margin:0;gap:var(--space-6);font-size:var(--inspector-type-md)}.lotomobil-dialog input{padding:var(--inspector-size-9) var(--inspector-type-xs)}.lotomobil-dialog #lotomobil-error{margin:var(--inspector-type-base) 0 0}.lotomobil-dialog #lotomobil-error:empty{display:none}.lotomobil-dialog [hidden]{display:none!important}.lotomobil-dialog button[type=submit]:not(:disabled){background:var(--inspector-accent);border-color:var(--inspector-accent);color:var(--inspector-on-accent);font-weight:600}.lotomobil-dialog button.is-loading{gap:var(--space-8)}.lotomobil-dialog button.is-loading::before{content:"";width:var(--type-14);height:var(--type-14);border:var(--stroke-2) solid currentColor;border-right-color:transparent;border-radius:50%;animation:lotomobil-spin var(--inspector-loading-duration) linear infinite}@keyframes lotomobil-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.lotomobil-dialog button.is-loading::before{animation:none}}
 
@@ -93,8 +93,8 @@ small{color:var(--inspector-muted);font-size:var(--inspector-type-sm)}#size{font
 #look-controls>*:first-child,#library-controls>*:first-child{padding-top:0}
 .role .reset{visibility:hidden;min-height:var(--space-24);padding:0 var(--space-6)}
 .theme-mode .role.themed .reset{visibility:visible}
-.role.themed .role-title::after{content:' · season';font-size:var(--inspector-type-xs);color:var(--inspector-accent)}
-.theme-mode .role:not(.themed){opacity:var(--alpha-muted,.7)}.theme-mode .role:not(.themed) .role-title::after{content:' · from the brand';font-size:var(--inspector-type-xs);color:var(--inspector-muted)}
+.role.themed .role-title::after{content:' · theme';font-size:var(--inspector-type-xs);color:var(--inspector-accent)}
+.theme-mode .role:not(.themed){opacity:var(--alpha-muted,.7)}.theme-mode .role:not(.themed) .role-title::after{content:' · from the tenant';font-size:var(--inspector-type-xs);color:var(--inspector-muted)}
 /* The brand editor in the room, beside a phone-sized stage, as Texts lays out its editor. */
 #room.look-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(calc(var(--space-48) * 6),calc(var(--space-48) * 8));grid-template-rows:minmax(0,1fr);gap:0 var(--space-24);padding:var(--space-24);overflow:hidden}
 /* Below 1250 px the editor keeps its two columns and the stage narrows to a phone. */
@@ -381,10 +381,10 @@ aside#side{grid-column:2;grid-row:2}
 .workspace-rail .workspace-dirty::after{content:"";position:absolute;top:var(--space-6);right:var(--space-6);width:var(--space-6);height:var(--space-6);border-radius:50%;background:var(--inspector-warning)}
 @media(max-width:640px){body{grid-template-columns:76px var(--inspector-sidebar-compact-width) minmax(var(--inspector-card-min-width),1fr)}}
 </style>
-<link rel="stylesheet" href="ux.css?v=1791374707">
+<link rel="stylesheet" href="ux.css?v=1791376426">
 <header class="appbar">
-<h1><img src="composer-icon-256.png?v=1791374707" alt="" width="28" height="28"><span>Game Composer <small id="kit-updated" title="When the shared UI kit last changed">Kit · 7 Oct 2026, 12:40</small></span></h1>
-<div id="picker" class="picker"></div><div id="look-bar" class="picker look-bar"><button id="look-bar-button" class="game pick wb-button" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="look-bar-menu"><i class="swatch"></i><span><strong>Lotomobil</strong><small>No season</small></span><i data-icon="chevron"></i></button><div id="look-bar-menu" class="games look-bar-menu" hidden><div id="look-pick"></div></div></div><div id="language-seg" class="lang-seg" role="group" aria-label="Preview language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="fr">FR</button><button type="button" data-lang="ht">CR</button></div><select id="language" aria-label="Preview language" class="visually-hidden"><option value="en">EN</option><option value="fr">FR</option><option value="ht">CR</option></select><select id="target" aria-label="Active game" class="visually-hidden"></select>
+<h1><img src="composer-icon-256.png?v=1791376426" alt="" width="28" height="28"><span>Game Composer <small id="kit-updated" title="When the shared UI kit last changed">Kit · 7 Oct 2026, 13:19</small></span></h1>
+<div id="picker" class="picker"></div><div id="look-bar" class="picker look-bar"><button id="look-bar-button" class="game pick wb-button" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="look-bar-menu"><i class="swatch"></i><span><strong>Lotomobil</strong><small>No theme</small></span><i data-icon="chevron"></i></button><div id="look-bar-menu" class="games look-bar-menu" hidden><div id="look-pick"></div></div></div><div id="language-seg" class="lang-seg" role="group" aria-label="Preview language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="fr">FR</button><button type="button" data-lang="ht">CR</button></div><select id="language" aria-label="Preview language" class="visually-hidden"><option value="en">EN</option><option value="fr">FR</option><option value="ht">CR</option></select><select id="target" aria-label="Active game" class="visually-hidden"></select>
 
 <span class="grow"></span>
 <button id="cloud-configurations" class="wb-button" type="button">Cloud</button>
@@ -393,8 +393,8 @@ aside#side{grid-column:2;grid-row:2}
 </header>
 <nav class="workspace-rail" aria-label="Composer workspace">
 <button class="wb-button side-toggle" id="side-toggle" type="button" aria-controls="side" aria-expanded="true" aria-keyshortcuts="Meta+Backslash Control+Backslash" aria-label="Hide panel" title="Hide panel (⌘\)"><span class="side-icon-close"><i data-icon="panel-close"></i></span><span class="side-icon-open"><i data-icon="panel-open"></i></span></button>
-<span class="rail-group" title="Brands and assets are shared by every game">All games</span>
-<button class="wb-button" id="look-tab" type="button" aria-label="Brands" aria-pressed="false"><i data-icon="brands"></i><span class="rail-tooltip" aria-hidden="true">Brands</span></button>
+<span class="rail-group" title="Tenants and assets are shared by every game">All games</span>
+<button class="wb-button" id="look-tab" type="button" aria-label="Tenants" aria-pressed="false"><i data-icon="brands"></i><span class="rail-tooltip" aria-hidden="true">Tenants</span></button>
 <button class="wb-button" id="library-tab" type="button" aria-label="Library" aria-pressed="false"><i data-icon="library"></i><span class="rail-tooltip" aria-hidden="true">Library</span></button>
 <span class="rail-group rail-game" id="rail-game" title="The tabs below are about the game picked in the top bar"><img id="rail-game-icon" alt="" width="30" height="30"><span id="rail-game-name"></span></span>
 <button class="wb-button" id="layout-tab" type="button" aria-label="Game" aria-pressed="true"><i data-icon="game"></i><span class="rail-tooltip" aria-hidden="true">Game</span></button>
@@ -446,7 +446,7 @@ aside#side{grid-column:2;grid-row:2}
 </div>
 <div id="modal-controls" hidden><select id="modal" aria-label="Preview window"><option value="">No modal</option><option value="difficulty">Difficulty</option><option value="menu">Settings / Auto</option><option value="account">Account</option><option value="wins">All wins</option><option value="win">Win</option></select></div>
 </div>
-<section id="look-controls" hidden aria-label="Brand editor"></section>
+<section id="look-controls" hidden aria-label="Tenant editor"></section>
 <section id="library-controls" hidden aria-label="UI library"></section>
 
 <section id="math-controls" hidden>
@@ -458,7 +458,7 @@ aside#side{grid-column:2;grid-row:2}
 </section>
 <section id="translates-controls" hidden aria-label="Translation controls"></section><section id="sound-controls" hidden aria-label="Sound effects sources"></section>
 </aside>
-<main class="wb-room" id="room"><section id="library-report" hidden aria-label="UI library"></section><section id="math-report" hidden aria-label="Mathematics report"></section><section id="translates-report" hidden aria-label="Translations"></section><section id="sound-report" hidden aria-label="Sound effects"></section><div id="preview-window"><strong>Window</strong></div><div id="translation-live-tools" hidden><div class="tx-preview-pick"><label for="translation-preview-view">Preview window</label><select id="translation-preview-view"><option value="">Game</option></select></div><small id="translation-preview-note" role="status"></small></div><div id="look-room" hidden aria-label="Brand editor"></div><div class="fit" id="fit"><div class="box" id="box"><span class="wb-size" id="size"></span><div class="stage" id="stage"><iframe id="frame" class="wb-frame" title="Live HTML/CSS UI components"></iframe></div></div></div></main>
+<main class="wb-room" id="room"><section id="library-report" hidden aria-label="UI library"></section><section id="math-report" hidden aria-label="Mathematics report"></section><section id="translates-report" hidden aria-label="Translations"></section><section id="sound-report" hidden aria-label="Sound effects"></section><div id="preview-window"><strong>Window</strong></div><div id="translation-live-tools" hidden><div class="tx-preview-pick"><label for="translation-preview-view">Preview window</label><select id="translation-preview-view"><option value="">Game</option></select></div><small id="translation-preview-note" role="status"></small></div><div id="look-room" hidden aria-label="Tenant editor"></div><div class="fit" id="fit"><div class="box" id="box"><span class="wb-size" id="size"></span><div class="stage" id="stage"><iframe id="frame" class="wb-frame" title="Live HTML/CSS UI components"></iframe></div></div></div></main>
 <script>
 const frame=document.querySelector('#frame'),width=document.querySelector('#width'),range=document.querySelector('#range'),height=document.querySelector('#height'),heightRange=document.querySelector('#height-range');
 const theStage=Workbench.stage({fit:document.querySelector('#fit'),box:document.querySelector('#box'),stage:document.querySelector('#stage'),frame,size:document.querySelector('#size')});
@@ -499,7 +499,7 @@ function syncPicker(){
  // Every game the person may open, as the select lists them: in category order, under headers.
  const T=window.ComposerTarget,games=[...select.options].map(o=>({id:o.value,title:T?.entry(o.value).title||o.textContent}));
  const KIND_TITLES={crash:'Crash',slots:'Slots',instant:'Instant'};
- const footer=document.createElement('div');footer.innerHTML='<small class="games-hint">⌘K finds a game, tab, brand or season from anywhere</small>';
+ const footer=document.createElement('div');footer.innerHTML='<small class="games-hint">⌘K finds a game, tab, tenant or theme from anywhere</small>';
  picker=Workbench.gamePicker({container:document.querySelector('#picker'),games,value:T?.value||select.value,thumb:gameIcon,subtitle:gameSubtitle,group:id=>id==='kit'?'':KIND_TITLES[kindOf(id)],footer,onPick:id=>{if(!T.set(id))picker.value=T.value}});
  const g=T?.entry();if(g){document.querySelector('#rail-game-icon').src=gameIcon(g.id);document.querySelector('#rail-game-name').textContent=g.title}
  showcaseLink();
@@ -538,28 +538,28 @@ function syncWorkspaceAccess(){
 window.ComposerAuth.ready.then(syncWorkspaceAccess);
 document.addEventListener('composer-permissions',syncWorkspaceAccess);
 </script>
-<script src="draft-editors.js?v=1791374707"></script>
-<script src="target.js?v=1791374707"></script>
-<script src="game-visibility.js?v=1791374707"></script>
-<script src="showcase-settings.js?v=1791374707"></script>
-<script src="translation-table.js?v=1791374707"></script>
-<script src="xlsx.js?v=1791374707"></script>
-<script src="live.js?v=1791374707"></script>
-<script src="look.js?v=1791374707"></script>
-<script src="library.js?v=1791374707"></script>
-<script type="module" src="math.js?v=1791374707"></script>
-<script src="sound.js?v=1791374707"></script>
+<script src="draft-editors.js?v=1791376426"></script>
+<script src="target.js?v=1791376426"></script>
+<script src="game-visibility.js?v=1791376426"></script>
+<script src="showcase-settings.js?v=1791376426"></script>
+<script src="translation-table.js?v=1791376426"></script>
+<script src="xlsx.js?v=1791376426"></script>
+<script src="live.js?v=1791376426"></script>
+<script src="look.js?v=1791376426"></script>
+<script src="library.js?v=1791376426"></script>
+<script type="module" src="math.js?v=1791376426"></script>
+<script src="sound.js?v=1791376426"></script>
 
-<script type="module" src="cloud.js?v=1791374707"></script>
-<script src="translates.js?v=1791374707"></script>
-<script src="player-config.js?v=1791374707"></script><script src="share.js?v=1791374707"></script>
-<script src="dropdown.js?v=1791374707"></script>
-<script src="palette.js?v=1791374707"></script>
+<script type="module" src="cloud.js?v=1791376426"></script>
+<script src="translates.js?v=1791376426"></script>
+<script src="player-config.js?v=1791376426"></script><script src="share.js?v=1791376426"></script>
+<script src="dropdown.js?v=1791376426"></script>
+<script src="palette.js?v=1791376426"></script>
 </html>
 
-<script src="ux.js?v=1791374707"></script>
+<script src="ux.js?v=1791376426"></script>
 
-<link rel="stylesheet" href="responsive.css?v=1791374707">
-<script src="responsive.js?v=1791374707"></script>
-<link rel="stylesheet" href="studio.css?v=1791374707">
-<link rel="stylesheet" href="theme-light.css?v=1791374707">
+<link rel="stylesheet" href="responsive.css?v=1791376426">
+<script src="responsive.js?v=1791376426"></script>
+<link rel="stylesheet" href="studio.css?v=1791376426">
+<link rel="stylesheet" href="theme-light.css?v=1791376426">

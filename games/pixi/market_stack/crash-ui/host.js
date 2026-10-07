@@ -7,16 +7,15 @@
    APP_READY / APP_FAILED, NAVIGATION NAVIGATE_HOME, SETTINGS_CHANGE SOUNDS and
    ACTION SHOW_BALANCE_ERROR. There is no demo mode: an embedded game always plays for money.
 
-   The frame is the host only when the URL carries the host's parameters (origin, baseUrl or
-   tenantId). Composer and the showcase embed games too, without them, and are left alone.
-   Load this before ui.js: it picks the tenant's brand before the kit and the splash draw. */
+   The frame is the host only when the URL carries the app's own parameters (origin or
+   baseUrl). Composer and the showcase embed games too, with tenantId, lang and theme but never
+   those two, and are left alone. The tenant's brand is the kit's business (GameUI.queryBrand),
+   inside the app or not. Load this after tokens.js and before ui.js. */
 (function(){
 'use strict';
 const query=new URLSearchParams(location.search);
-const active=window.parent!==window&&['origin','baseUrl','tenantId'].some(key=>query.has(key));
+const active=window.parent!==window&&['origin','baseUrl'].some(key=>query.has(key));
 const TYPES=['AUTH','ACTION','APP_READY','APP_FAILED','DATA','NAVIGATION','SETTINGS_CHANGE','SWITCH_TO_REAL_MONEY'];
-// The tenant is the operator's brand; the kit's brands carry the same three.
-const TENANT_BRANDS={LotomobilPlayers:'default',NumbaGhanaPlayers:'numba-ghana',NumbaNigeriaPlayers:'numba-nigeria'};
 const flag=key=>{try{return JSON.parse(query.get(key)||'false')===true}catch{return false}};
 const local=host=>host==='localhost'||host==='127.0.0.1'||host==='[::1]';
 // The parent's origin is where replies go; without it the protocol falls back to '*'.
@@ -26,11 +25,8 @@ try{const value=query.get('origin');if(value)parentOrigin=new URL(value).origin}
 let baseUrl='';
 try{const value=query.get('baseUrl');if(value){const url=new URL(value);if(url.protocol==='https:'||(url.protocol==='http:'&&local(url.hostname)))baseUrl=url.href.replace(/\/?$/,'/')}}catch{}
 const tenant=query.get('tenantId')||'LotomobilPlayers';
-const brand=TENANT_BRANDS[tenant]||'default';
-// Inside the app the tenant decides the brand, even over a ?brand= left in a link copied from
-// Composer's share dialog: a Numba player never sees Lotomobil's colours.
-const tenantBrand=active&&query.has('tenantId')?brand:'';
-if(tenantBrand){if(tenantBrand==='default')delete document.documentElement.dataset.brand;else document.documentElement.dataset.brand=tenantBrand}
+// The tenant is the brand (CrashTokens.TENANTS, from the kit's tokens).
+const brand=window.CrashTokens?.TENANTS?.[tenant]||'default';
 
 const listeners={auth:new Set(),back:new Set(),sound:new Set(),insets:new Set()};
 const emit=(name,value)=>{for(const fn of listeners[name])try{fn(value)}catch(error){console.error(error)}};
@@ -145,8 +141,6 @@ async function request(path,options={}){
 
 window.CrashHost={
  active,parentOrigin,tenant,brand,
- /** The tenant's brand when the app named a tenant, else '': the kit and the splash take it first. */
- tenantBrand,
  /** The API base the parent named, or '' (the game then supplies its own). */
  get baseUrl(){return baseUrl},
  set baseUrl(value){if(!query.has('baseUrl'))try{const url=new URL(value);if(url.protocol==='https:'||(url.protocol==='http:'&&local(url.hostname)))baseUrl=url.href.replace(/\/?$/,'/')}catch{}},
