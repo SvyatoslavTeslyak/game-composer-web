@@ -12,26 +12,17 @@
       "risks": [
         0.06,
         0.1,
-        0.16,
-        0.24
+        0.16
       ],
       "maxSteps": 20,
       "sources": [
         {
-          "path": "goat-road/scripts/systems/multiplier_manager.gd",
-          "sha256": "0ba36654a7191dd5844538ae82bfeee09fb3b2786305a86c38fc5d48b7635f5d"
+          "path": "goat-road/src/game/multipliers.ts",
+          "sha256": "23ace905e4b78e6bfaee327af36759948ccb4415c1ad8eee432b8155f0a9192d"
         },
         {
-          "path": "goat-road/scripts/game/game_manager.gd",
-          "sha256": "f72f5879219db9d01260bfcef68625484bd32412d684fa8eb48bd08b55a52e41"
-        },
-        {
-          "path": "goat-road/addons/crash_ui/ui/preview_math.gd",
-          "sha256": "483cb695863ab9b202d660896d03212639e15122cf6ef510ba76ca6fb757ead2"
-        },
-        {
-          "path": "goat-road/scripts/ui/bet_control_panel.gd",
-          "sha256": "67a67c91878da144e6b57df1a032bdc2dd083de4d5aa686c53b79fa00c6b190a"
+          "path": "goat-road/src/game/round.ts",
+          "sha256": "5b28f160c4e64f9a9a793071e6e5d978a650d3b8aee85d4fcac6b86f64016912"
         }
       ]
     },
@@ -50,16 +41,12 @@
       ],
       "sources": [
         {
-          "path": "fish-master/scripts/game/fishing_round.gd",
-          "sha256": "aa2a98087dde8b1630b2a0f67542d8908690b66d96acca7122f00b9969c9f4ee"
+          "path": "big-haul/src/game/fishing-round.ts",
+          "sha256": "736d5e48a18b754a2ad51104f8ca05a055b6438d663ff004a41c6a1f58b7b3c8"
         },
         {
-          "path": "fish-master/scripts/game/game_manager.gd",
-          "sha256": "38078d00217302f749d5ddbbc1835b859429ee9b9cc9f88a74fc86d04b96b6b7"
-        },
-        {
-          "path": "fish-master/addons/crash_ui/ui/preview_math.gd",
-          "sha256": "483cb695863ab9b202d660896d03212639e15122cf6ef510ba76ca6fb757ead2"
+          "path": "big-haul/src/game/round.ts",
+          "sha256": "ee34c7df9efa083c4fff2d12f0260b0413b6ffcfd602fd7d0c2a03ad2442fcdf"
         }
       ]
     },
@@ -78,16 +65,12 @@
       ],
       "sources": [
         {
-          "path": "goat-gold/scripts/game/gold_round.gd",
-          "sha256": "1163d5bf10ad27a64c794b93b6cb8a992bed762cad4bc3b66f5ddfcc5ecff6f7"
+          "path": "goat-gold/src/game/gold-round.ts",
+          "sha256": "f306a6468036c931af1a0cafcfee9ee4f52b559ccd9bbe16edf003dc04516076"
         },
         {
-          "path": "goat-gold/scripts/game/game_manager.gd",
-          "sha256": "016026a15f8b4dd57da194b26509c83b152a8917801953bf5563c81c919ca1db"
-        },
-        {
-          "path": "goat-gold/addons/crash_ui/ui/preview_math.gd",
-          "sha256": "483cb695863ab9b202d660896d03212639e15122cf6ef510ba76ca6fb757ead2"
+          "path": "goat-gold/src/game/round.ts",
+          "sha256": "962fd57b386bed2829cc1e26d6bbda15869a6e190082afbd5b891e1b6e0f6397"
         }
       ]
     },
@@ -101,8 +84,7 @@
       "risks": [
         0.06,
         0.1,
-        0.16,
-        0.24
+        0.16
       ],
       "maxSteps": 25,
       "goldChance": 0.15,
@@ -116,24 +98,12 @@
       "rottenDropMax": 0.34,
       "sources": [
         {
-          "path": "explosive-fruits/scripts/game/fruit_round.gd",
-          "sha256": "880d1f7881577d656b9adce7e7de3f8c2c1161421141f595266a802bf79d2a1d"
+          "path": "fruit-boom/src/game/fruit-round.ts",
+          "sha256": "16faa3591630316746e939661285ec07a904bbff9b37e0bfd94e5e23a58f975e"
         },
         {
-          "path": "explosive-fruits/scripts/game/game_manager.gd",
-          "sha256": "dd3c2a519cc7a18e71b529e6662374f53fe46ace850a27f2f76c36b090f4dd09"
-        },
-        {
-          "path": "explosive-fruits/addons/crash_ui/ui/preview_math.gd",
-          "sha256": "483cb695863ab9b202d660896d03212639e15122cf6ef510ba76ca6fb757ead2"
-        },
-        {
-          "path": "explosive-fruits/scripts/systems/multiplier_manager.gd",
-          "sha256": "93c4e8bee244232bd3cc801d712a67f52a7d3095ba19a2ddac2f831052a8d23c"
-        },
-        {
-          "path": "explosive-fruits/scripts/game/fruit_stage.gd",
-          "sha256": "f1ae4b9844c4b03040b0592d8e51fa6b2635e91ecd57230be39614b1b90c3a06"
+          "path": "fruit-boom/src/game/round.ts",
+          "sha256": "549859686ce200f2a757f2ba2c6a89918a4a8ebc035ab4f8f39ed694e7496566"
         }
       ]
     },
@@ -161,24 +131,12 @@
       "rottenPenalty": 0.21,
       "sources": [
         {
-          "path": "fuel-run/scripts/game/fuel_round.gd",
-          "sha256": "953a95e6053c57ca82df9b176cff2a55f6df4394399fa03574025455cea26044"
+          "path": "fuel-run/src/game/fuel-round.ts",
+          "sha256": "9b17abe4885237039db48b1a202252136a8caf032e43a40611056b4fac04dfc5"
         },
         {
-          "path": "fuel-run/scripts/game/game_manager.gd",
-          "sha256": "4ccc4fe59431cbc6be6391684ac8b6b15d04390c7af6392fdb5d7c8a4c22b5fe"
-        },
-        {
-          "path": "fuel-run/addons/crash_ui/ui/preview_math.gd",
-          "sha256": "483cb695863ab9b202d660896d03212639e15122cf6ef510ba76ca6fb757ead2"
-        },
-        {
-          "path": "fuel-run/scripts/systems/multiplier_manager.gd",
-          "sha256": "775ee29a55d55864fc3621c04ee572e5b8fefa739bb2f7927af4efcf46ffcf9c"
-        },
-        {
-          "path": "fuel-run/scripts/game/run_stage.gd",
-          "sha256": "7045ed5f29cf8414dc0d8e99f276e0e10fa9b42342a1ff9d2b63d7f238d3920d"
+          "path": "fuel-run/src/game/round.ts",
+          "sha256": "e4ec2fcfc70c35f482104037e163402f7ed27ab3b3d8436f5d5a25ad45412227"
         }
       ]
     },
@@ -200,15 +158,11 @@
       ],
       "sources": [
         {
-          "path": "catch-clash/scripts/game/catch_round.gd",
-          "sha256": "6a6ef0e234a6d3f19c9b6663236437237e21a31bb6231402fc88fc93d46c1075"
-        },
-        {
-          "path": "catch-clash/scripts/game/catch_game.gd",
-          "sha256": "4cbde183c6d355eb85486bb85560714694da38b2b6d0c2087a8747407dc6e55e"
+          "path": "catch-clash/src/game/catch-round.ts",
+          "sha256": "b9e3b5bd4e499de2723e8374428451cc046a9051b623dcfc69f0c8f066737d32"
         }
       ]
     }
   },
-  "sourceVerification": "bundled-snapshot-only"
+  "sourceVerification": "source-files"
 }

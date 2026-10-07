@@ -1,7 +1,9 @@
 # Vault background
 
-`vault.png` was generated with the built-in imagegen tool and copied into this project.
-The character generation was rejected by the service; the playable character and bag use Godot drawing code in `scripts/game/gold_stage.gd`.
+`vault.png` was generated with the built-in imagegen tool. It is the earlier background,
+kept as a previous version; the stage now draws the SpriteCook art in `spritecook/`.
+The character generation was rejected by the service, which is why the character and the
+bag come from SpriteCook instead.
 
 Final background prompt:
 

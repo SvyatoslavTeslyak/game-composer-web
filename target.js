@@ -5,7 +5,7 @@
 (function(){
 'use strict';
 const $=s=>document.querySelector(s);
-// live: has a web export to run in Layout. math: has a model in math-baseline.json.
+// live: has a web build to run in Layout. math: has a model in math-baseline.json.
 const TARGETS=[
  {id:'road',title:'Goat Road',live:true,math:true},
  {id:'haul',title:'Big Haul',live:true,math:true},
@@ -22,9 +22,8 @@ const TARGETS=[
 ];
 // Off, the list keeps the shared kit, the two featured games and whatever is selected.
 const KEYS={target:'crash-composer-target',engine:'crash-composer-engine'};
-// The same game exists once per engine. Which engines a game actually has comes from the
-// catalog, so a game that has not been ported yet simply never offers the choice.
-// PixiJS is the product; the Godot games are frozen and Composer no longer offers them.
+// The engine the games are built with; the catalog says which games have a build of it.
+// With one engine there is no choice, so the engine row stays hidden.
 const ENGINES=[{id:'pixi',title:'PixiJS'}];
 const DEFAULT_ENGINE='pixi';
 const select=$('#target');

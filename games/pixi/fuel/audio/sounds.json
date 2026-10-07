@@ -2,7 +2,7 @@
   "version": 1,
   "game": "fuel",
   "title": "Fuel Run",
-  "owner": "LocalFeedback (scripts/systems/local_feedback.gd)",
+  "owner": "Audio (src/platform/audio.ts)",
   "events": [
     {
       "id": "start",

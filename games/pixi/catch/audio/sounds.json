@@ -2,7 +2,7 @@
   "version": 1,
   "game": "catch",
   "title": "Catch Clash",
-  "owner": "catch_game.gd (_sound)",
+  "owner": "src/game/round.ts",
   "events": [
     {
       "id": "start",

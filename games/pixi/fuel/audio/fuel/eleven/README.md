@@ -21,11 +21,10 @@ detected onset so it never lands mid-bark.
 The loop is rolled off above 3 kHz: the steady take carried 18 % of its energy above 8 kHz and
 read as ringing rather than as an engine. Centroid 6.2 kHz down to 4.5 kHz.
 
-The loop does not start with the round: `LocalFeedback.ride_lead_in()` holds it back by the
+The loop does not start with the round: `ride()` in `src/main.ts` holds it back by the
 length of the start take minus 300 ms, so the engine is heard catching and the drone comes in
 under its tail. Fired together, the start was inaudible. The lead-in reads the clip rather than
-hard-coding a delay, so replacing the start take keeps the two in step. `tests/ride_lead_test.gd`
-checks it.
+hard-coding a delay, so replacing the start take keeps the two in step.
 
 The low end was cut 4 dB below 180 Hz after the steady take turned out to boom: 42 % of its
 energy sat under 200 Hz. That is EQ, not level-over-time, so the steadiness is untouched.
@@ -68,18 +67,18 @@ looping drone cannot be compared by average level.
 
 | Event | Takes on | Trigger | Prompt |
 |---|---|---|---|
-| start | in use | round begins (`scripts/game/game_manager.gd`) | Motorcycle kick start, starter whirs then the engine catches and revs once, close-mic |
-| ride | in use | loops from round start to `finish_round` on its own voice (`LocalFeedback.start_ride`) | Single cylinder motorcycle exhaust barking at speed, hard raspy four stroke pulses, close to the pipe, gritty, not a smooth rumble |
-| spill | in use | strap slips, part of the run lost (`run_stage.gd`) | Fuel sloshing and splashing out of a metal jerrycan onto asphalt, wet glug, short |
-| burst | in use | both cans fly off and empty, run lost (`run_stage.gd`) |
-| dog | 2 of 2 | every 6.5–15 s while he is riding (`run_stage.gd`) | A street dog barking twice at a passing motorbike, mid-sized dog, outdoors at a distance, short, dry | Metal jerrycan clangs off a bike and bursts open, liquid gushing across asphalt |
+| start | in use | round begins (`src/game/round.ts`) | Motorcycle kick start, starter whirs then the engine catches and revs once, close-mic |
+| ride | in use | loops from round start to round end on its own voice (`ride()` in `src/main.ts`) | Single cylinder motorcycle exhaust barking at speed, hard raspy four stroke pulses, close to the pipe, gritty, not a smooth rumble |
+| spill | in use | strap slips, part of the run lost (`src/scene/stage.ts`) | Fuel sloshing and splashing out of a metal jerrycan onto asphalt, wet glug, short |
+| burst | in use | both cans fly off and empty, run lost (`src/scene/stage.ts`) |
+| dog | 2 of 2 | every 6.5–15 s while he is riding (`src/scene/stage.ts`) | A street dog barking twice at a passing motorbike, mid-sized dog, outdoors at a distance, short, dry | Metal jerrycan clangs off a bike and bursts open, liquid gushing across asphalt |
 
 A courier groan was generated and wired 0.35 s after `burst`, then removed: the voice read as odd
 against an otherwise wordless scene. The prompt was "Young man groans in frustration, short
 disappointed sigh, no words" — regenerate from the flow above if it is ever wanted back.
 
 | sale | in use | every buyer paid, whenever a seller draws level with the rider | Mechanical counter wheel clicking over one notch, single dry ratchet click, tight and short, no ring, no music |
-| milestone | 1 of 1 | the shown multiplier crosses a whole number (`game_manager.gd`) | Two clean bell notes rising a step, bright and confident, short, dry, no music |
+| milestone | 1 of 1 | the shown multiplier crosses a whole number (`src/game/round.ts`) | Two clean bell notes rising a step, bright and confident, short, dry, no music |
 | big_sale | tick | a buyer hands over several bundles: still a step, so it plays the same tick |
 
 Coins were dropped once the floating popup started counting in multiplier rather than money:

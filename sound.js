@@ -14,7 +14,7 @@ const LOCAL_EDITOR=/^(127\.0\.0\.1|localhost|\[::1\])$/.test(location.hostname);
 const canAddTake=()=>window.ComposerDraftEditors?.enabled?!!window.ComposerAuth?.has('audio.edit',window.ComposerTarget?.value):LOCAL_EDITOR;
 let drafts={},dirty=new Set(),player=null,stamp=Date.now(),loaded=false,group='interface';
 
-// The target is the global Composer game; target.js owns the catalog and the web-dev rebuild.
+// The target is the global Composer game; target.js owns the catalog and the game rebuild.
 const targetId=()=>window.ComposerTarget.value;
 const catalog=()=>window.ComposerTarget.catalog;
 const current=()=>window.ComposerTarget.source();
@@ -84,7 +84,7 @@ function sections(game,own){
  const grid=(sid,list)=>'<div class="sound-grid">'+list.map(([event,index])=>card(event,index,sid)).join('')+'</div>';
  const indexed=sid=>events(sid).map((event,index)=>[event,index]);
  if(group==='scene'){
-  if(!own)return '<p class="sound-note">This game has no assets/audio/sounds.json yet. Add one in the Fruit Boom format, point LocalFeedback.play_event at SOUNDS.EVENTS, then reload.</p>';
+  if(!own)return '<p class="sound-note">This game has no assets/audio/sounds.json yet. Add one in the Fruit Boom format, have the game play its events from it, then reload.</p>';
   return grid(targetId(),indexed(targetId()).filter(([e])=>e.group!=='interface'&&!e.runtime_unused));
  }
  const overrides=indexed(targetId()).filter(([e])=>e.group==='interface'),ids=new Set(overrides.map(([e])=>e.id));
@@ -191,7 +191,7 @@ async function savePending(){
  flagDirty();
  if(dirty.size){await savePending();return}
  if(window.ComposerDraftEditors?.enabled){message('Saved '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · in the shared draft. Send it from Changes.');return}
- message('Saved'+(isGame()&&pending.includes(targetId())?'. Rebuild web-dev to hear it in the game.':'.'));
+ message('Saved'+(isGame()&&pending.includes(targetId())?'. Rebuild the game to hear it there.':'.'));
 }
 
 
@@ -204,7 +204,7 @@ async function restore(){
  clearTimeout(saveTimer);saveTimer=null;dirty.clear();flagDirty();
  await request('studio/restore?source='+encodeURIComponent(sid)+'&engine='+encodeURIComponent(engineId()),{method:'POST'});
  await load(true);
- message('Back to the published sounds'+(sid===KIT?'.':'. Rebuild web-dev to hear it in the game.'));
+ message('Back to the published sounds'+(sid===KIT?'.':'. Rebuild the game to hear it there.'));
 }
 
 async function addTake(sid,eventIndex,file){
@@ -213,7 +213,7 @@ async function addTake(sid,eventIndex,file){
  message('Uploading '+file.name+'…');
  await request('studio/upload?source='+encodeURIComponent(sid)+'&engine='+encodeURIComponent(engineId())+'&event='+encodeURIComponent(event.id)+'&take='+event.takes.length,{method:'POST',headers:{'X-File-Name':encodeURIComponent(file.name),'Content-Type':'application/octet-stream'},body:file});
  await load(true);
- message(window.ComposerDraftEditors?.enabled?'Added '+file.name+' to '+(event.label||event.id)+' · in the draft; it reaches players once released from Changes.':'Added a sound for '+event.id+(sid!==KIT?'. Rebuild web-dev so Godot imports it.':'.'));
+ message(window.ComposerDraftEditors?.enabled?'Added '+file.name+' to '+(event.label||event.id)+' · in the draft; it reaches players once released from Changes.':'Added a sound for '+event.id+(sid!==KIT?'. Rebuild the game so its build carries it.':'.'));
 }
 
 controls.addEventListener('click',event=>{

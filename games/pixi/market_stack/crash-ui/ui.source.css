@@ -1,5 +1,5 @@
-.crash-ui,.crash-ui *{box-sizing:border-box}.crash-ui{font:var(--body-type-px)/var(--leading-body) var(--font-body),sans-serif;font-synthesis:none;color:var(--text);position:fixed;inset:0;z-index:10;pointer-events:none;--edge:var(--space-16);--gap:var(--space-16);--button-radius:var(--radius-24);--panel-radius:var(--web-panel-radius);--control-h:var(--web-control-comfort-height)}.crash-ui button,.crash-ui input,.crash-ui select{font:inherit}.crash-ui{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.crash-ui input,.crash-ui textarea{-webkit-user-select:text;user-select:text}.crash-ui button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.crash-ui button:focus-visible,.crash-ui input:focus-visible,.crash-ui select:focus-visible{outline:var(--stroke-3) solid var(--focus);outline-offset:var(--stroke-3)}.crash-ui [hidden]{display:none!important}.crash-ui .panel{background:var(--surface);border:var(--stroke-1) solid var(--border);border-radius:var(--panel-radius);padding:var(--space-16);box-shadow:var(--elevation-panel);pointer-events:auto}.crash-ui .button{display:flex;align-items:center;justify-content:center;gap:var(--space-8);min-height:var(--control-h);min-width:var(--tap-min);padding:var(--space-8) var(--space-12);border-radius:var(--button-radius);border:var(--stroke-2) solid color-mix(in srgb,var(--button-edge) calc(var(--alpha-strong) * 100%),transparent);color:var(--on-button);background:linear-gradient(var(--button-top),var(--button-bottom));box-shadow:inset 0 0 0 var(--stroke-3) color-mix(in srgb,var(--button-edge) calc(var(--alpha-faint) * 100%),transparent),0 var(--web-button-depth) 0 var(--button-shadow);transition:filter var(--motion-fast-ms),transform var(--motion-fast-ms),box-shadow var(--motion-fast-ms);white-space:nowrap}.crash-ui .button:hover:not(:disabled){filter:brightness(1.12)}.crash-ui .button:active:not(:disabled){transform:translateY(var(--web-button-depth));box-shadow:inset 0 0 0 var(--stroke-3) color-mix(in srgb,var(--button-edge) calc(var(--alpha-faint) * 100%),transparent),0 var(--stroke-1) 0 var(--button-shadow)}.crash-ui button:disabled{cursor:default}.crash-ui .button:disabled{background:var(--button-disabled);color:var(--disabled);box-shadow:inset 0 var(--web-button-depth) 0 var(--button-shadow);filter:none}.crash-ui .button[aria-pressed=true]{border-color:var(--focus)}.crash-ui .icon{width:var(--web-icon-md);height:var(--web-icon-md);object-fit:contain;flex:none}.crash-ui .chevron{display:block;width:var(--space-16);height:var(--space-16);flex:0 0 var(--space-16)}.crash-ui .money{font-family:var(--font-numbers),var(--font-body),sans-serif;font-size:var(--type-24);font-variant-numeric:tabular-nums}.crash-ui .muted{color:var(--text-muted);font-size:var(--type-12)}.crash-ui .avatar{--index:5;width:var(--web-avatar-xl);height:var(--web-avatar-xl);flex:none;border-radius:50%;border:var(--stroke-1) solid var(--gold);background-image:url('assets/avatars/players.webp');background-size:calc(100% * 1536 / 464) calc(100% * 1024 / 464);background-repeat:no-repeat;background-position:var(--avatar-x,100%) var(--avatar-y,100%)}.crash-ui .top{position:absolute;left:var(--edge);right:var(--edge);top:max(var(--edge),env(safe-area-inset-top));display:flex;gap:var(--space-16);align-items:flex-start;pointer-events:none}.crash-ui .account{width:100%;min-width:0}.crash-ui .profile{display:flex;align-items:center;gap:var(--space-12)}.crash-ui .identity{display:flex;align-items:center;gap:var(--space-12);border:0;background:none;color:inherit;text-align:left;padding:0;min-height:var(--tap-min)}.crash-ui .identity strong{display:block;font-size:var(--type-24)}.crash-ui .level{color:var(--gold);font-size:var(--type-12)}/* The coin follows the number, as it does beside every other amount. */
-.crash-ui .balance{margin-left:auto;display:flex;gap:var(--space-8);align-items:center;min-width:0}.crash-ui .balance>.icon{order:1}.crash-ui .balance .money{font-size:clamp(var(--type-24),5vw,var(--type-32))}.crash-ui .icon-button{width:var(--tap-min);height:var(--tap-min);border:0;background:none;color:inherit;padding:var(--space-8);flex:none}.crash-ui .records{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:var(--space-16);padding:var(--space-12);margin-top:var(--space-12);background:var(--surface-inset);border:var(--stroke-1) solid var(--border);border-radius:var(--radius-24)}.crash-ui .record{display:flex;gap:var(--space-8);align-items:flex-start;min-width:0}.crash-ui .record .icon{width:var(--web-icon-md);height:var(--web-icon-md)}.crash-ui .record-title{font-size:var(--type-12);color:var(--text-muted)}.crash-ui .record-value{font-size:var(--type-24);color:var(--success)}.crash-ui .record-top{display:flex;gap:var(--space-16);flex-wrap:wrap;align-items:center;min-width:0}.crash-ui .record-top .record-value{color:var(--gold)}.crash-ui .owner{display:flex;gap:var(--space-8);align-items:center;min-width:0;flex:1 1 var(--web-owner-min-width)}.crash-ui .owner .avatar{width:var(--web-avatar-md);height:var(--web-avatar-md)}.crash-ui .owner-name{font-size:var(--type-12);overflow-wrap:anywhere}.crash-ui .owner-date{font:var(--type-12) var(--font-body),sans-serif;color:var(--text-muted);white-space:nowrap}.crash-ui .winners{width:100%;margin-top:var(--space-12)}.crash-ui .wins-head{display:flex;align-items:center;gap:var(--space-8);margin-bottom:var(--space-12);font-size:var(--type-16)}.crash-ui .online{font-size:var(--type-12);color:var(--switch-on);display:flex;align-items:center;gap:var(--space-6);white-space:nowrap}.crash-ui .dot{width:var(--web-status-dot);height:var(--web-status-dot);border-radius:50%;background:currentColor}.crash-ui .text-button{border:0;background:none;color:var(--text-muted);min-height:var(--tap-min);padding:0 var(--space-4);margin-left:auto;font-size:var(--type-12)}.crash-ui .wins-list{display:flex;gap:var(--space-8);overflow-x:auto;scrollbar-width:none}.crash-ui .winner{display:grid;align-items:center;grid-template-columns:var(--web-avatar-md) minmax(var(--web-winner-name-min-width),auto);gap:var(--space-4) var(--space-8);flex:1 0 var(--web-win-card-width);padding:var(--space-8);border:var(--stroke-1) solid var(--border);border-radius:var(--radius-16)}.crash-ui .winner .avatar{width:var(--web-avatar-md);height:var(--web-avatar-md);grid-row:span 2;align-self:center}.crash-ui .winner-name{font-size:var(--type-12);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.crash-ui .winner .money{color:var(--success);white-space:nowrap}.crash-ui .win-multiple{display:none}.crash-ui .history{display:flex;gap:var(--space-8);overflow:auto;scrollbar-width:none;margin-top:var(--space-12)}.crash-ui .pill{display:inline-flex;align-items:center;justify-content:center;min-height:var(--web-history-pill-height);box-sizing:border-box;border:var(--stroke-1) solid color-mix(in srgb,currentColor calc(var(--alpha-soft) * 100%),var(--border));border-radius:var(--radius-24);background:var(--surface-raised);color:var(--pill-cyan);padding:0 var(--space-8);font-size:var(--web-history-pill-size);font-family:var(--font-numbers),var(--font-body),sans-serif;white-space:nowrap}.crash-ui .pill.tier-success{color:var(--pill-success)}.crash-ui .pill.tier-purple{color:var(--pill-purple)}.crash-ui .pill.tier-gold{color:var(--pill-gold)}.crash-ui .bottom{position:absolute;left:var(--edge);right:var(--edge);bottom:max(var(--edge),env(safe-area-inset-bottom));pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:var(--space-12)}/* The steps of a climbing round, beside the scene: the kit's panel, so a brand restyles it
+.crash-ui,.crash-ui *{box-sizing:border-box}.crash-ui{font:var(--body-type-px)/var(--leading-body) var(--font-body),sans-serif;font-synthesis:none;color:var(--text);position:fixed;inset:0;z-index:10;pointer-events:none;--edge:var(--space-16);--gap:var(--space-16);--button-radius:var(--radius-24);--panel-radius:var(--web-panel-radius);--control-h:var(--web-control-comfort-height)}.crash-ui button,.crash-ui input,.crash-ui select{font:inherit}.crash-ui{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.crash-ui input,.crash-ui textarea{-webkit-user-select:text;user-select:text}.crash-ui button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.crash-ui button:focus-visible,.crash-ui input:focus-visible,.crash-ui select:focus-visible{outline:var(--stroke-3) solid var(--focus);outline-offset:var(--stroke-3)}.crash-ui [hidden]{display:none!important}.crash-ui .panel{background:var(--surface);border:var(--stroke-1) solid var(--border);border-radius:var(--panel-radius);padding:var(--space-16);box-shadow:var(--elevation-panel);pointer-events:auto}.crash-ui .button{display:flex;align-items:center;justify-content:center;gap:var(--space-8);min-height:var(--control-h);min-width:var(--tap-min);padding:var(--space-8) var(--space-12);border-radius:var(--button-radius);border:var(--stroke-2) solid color-mix(in srgb,var(--button-edge) calc(var(--alpha-strong) * 100%),transparent);color:var(--on-button);background:linear-gradient(var(--button-top),var(--button-bottom));box-shadow:inset 0 0 0 var(--stroke-3) color-mix(in srgb,var(--button-edge) calc(var(--alpha-faint) * 100%),transparent),0 var(--web-button-depth) 0 var(--button-shadow);transition:filter var(--motion-fast-ms),transform var(--motion-fast-ms),box-shadow var(--motion-fast-ms);white-space:nowrap}.crash-ui .button:hover:not(:disabled){filter:brightness(1.12)}.crash-ui .button:active:not(:disabled){transform:translateY(var(--web-button-depth));box-shadow:inset 0 0 0 var(--stroke-3) color-mix(in srgb,var(--button-edge) calc(var(--alpha-faint) * 100%),transparent),0 var(--stroke-1) 0 var(--button-shadow)}.crash-ui button:disabled{cursor:default}.crash-ui .button:disabled{background:var(--button-disabled);color:var(--disabled);box-shadow:inset 0 var(--web-button-depth) 0 var(--button-shadow);filter:none}.crash-ui .button[aria-pressed=true]{border-color:var(--focus)}.crash-ui .icon{width:var(--web-icon-md);height:var(--web-icon-md);object-fit:contain;flex:none}.crash-ui .chevron{display:block;width:var(--space-16);height:var(--space-16);flex:0 0 var(--space-16)}.crash-ui .money{font-family:var(--font-numbers),var(--font-body),sans-serif;font-size:var(--type-24);font-variant-numeric:tabular-nums}.crash-ui .muted{color:var(--text-muted);font-size:var(--type-12)}.crash-ui .avatar{--index:5;width:var(--web-avatar-xl);height:var(--web-avatar-xl);flex:none;border-radius:50%;border:var(--stroke-1) solid var(--gold);background-image:url('assets/avatars/players.webp');background-size:calc(100% * 1536 / 464) calc(100% * 1024 / 464);background-repeat:no-repeat;background-position:var(--avatar-x,100%) var(--avatar-y,100%)}.crash-ui .top{position:absolute;left:var(--edge);right:var(--edge);top:max(var(--edge),var(--safe-area-top,env(safe-area-inset-top)));display:flex;gap:var(--space-16);align-items:flex-start;pointer-events:none}.crash-ui .account{width:100%;min-width:0}.crash-ui .profile{display:flex;align-items:center;gap:var(--space-12)}.crash-ui .identity{display:flex;align-items:center;gap:var(--space-12);border:0;background:none;color:inherit;text-align:left;padding:0;min-height:var(--tap-min)}.crash-ui .identity strong{display:block;font-size:var(--type-24)}.crash-ui .level{color:var(--gold);font-size:var(--type-12)}/* The coin follows the number, as it does beside every other amount. */
+.crash-ui .balance{margin-left:auto;display:flex;gap:var(--space-8);align-items:center;min-width:0}.crash-ui .balance>.icon{order:1}.crash-ui .balance .money{font-size:clamp(var(--type-24),5vw,var(--type-32))}.crash-ui .icon-button{width:var(--tap-min);height:var(--tap-min);border:0;background:none;color:inherit;padding:var(--space-8);flex:none}.crash-ui .records{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:var(--space-16);padding:var(--space-12);margin-top:var(--space-12);background:var(--surface-inset);border:var(--stroke-1) solid var(--border);border-radius:var(--radius-24)}.crash-ui .record{display:flex;gap:var(--space-8);align-items:flex-start;min-width:0}.crash-ui .record .icon{width:var(--web-icon-md);height:var(--web-icon-md)}.crash-ui .record-title{font-size:var(--type-12);color:var(--text-muted)}.crash-ui .record-value{font-size:var(--type-24);color:var(--success)}.crash-ui .record-top{display:flex;gap:var(--space-16);flex-wrap:wrap;align-items:center;min-width:0}.crash-ui .record-top .record-value{color:var(--gold)}.crash-ui .owner{display:flex;gap:var(--space-8);align-items:center;min-width:0;flex:1 1 var(--web-owner-min-width)}.crash-ui .owner .avatar{width:var(--web-avatar-md);height:var(--web-avatar-md)}.crash-ui .owner-name{font-size:var(--type-12);overflow-wrap:anywhere}.crash-ui .owner-date{font:var(--type-12) var(--font-body),sans-serif;color:var(--text-muted);white-space:nowrap}.crash-ui .winners{width:100%;margin-top:var(--space-12)}.crash-ui .wins-head{display:flex;align-items:center;gap:var(--space-8);margin-bottom:var(--space-12);font-size:var(--type-16)}.crash-ui .online{font-size:var(--type-12);color:var(--switch-on);display:flex;align-items:center;gap:var(--space-6);white-space:nowrap}.crash-ui .dot{width:var(--web-status-dot);height:var(--web-status-dot);border-radius:50%;background:currentColor}.crash-ui .text-button{border:0;background:none;color:var(--text-muted);min-height:var(--tap-min);padding:0 var(--space-4);margin-left:auto;font-size:var(--type-12)}.crash-ui .wins-list{display:flex;gap:var(--space-8);overflow-x:auto;scrollbar-width:none}.crash-ui .winner{display:grid;align-items:center;grid-template-columns:var(--web-avatar-md) minmax(var(--web-winner-name-min-width),auto);gap:var(--space-4) var(--space-8);flex:1 0 var(--web-win-card-width);padding:var(--space-8);border:var(--stroke-1) solid var(--border);border-radius:var(--radius-16)}.crash-ui .winner .avatar{width:var(--web-avatar-md);height:var(--web-avatar-md);grid-row:span 2;align-self:center}.crash-ui .winner-name{font-size:var(--type-12);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.crash-ui .winner .money{color:var(--success);white-space:nowrap}.crash-ui .win-multiple{display:none}.crash-ui .history{display:flex;gap:var(--space-8);overflow:auto;scrollbar-width:none;margin-top:var(--space-12)}.crash-ui .pill{display:inline-flex;align-items:center;justify-content:center;min-height:var(--web-history-pill-height);box-sizing:border-box;border:var(--stroke-1) solid color-mix(in srgb,currentColor calc(var(--alpha-soft) * 100%),var(--border));border-radius:var(--radius-24);background:var(--surface-raised);color:var(--pill-cyan);padding:0 var(--space-8);font-size:var(--web-history-pill-size);font-family:var(--font-numbers),var(--font-body),sans-serif;white-space:nowrap}.crash-ui .pill.tier-success{color:var(--pill-success)}.crash-ui .pill.tier-purple{color:var(--pill-purple)}.crash-ui .pill.tier-gold{color:var(--pill-gold)}.crash-ui .bottom{position:absolute;left:var(--edge);right:var(--edge);bottom:max(var(--edge),var(--safe-area-bottom,env(safe-area-inset-bottom)));pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:var(--space-12)}/* The steps of a climbing round, beside the scene: the kit's panel, so a brand restyles it
    with everything else. It stands in the band the scene was given, clear of both panels. */
 .crash-ui .ladder{position:absolute;left:var(--edge);top:var(--scene-top,0);height:calc(var(--scene-bottom,100%) - var(--scene-top,0));display:flex;align-items:center;pointer-events:none}
 .crash-ui .ladder-list{list-style:none;margin:0;padding:var(--space-16) var(--space-12);display:grid;gap:var(--space-8);background:var(--surface);border:var(--stroke-1) solid var(--border);border-radius:var(--radius-24);box-shadow:var(--elevation-panel,none)}
@@ -495,9 +495,9 @@
 @media(max-width:__PHONE_MAX__px){
  .crash-ui{--edge:0;--control-h:var(--tap-min);--web-control-padding:var(--space-8);--web-control-row-gap:var(--space-6);--web-control-gap:var(--space-8)}
  .crash-ui .top{top:0;gap:0}
- .crash-ui .top .panel{border-radius:0 0 var(--radius-24) var(--radius-24);border-top:0;border-left:0;border-right:0;padding:calc(var(--space-8) + env(safe-area-inset-top)) var(--space-12) var(--space-8);box-shadow:var(--elevation-sheet)}
+ .crash-ui .top .panel{border-radius:0 0 var(--radius-24) var(--radius-24);border-top:0;border-left:0;border-right:0;padding:calc(var(--space-8) + var(--safe-area-top,env(safe-area-inset-top))) var(--space-12) var(--space-8);box-shadow:var(--elevation-sheet)}
  .crash-ui .bottom{bottom:0;gap:var(--space-8)}
- .crash-ui .controls{border-radius:var(--radius-24) var(--radius-24) 0 0;border-bottom:0;border-left:0;border-right:0;padding:var(--space-8) var(--space-8) calc(var(--space-8) + var(--web-control-depth) + env(safe-area-inset-bottom));box-shadow:var(--elevation-sheet-up)}
+ .crash-ui .controls{border-radius:var(--radius-24) var(--radius-24) 0 0;border-bottom:0;border-left:0;border-right:0;padding:var(--space-8) var(--space-8) calc(var(--space-8) + var(--web-control-depth) + var(--safe-area-bottom,env(safe-area-inset-bottom)));box-shadow:var(--elevation-sheet-up)}
  .crash-ui .account{gap:var(--space-8)}
  .crash-ui .top .identity strong{font-size:var(--type-16)}
  .crash-ui .top .identity{min-height:var(--web-compact-row-height)}
@@ -525,7 +525,7 @@
  .crash-ui .bet-quote{font-size:var(--type-12)}
  .crash-ui .bet-quote strong{font-size:var(--type-16)}
  .crash-ui .bet-receipt{min-height:var(--space-24)}
- .crash-ui .controls.multi-bet-controls{padding:var(--space-8) var(--space-8) calc(var(--space-8) + var(--web-control-depth) + env(safe-area-inset-bottom))}
+ .crash-ui .controls.multi-bet-controls{padding:var(--space-8) var(--space-8) calc(var(--space-8) + var(--web-control-depth) + var(--safe-area-bottom,env(safe-area-inset-bottom)))}
  .crash-ui .dev{top:var(--dev-top,var(--web-dev-top-phone))}
 }
 
@@ -588,7 +588,7 @@
 .crash-ui .modal-footer .button[aria-pressed=true]{color:var(--on-go);border-color:var(--action-go-edge);background:linear-gradient(var(--action-go-top),var(--action-go-bottom));box-shadow:inset 0 0 0 var(--stroke-2) color-mix(in srgb,var(--action-go-edge) calc(var(--alpha-soft) * 100%),transparent),0 var(--web-control-depth) 0 var(--action-go-shadow)}
 .crash-ui .modal-footer .button[aria-pressed=true]:active{transform:translateY(var(--web-control-depth));box-shadow:inset 0 0 0 var(--stroke-2) color-mix(in srgb,var(--action-go-edge) calc(var(--alpha-soft) * 100%),transparent)}
 @media(max-width:__PHONE_MAX__px){
- .crash-ui .modal-layer.is-tab-view{padding:var(--space-8);padding-top:max(var(--space-16),env(safe-area-inset-top));padding-bottom:max(var(--space-8),env(safe-area-inset-bottom))}
+ .crash-ui .modal-layer.is-tab-view{padding:var(--space-8);padding-top:max(var(--space-16),var(--safe-area-top,env(safe-area-inset-top)));padding-bottom:max(var(--space-8),var(--safe-area-bottom,env(safe-area-inset-bottom)))}
  .crash-ui .modal-layer.is-tab-view .modal{width:100%;max-width:100%;padding:var(--space-12)}
  .crash-ui .top-bets .bet-player{gap:var(--space-12)}
  .crash-ui .top-bets .avatar{width:var(--space-24);height:var(--space-24)}
@@ -599,7 +599,7 @@
 .crash-ui .modal-layer.is-tab-view .modal{min-height:0;width:100%;border:var(--stroke-1) solid var(--border);--modal-radius:var(--radius-48);border-radius:var(--modal-radius)}
 .crash-ui .is-tab-view>.modal-footer{min-width:0;padding:0 0 var(--web-button-depth)}
 @media(max-width:__PHONE_MAX__px){
- .crash-ui .modal-layer.is-tab-view{grid-template-columns:minmax(0,1fr);padding:var(--space-8);padding-top:calc(max(var(--space-8),env(safe-area-inset-top)) + var(--web-control-comfort-height) + var(--space-16));padding-bottom:max(var(--space-8),env(safe-area-inset-bottom))}
+ .crash-ui .modal-layer.is-tab-view{grid-template-columns:minmax(0,1fr);padding:var(--space-8);padding-top:calc(max(var(--space-8),var(--safe-area-top,env(safe-area-inset-top))) + var(--web-control-comfort-height) + var(--space-16));padding-bottom:max(var(--space-8),var(--safe-area-bottom,env(safe-area-inset-bottom)))}
  .crash-ui .modal-layer.is-tab-view .modal{--modal-radius:var(--radius-32)}
 }
 
@@ -626,8 +626,8 @@
  .crash-ui .modal-layer.is-context-panel .modal{left:calc(var(--edge) + var(--tabs-column) + 2 * var(--stroke-1) + var(--space-8));width:min(var(--modal-max-width-px),100% - 2 * var(--edge) - var(--tabs-column) - 2 * var(--stroke-1) - var(--space-8))}
 }
 @media(max-width:__PHONE_MAX__px){
- .crash-ui .modal-layer.is-context-panel .modal{left:var(--space-8);width:calc(100% - 2 * var(--space-8));top:calc(max(var(--space-8),env(safe-area-inset-top)) + var(--web-control-comfort-height) + var(--space-16))}
- .crash-ui .is-context-panel>.modal-footer{position:absolute;left:var(--space-8);right:var(--space-8);bottom:max(var(--space-8),env(safe-area-inset-bottom))}
+ .crash-ui .modal-layer.is-context-panel .modal{left:var(--space-8);width:calc(100% - 2 * var(--space-8));top:calc(max(var(--space-8),var(--safe-area-top,env(safe-area-inset-top))) + var(--web-control-comfort-height) + var(--space-16))}
+ .crash-ui .is-context-panel>.modal-footer{position:absolute;left:var(--space-8);right:var(--space-8);bottom:max(var(--space-8),var(--safe-area-bottom,env(safe-area-inset-bottom)))}
 }
 
 @media(min-width:__CRASH_MEDIUM_BREAKPOINT__px){
@@ -644,7 +644,7 @@
  .crash-ui .tabbed-controls .tabs .tab,.crash-ui .modal-layer .modal-footer .tab{height:var(--web-control-comfort-height);min-height:var(--web-control-comfort-height);border-radius:var(--radius-24);border-width:var(--stroke-1);box-shadow:inset 0 0 0 var(--stroke-2) color-mix(in srgb,var(--button-edge) calc(var(--alpha-faint) * 100%),transparent),0 var(--web-control-depth) 0 var(--button-side)}
  .crash-ui .tabbed-controls .tabs .tab[aria-pressed=true],.crash-ui .modal-layer .modal-footer .tab[aria-pressed=true]{box-shadow:inset 0 0 0 var(--stroke-2) color-mix(in srgb,var(--action-go-edge) calc(var(--alpha-soft) * 100%),transparent),0 var(--web-control-depth) 0 var(--action-go-shadow)}
  .crash-ui .modal-layer.is-tab-view>.modal-footer{position:fixed;left:var(--tabs-anchor-left);top:var(--tabs-anchor-top);right:auto;bottom:auto;width:var(--tabs-anchor-width);height:var(--tabs-anchor-height);padding:0;transform:none}
- .crash-ui .modal-layer.is-tab-view .modal{position:absolute;top:calc(max(var(--space-8),env(safe-area-inset-top)) + var(--web-control-comfort-height) + var(--space-16));bottom:calc(100% - var(--tabs-anchor-top) + var(--space-8));left:var(--edge);width:calc(100% - 2 * var(--edge));height:auto}
+ .crash-ui .modal-layer.is-tab-view .modal{position:absolute;top:calc(max(var(--space-8),var(--safe-area-top,env(safe-area-inset-top))) + var(--web-control-comfort-height) + var(--space-16));bottom:calc(100% - var(--tabs-anchor-top) + var(--space-8));left:var(--edge);width:calc(100% - 2 * var(--edge));height:auto}
 }
 
 /* Bet rows open an in-panel detail view; typography and surfaces follow the brand. */
@@ -711,7 +711,7 @@
 .crash-ui.has-tabbed-controls .account-column,.crash-ui.has-tabbed-controls .account{width:100%;max-width:none;margin:0}
 /* The header already supplies the 16px inset above history. */
 .crash-ui.has-tabbed-controls .account-column{gap:0}
-.crash-ui.has-tabbed-controls .account.panel{border-radius:0;border-top:0;border-inline:0;padding:var(--space-12) var(--space-16);padding-top:max(var(--space-12),env(safe-area-inset-top));padding-left:max(var(--space-16),env(safe-area-inset-left));padding-right:max(var(--space-16),env(safe-area-inset-right))}
+.crash-ui.has-tabbed-controls .account.panel{border-radius:0;border-top:0;border-inline:0;padding:var(--space-12) var(--space-16);padding-top:max(var(--space-12),var(--safe-area-top,env(safe-area-inset-top)));padding-left:max(var(--space-16),var(--safe-area-left,env(safe-area-inset-left)));padding-right:max(var(--space-16),var(--safe-area-right,env(safe-area-inset-right)))}
 
 /* Floating header controls, with the game visible through the header itself. */
 .crash-ui.has-tabbed-controls .account.panel{background:transparent;border:0;box-shadow:none}
@@ -726,7 +726,7 @@
 .crash-ui.has-tabbed-controls .profile .balance>.icon{order:1;width:var(--type-20);height:var(--type-20)}
 .crash-ui.has-tabbed-controls .profile .balance .money{font-size:var(--type-20);white-space:nowrap;min-width:0}
 @media(max-width:__PHONE_MAX__px){
- .crash-ui.has-tabbed-controls .account.panel{padding-inline:var(--space-8);padding-left:max(var(--space-8),env(safe-area-inset-left));padding-right:max(var(--space-8),env(safe-area-inset-right))}
+ .crash-ui.has-tabbed-controls .account.panel{padding-inline:var(--space-8);padding-left:max(var(--space-8),var(--safe-area-left,env(safe-area-inset-left)));padding-right:max(var(--space-8),var(--safe-area-right,env(safe-area-inset-right)))}
 }
 
 /* The tabbed header menu is a single action anchored below its trigger. */
@@ -813,9 +813,9 @@
 
 /* One inset for the floating header, history and side navigation. */
 .crash-ui.has-tabbed-controls{--shell-inset:var(--space-16)}
-.crash-ui.has-tabbed-controls .account-column .history{padding-left:max(var(--shell-inset),env(safe-area-inset-left));padding-right:max(var(--shell-inset),env(safe-area-inset-right))}
+.crash-ui.has-tabbed-controls .account-column .history{padding-left:max(var(--shell-inset),var(--safe-area-left,env(safe-area-inset-left)));padding-right:max(var(--shell-inset),var(--safe-area-right,env(safe-area-inset-right)))}
 @media(min-width:__CRASH_MEDIUM_BREAKPOINT__px){
- .crash-ui.has-tabbed-controls .tabbed-controls .tabs,.crash-ui.has-tabbed-controls .is-tab-view>.modal-footer{left:max(var(--shell-inset),env(safe-area-inset-left))}
+ .crash-ui.has-tabbed-controls .tabbed-controls .tabs,.crash-ui.has-tabbed-controls .is-tab-view>.modal-footer{left:max(var(--shell-inset),var(--safe-area-left,env(safe-area-inset-left)))}
 }
 @media(max-width:__PHONE_MAX__px){
  .crash-ui.has-tabbed-controls{--shell-inset:var(--space-8)}
@@ -883,6 +883,10 @@
 
 /* Equal outer content padding on all four sides. */
 .crash-ui.has-tabbed-controls .panel:not(.navigation-only){padding:var(--space-16)}
+/* Except where a panel meets the screen's edge: there the notch, the home indicator or the
+   host app's bars (--safe-area-*, set by host.js) take the room they need. */
+.crash-ui.has-tabbed-controls .top .account.panel:not(.navigation-only){padding-top:max(var(--space-16),var(--safe-area-top,env(safe-area-inset-top)));padding-left:max(var(--space-16),var(--safe-area-left,env(safe-area-inset-left)));padding-right:max(var(--space-16),var(--safe-area-right,env(safe-area-inset-right)))}
+.crash-ui.has-tabbed-controls .bottom .tabbed-controls:not(.navigation-only){padding-bottom:max(var(--space-16),var(--safe-area-bottom,env(safe-area-inset-bottom)))}
 .crash-ui.has-tabbed-controls .modal-layer .modal:not(:has(.bets-table)){padding:var(--space-16)}
 .crash-ui.has-tabbed-controls .modal-layer .modal:has(.bets-table){padding-top:var(--space-16)}
 
@@ -974,7 +978,7 @@
 .crash-ui.has-tabbed-controls .modal-layer .modal>header .icon-button:active{transform:translateY(var(--web-control-depth));box-shadow:inset 0 0 0 var(--stroke-2) color-mix(in srgb,var(--button-edge) calc(var(--alpha-faint) * 100%),transparent),0 var(--stroke-1) 0 var(--button-shadow)}
 /* Window header glyphs match the game header's: 24 in a 44 button. */
 .crash-ui.has-tabbed-controls .modal-layer .modal>header .icon{display:block;width:var(--space-24);height:var(--space-24)}
-.crash-ui.has-menu-drawer .is-menu-drawer .modal-body{display:block;flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom);scrollbar-gutter:stable}
+.crash-ui.has-menu-drawer .is-menu-drawer .modal-body{display:block;flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding-bottom:var(--safe-area-bottom,env(safe-area-inset-bottom));scrollbar-gutter:stable}
 .crash-ui.has-menu-drawer .drawer-tabs{display:flex;align-items:stretch;gap:var(--space-2);flex:none;padding:var(--space-4);border:var(--stroke-1) solid var(--border);border-radius:var(--radius-pill);background:color-mix(in srgb,var(--text) 4%,var(--surface))}
 .crash-ui.has-menu-drawer .modal.is-bet-detail .drawer-tabs{display:none}
 .crash-ui.has-menu-drawer .drawer-tab{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;flex:1 1 auto;height:max(var(--tap-min),calc(var(--type-12) * var(--leading-tight) * 2 + var(--space-8)));min-height:var(--tap-min);padding:var(--space-4) var(--space-2);font-size:var(--type-12);line-height:var(--leading-tight);text-align:center;white-space:normal;overflow-wrap:normal;appearance:none;border:0;border-radius:var(--radius-pill);background:transparent;color:var(--text-muted);box-shadow:none;transition:background var(--motion-fast-ms),color var(--motion-fast-ms)}
@@ -982,7 +986,7 @@
 .crash-ui.has-menu-drawer .drawer-tab[aria-selected=true]{background:color-mix(in srgb,var(--action-go) 14%,var(--surface));color:var(--action-go)}
 .crash-ui.has-menu-drawer .drawer-tab:focus-visible{outline-offset:calc(-1 * var(--stroke-3))}
 .crash-ui.has-menu-drawer .is-menu-drawer .modal-body>.button[data-action=refill]{width:100%;margin-top:var(--space-16)}
-@media(max-width:__PHONE_MAX__px){.crash-ui.has-menu-drawer .modal-layer.is-menu-drawer .modal{width:100%;padding:var(--space-16) max(var(--space-16),env(safe-area-inset-right)) max(var(--space-16),env(safe-area-inset-bottom)) max(var(--space-16),env(safe-area-inset-left))}}
+@media(max-width:__PHONE_MAX__px){.crash-ui.has-menu-drawer .modal-layer.is-menu-drawer .modal{width:100%;padding:var(--space-16) max(var(--space-16),var(--safe-area-right,env(safe-area-inset-right))) max(var(--space-16),var(--safe-area-bottom,env(safe-area-inset-bottom))) max(var(--space-16),var(--safe-area-left,env(safe-area-inset-left)))}}
 .crash-ui.has-menu-drawer .modal-layer.is-menu-drawer .modal:has(.bets-table){--table-inset:var(--space-24)}
 .crash-ui.has-menu-drawer .is-menu-drawer .modal-body:has(>.bets-table){margin-inline:calc(-1 * var(--table-inset));scrollbar-gutter:auto}
 @media(max-width:__PHONE_MAX__px){.crash-ui.has-menu-drawer .modal-layer.is-menu-drawer .modal:has(.bets-table){--table-inset:var(--space-16)}}
@@ -1092,6 +1096,9 @@
 @keyframes win-flip{from{transform:rotateY(0)}to{transform:rotateY(180deg)}}
 .crash-ui .win-toast strong{display:block;font-size:var(--type-12);white-space:nowrap;color:var(--text)}
 .crash-ui .win-toast span{display:block;color:var(--gold);font-family:var(--font-numbers),sans-serif;font-weight:700;font-size:var(--type-16);white-space:nowrap}
+/* The multiple beside the label stays on the label's line, in its type: it is a separate span only so
+   the label translates on its own. */
+.crash-ui .win-toast .win-multiple{display:inline;color:inherit;font:inherit}
 
 @keyframes win-toast-enter{0%{transform:translateX(-50%) scale(.5);opacity:0}60%{transform:translateX(-50%) scale(1.08);opacity:1}100%{transform:translateX(-50%) scale(1);opacity:1}}
 @keyframes win-toast-bloom{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
@@ -1102,6 +1109,14 @@
 
 @keyframes win-toast-exit{0%{transform:translateX(-50%) scale(1);opacity:1}30%{transform:translateX(-50%) scale(1.06);opacity:1}100%{transform:translateX(-50%) scale(.5);opacity:0}}
 .crash-ui .win-toast.is-leaving{animation:win-toast-exit var(--win-toast-motion) cubic-bezier(.4,0,1,1) both}
+/* The same toast in the middle of the screen, larger (config.winPresentation='center'): its own
+   motion and logic unchanged; the vertical centring rides on `translate`, beside the animations' transform. */
+.crash-ui .win-toast.is-center{top:50%;translate:0 -50%}
+.crash-ui .win-toast.is-center::before{inset:calc(-1 * var(--space-40));border-radius:var(--radius-48)}
+.crash-ui .win-toast.is-center .win-toast-card{border-radius:var(--radius-24);gap:var(--space-16);padding:var(--space-16) var(--space-32) var(--space-16) var(--space-24)}
+.crash-ui .win-toast.is-center .win-flip{width:var(--space-48);height:var(--space-48)}
+.crash-ui .win-toast.is-center .win-toast-card>div>strong{font-size:var(--type-16)}
+.crash-ui .win-toast.is-center .win-toast-card>div>span{font-size:var(--type-32)}
 
 /* The settings popover in the tabbed shell is a small card next to its button, not a panel:
    a panel's 32px corner and comfort-height rows made it look inflated. A card corner, one
@@ -1115,7 +1130,7 @@
    sides, 8px under the HUD row, 8px above the tabs, whose position the script reports as the
    tabs anchor. */
 @media(max-width:__PHONE_MAX__px){
- .crash-ui.has-tabbed-controls .modal-layer:is(.is-bets-panel,.is-rules-panel,.is-menu-drawer){padding:calc(max(var(--space-8),env(safe-area-inset-top)) + var(--web-control-comfort-height) + var(--space-8)) var(--space-4) calc(100dvh - var(--tabs-anchor-top,100dvh) + var(--space-8))}
+ .crash-ui.has-tabbed-controls .modal-layer:is(.is-bets-panel,.is-rules-panel,.is-menu-drawer){padding:calc(max(var(--space-8),var(--safe-area-top,env(safe-area-inset-top))) + var(--web-control-comfort-height) + var(--space-8)) var(--space-4) calc(100dvh - var(--tabs-anchor-top,100dvh) + var(--space-8))}
  .crash-ui.has-tabbed-controls .modal-layer:is(.is-bets-panel,.is-rules-panel,.is-menu-drawer) .modal{width:100%;height:100%}
 }
 
@@ -1298,3 +1313,45 @@
    translation is cut with an ellipsis there); the amount between the steps gives up the room
    down to what a few digits and the coin need. */
 .crash-ui .stake [data-action=min],.crash-ui .stake [data-action=max]{min-width:var(--tap-min);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-inline:var(--space-8)!important}
+
+/* A big win's celebration (ui.celebrate): the whole game, a tier colour that climbs BIG → MEGA → EPIC,
+   each drawn from the brand's roles (gold, success, cyan). */
+.crash-ui .big-win{--big-win-top:var(--action-go-edge);--big-win-mid:var(--gold);--big-win-low:var(--gold-strong);--big-win-ink:var(--action-go-shadow);--big-win-glow:var(--gold);--big-win-beat:calc(var(--motion-ms) * 4);position:fixed;inset:0;z-index:95;display:grid;place-items:center;overflow:hidden;cursor:pointer;pointer-events:auto;isolation:isolate;animation:big-win-in var(--motion-fast-ms) ease-out}
+/* The dim behind the celebration. */
+.crash-ui .big-win::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--big-win-glow) calc(var(--alpha-soft) * 100%),var(--scrim)),color-mix(in srgb,var(--shadow) calc(var(--alpha-bright) * 100%),var(--scrim)))}
+
+.crash-ui .big-win[data-tier=mega]{--big-win-top:var(--action-cash-edge);--big-win-mid:var(--success);--big-win-low:var(--action-cash-strong);--big-win-ink:var(--cash-shadow);--big-win-glow:var(--success)}
+.crash-ui .big-win[data-tier=epic]{--big-win-top:color-mix(in srgb,var(--cyan) 40%,var(--highlight));--big-win-mid:var(--cyan);--big-win-low:color-mix(in srgb,var(--cyan) 70%,var(--shadow));--big-win-ink:color-mix(in srgb,var(--cyan) 30%,var(--shadow));--big-win-glow:var(--cyan)}
+.crash-ui .big-win.is-leaving{animation:big-win-out calc(var(--motion-ms) * 1.75) ease-in forwards}
+@keyframes big-win-in{from{opacity:0}}
+@keyframes big-win-out{to{opacity:0}}
+.crash-ui .big-win-rays{position:absolute;left:50%;top:45%;width:calc(var(--space-40) * 16);height:calc(var(--space-40) * 16);margin:calc(var(--space-40) * -8) 0 0 calc(var(--space-40) * -8);border-radius:50%;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--big-win-glow) calc(var(--alpha-medium) * 100%),transparent) 0 9deg,transparent 9deg 18deg);mask:radial-gradient(circle,var(--shadow) 18%,transparent 66%);-webkit-mask:radial-gradient(circle,var(--shadow) 18%,transparent 66%);animation:big-win-turn calc(var(--motion-win-halo-ms) * 1.75) linear infinite}
+@keyframes big-win-turn{to{transform:rotate(360deg)}}
+.crash-ui .big-win-rain{position:absolute;inset:0;z-index:0;pointer-events:none}
+.crash-ui .big-win-drop{position:absolute;top:calc(var(--space-40) * -2);left:var(--x);width:var(--s);height:var(--s);object-fit:contain;filter:drop-shadow(0 var(--space-4) var(--space-6) color-mix(in srgb,var(--shadow) calc(var(--alpha-strong) * 100%),transparent));animation:big-win-fall var(--t) linear var(--d) infinite}
+@keyframes big-win-fall{to{transform:translateY(calc(100dvh + var(--space-40) * 4)) rotate(var(--r))}}
+.crash-ui .big-win-confetti{position:absolute;top:calc(var(--space-24) * -1);left:var(--x);width:var(--w);height:var(--h);border-radius:var(--radius-4);background:var(--c);opacity:0;animation:big-win-flutter var(--t) linear var(--d) infinite}
+@keyframes big-win-flutter{0%{opacity:1;transform:translate(0,0) rotate3d(1,.3,.2,0deg)}25%{transform:translate(var(--sway),25dvh) rotate3d(1,.3,.2,calc(var(--spin) * .25))}50%{transform:translate(calc(var(--sway) * -1),50dvh) rotate3d(1,.3,.2,calc(var(--spin) * .5))}75%{transform:translate(var(--sway),75dvh) rotate3d(1,.3,.2,calc(var(--spin) * .75))}100%{opacity:1;transform:translate(0,calc(100dvh + var(--space-40))) rotate3d(1,.3,.2,var(--spin))}}
+.crash-ui .big-win-card{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:var(--space-8);padding:0 var(--space-16);text-align:center;font-family:var(--font-body),sans-serif}
+/* A soft dark pool behind the words, so the game under the scrim and the rain never fight them. */
+.crash-ui .big-win-card::before{content:"";position:absolute;inset:calc(var(--space-40) * -1) calc(var(--space-24) * -1);z-index:-1;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--shadow) calc(var(--alpha-bright) * 100%),transparent),transparent)}
+/* The brand's faces may be variable fonts declared at one weight: the axis is set directly, so the
+   title and the amount are truly heavy rather than a thin face made bold by the browser. */
+.crash-ui .big-win-title{font-size:calc(var(--type-52) * var(--big-win-fit,1));font-weight:900;font-variation-settings:"wght" 900;line-height:1.05;letter-spacing:.02em;white-space:nowrap;background:linear-gradient(var(--big-win-top),var(--big-win-mid) 55%,var(--big-win-low));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 var(--space-4) 0 var(--big-win-ink));animation:big-win-pop var(--big-win-beat) cubic-bezier(.2,1.6,.4,1)}
+.crash-ui .big-win[data-tier=mega] .big-win-title{font-size:calc(var(--type-64) * var(--big-win-fit,1))}
+.crash-ui .big-win[data-tier=epic] .big-win-title{font-size:calc(var(--type-72) * var(--big-win-fit,1))}
+@keyframes big-win-pop{from{transform:scale(.3)}}
+.crash-ui .big-win-amount{font-family:var(--font-numbers),sans-serif;font-size:var(--type-52);font-weight:900;font-variation-settings:"wght" 900;font-variant-numeric:tabular-nums;color:var(--text);text-shadow:0 var(--space-4) 0 color-mix(in srgb,var(--shadow) calc(var(--alpha-strong) * 100%),transparent),0 0 var(--space-24) color-mix(in srgb,var(--big-win-glow) calc(var(--alpha-strong) * 100%),transparent)}
+.crash-ui .big-win.is-done .big-win-amount{animation:big-win-pop calc(var(--motion-ms) * 2.5) cubic-bezier(.2,1.6,.4,1)}
+.crash-ui .big-win-x{font-size:var(--type-16);font-weight:800;font-variation-settings:"wght" 800;color:var(--big-win-mid)}
+.crash-ui .big-win-tap{margin-top:var(--space-16);font-size:var(--type-12);letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+.crash-ui .big-win-flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--big-win-top) calc(var(--alpha-bright) * 100%),transparent),transparent 60%)}
+/* Climbing a tier: the title bursts, light flashes and the whole thing shakes. */
+.crash-ui .big-win.tier-up .big-win-title{animation:big-win-burst var(--big-win-beat) cubic-bezier(.2,1.6,.4,1)}
+.crash-ui .big-win.tier-up .big-win-flash{animation:big-win-flash var(--big-win-beat) ease-out}
+.crash-ui .big-win.tier-up .big-win-card{animation:big-win-shake calc(var(--motion-ms) * 3) ease-out}
+@keyframes big-win-burst{0%{transform:scale(.4) rotate(-6deg)}60%{transform:scale(1.18) rotate(2deg)}100%{transform:none}}
+@keyframes big-win-flash{0%{opacity:1}100%{opacity:0}}
+@keyframes big-win-shake{0%,100%{translate:0 0}20%{translate:calc(var(--space-8) * -1) var(--space-4)}40%{translate:var(--space-6) calc(var(--space-4) * -1)}60%{translate:calc(var(--space-4) * -1) var(--space-4)}80%{translate:var(--space-4) 0}}
+.crash-ui.reduced .big-win *,.crash-ui.reduced .big-win{animation:none!important}
+@media(prefers-reduced-motion:reduce){.crash-ui .big-win,.crash-ui .big-win *{animation:none!important}}

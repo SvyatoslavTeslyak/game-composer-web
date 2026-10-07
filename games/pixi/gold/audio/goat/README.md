@@ -1,13 +1,13 @@
 Gameplay sound effects generated with ElevenLabs Sound Effects v2 (`eleven_text_to_sound_v2`)
 on 2026-09-17, flow "Goat Gold SFX": https://elevenlabs.io/app/flows/quMkLZruiqbHHQUkIr5X
 
-Several takes per sound (`_0`, `_1`, …; counts in `LocalFeedback.GOAT_SFX`); one is picked at random with ±6% pitch.
+Several takes per sound (`_0`, `_1`, …; listed in `assets/audio/sounds.json`); one is picked at random with a little pitch variation.
 Post-processing: MP3 → 44.1 kHz mono 16-bit WAV (afconvert), leading/trailing silence
 trimmed at −40 dB, 4 ms fade-in, 60 ms fade-out, peak normalized to −1 dBFS, length capped.
 
 No goat voice is used anywhere in the game. Panel/UI sounds (tap, toggle, refill, HUD coins, win sting) are not here; they come from the UI kit.
 
-| Event | Trigger (scripts/game/gold_stage.gd) | Prompt |
+| Event | Trigger (src/scene/stage.ts) | Prompt |
 |---|---|---|
 | sack_creak | while fill > 0.25, every 3.2 → 1.1 s as the sack fills | Burlap sack stretching under heavy load, short rope creak and coarse fabric strain, close-mic, dry |
 | sack_rip | sack tears (crash); no goat voice on crash | Thick burlap sack ripping open, loud fast fabric tear with a seam popping, close-mic, dry |

@@ -2,7 +2,7 @@
   "version": 1,
   "game": "boom",
   "title": "Fruit Boom",
-  "owner": "LocalFeedback (scripts/systems/local_feedback.gd)",
+  "owner": "Audio (src/platform/audio.ts)",
   "events": [
     {
       "id": "slice",

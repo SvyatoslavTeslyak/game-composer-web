@@ -99,9 +99,9 @@
    document.querySelector('#modal-controls').hidden=false;
    document.querySelector('#control-variant').disabled=false;status.textContent=playable()?'Simulated data · '+window.ComposerTarget.entry().title:'Simulated data · shared UI kit';frame.src='game.html';return
   }
-  // Blank the frame first: a Godot export left running would keep its audio going under the next game.
+  // Blank the frame first: a game left running would keep its audio going under the next one.
   if(frame.src&&!frame.src.endsWith('about:blank')){frame.src='about:blank';await new Promise(r=>setTimeout(r,60));if(request!==generation)return}
-  status.textContent='Loading local web export…';
+  status.textContent='Loading local web build…';
   const custom=game()==='catch';
   document.querySelector('#control-variant').value=custom?'three-position':TABBED_GAMES.includes(game())&&engine()==='pixi'?'tabbed':'standard';document.querySelector('#control-variant').disabled=true;
   syncInspector();
@@ -115,7 +115,7 @@
    if(inRound())throw Error('Finish the current round and turn Auto off before changing mathematics.');
    if(live()&&instance()?.state.game){
     instance().send('preview_lock',{});
-    if(!instance().state.previewLocked)throw Error('Game did not confirm an idle round. Finish the round or rebuild its export.');
+    if(!instance().state.previewLocked)throw Error('Game did not confirm an idle round. Finish the round or rebuild the game.');
     frame.inert=true;
    }
    if(config)applied[key]=structuredClone(config);else delete applied[key];
@@ -127,7 +127,7 @@
  // Choosing a game means seeing that game, so Layout follows it to its web build.
  let deferred=false;
  function follow(){
-  // A game loading behind a hidden frame costs a Godot boot nobody asked for: wait for Layout.
+  // A game loading behind a hidden frame costs a boot nobody asked for: wait for Layout.
   if(frame.hidden){deferred=true;return}
   deferred=false;load();
  }
@@ -136,7 +136,7 @@
 window.addEventListener('composer-target',follow);
  window.addEventListener('composer-workspace',event=>{
   if(event.detail==='layout'||event.detail==='look'||event.detail==='translates'){if(deferred){deferred=false;load()}return}
-  // A Godot export behind a hidden frame keeps running, and keeps playing its audio.
+  // A game behind a hidden frame keeps running, and keeps playing its audio.
   if(!live()||frame.src.endsWith('about:blank'))return;
   if(inRound()){status.textContent='Round in progress · '+window.ComposerTarget.entry().title+' keeps running in the background.';return}
   clearInterval(timer);frame.src='about:blank';deferred=true;
@@ -169,7 +169,7 @@ window.addEventListener('composer-target',follow);
   const doc=frame.contentDocument;
   const style=doc.createElement('link');style.rel='stylesheet';style.href=new URL('inspection.css',location.href).href;doc.head.append(style);
   clearInterval(timer);let attempts=0;
-  timer=setInterval(()=>{if(instance()?.state.game){clearInterval(timer);presetSelect.disabled=!instance().setPresentationPreset;if(!presetSelect.disabled)applyPresentation();const m=instance().state.mathPreview;status.textContent=instance().state.api?'Live · Runner API'+(instance().state.currency?' · '+instance().state.currency:''):game()==='market_stack'?'Market Stack · skill prototype · demo credits':game()==='catch'?'Catch Clash · separate duel / crash model · test credits':m?.error||(applied[game()]?(m?.version===2&&Object.keys(applied[game()]).every(k=>m.rules?.[k]===applied[game()][k])?'Math preview · applied · test wallet · '+(applied[game()].rtp*100).toFixed(1)+'% target':'Math not acknowledged — rebuild the game export'):(m?.sandbox?'Isolated test wallet':''))}else if(++attempts>=600){clearInterval(timer);status.textContent='Game is taking longer to load. Check the web export.'}},100);
+  timer=setInterval(()=>{if(instance()?.state.game){clearInterval(timer);presetSelect.disabled=!instance().setPresentationPreset;if(!presetSelect.disabled)applyPresentation();const m=instance().state.mathPreview;status.textContent=instance().state.api?'Live · Runner API'+(instance().state.currency?' · '+instance().state.currency:''):game()==='market_stack'?'Market Stack · skill prototype · demo credits':game()==='catch'?'Catch Clash · separate duel / crash model · test credits':m?.error||(applied[game()]?(m?.version===2&&Object.keys(applied[game()]).every(k=>m.rules?.[k]===applied[game()][k])?'Math preview · applied · test wallet · '+(applied[game()].rtp*100).toFixed(1)+'% target':'Math not acknowledged — rebuild the game'):(m?.sandbox?'Isolated test wallet':''))}else if(++attempts>=600){clearInterval(timer);status.textContent='Game is taking longer to load. Check its web build.'}},100);
  });
  window.addEventListener('DOMContentLoaded',follow);
 })();

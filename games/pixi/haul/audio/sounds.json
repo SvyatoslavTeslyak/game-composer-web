@@ -2,7 +2,7 @@
   "version": 1,
   "game": "haul",
   "title": "Big Haul",
-  "owner": "LocalFeedback (scripts/systems/local_feedback.gd)",
+  "owner": "Audio (src/platform/audio.ts)",
   "events": [
     {
       "id": "motor",

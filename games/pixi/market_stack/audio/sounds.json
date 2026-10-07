@@ -2,7 +2,7 @@
   "version": 1,
   "game": "market_stack",
   "title": "Market Stack",
-  "owner": "LocalFeedback (scripts/systems/local_feedback.gd)",
+  "owner": "src/platform/audio.ts (Audio). The kit plays its own button, cash-out and win sounds.",
   "events": [
     {
       "id": "hit",
@@ -41,7 +41,7 @@
     {
       "id": "win",
       "label": "Payout",
-      "trigger": "Cash out is collected (native builds; the browser UI plays its own jingle).",
+      "trigger": "Cash out is collected. The game leaves it silent: the browser UI plays its own jingle.",
       "volume_db": -7.0,
       "pitch_jitter": 0.0,
       "generator": "ElevenLabs eleven_text_to_sound_v2",
