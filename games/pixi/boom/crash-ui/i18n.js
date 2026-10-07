@@ -3,8 +3,12 @@
 'use strict';
 const base=new URL('.',document.currentScript.src), version=new URL(document.currentScript.src).search, originals=new WeakMap(), listeners=new Set();
 let locale='en',catalog={entries:{}},overrides={},game='',revision=0,observer,scheduled=false,draftActive=false,index=new Map(),patterns=[];
-try{locale=new URLSearchParams(location.search).get('lang')||localStorage.getItem('crash-language')||'en'}catch{}
+// The last ?lang= wins: an app appends its own to a link that may already carry one.
+try{locale=new URLSearchParams(location.search).getAll('lang').pop()||localStorage.getItem('crash-language')||'en'}catch{}
 if(!['en','fr','ht'].includes(locale))locale='en';
+// The host may set how numbers are written (?numberLocale=es-ES) apart from the language.
+let numberLocale='';
+try{const value=new URLSearchParams(location.search).get('numberLocale');if(value&&Intl.NumberFormat.supportedLocalesOf(value).length)numberLocale=value}catch{}
 const escape=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 function rebuild(){index=new Map();patterns=[];for(const [key,entry] of Object.entries(catalog.entries)){
  if(game&&entry.games?.length&&!entry.games.includes(game))continue;
@@ -141,7 +145,7 @@ function changed(){revision++;document.documentElement.lang=locale;translate();f
 function setLanguage(value){locale=['en','fr','ht'].includes(value)?value:'en';try{localStorage.setItem('crash-language',locale)}catch{}changed()}
 function setDraft(data){draftActive=true;catalog=data.catalog||catalog;overrides=data.overrides||{};rebuild();changed()}
 async function setGame(id){if(!id||id===game)return;game=id;rebuild();changed();if(/(?:^|\/)(?:demo|game)\.html$/.test(location.pathname))return;const current=id;try{const r=await fetch(new URL('../locales/overrides.json',base));if(r.ok&&current===game&&!draftActive){overrides=(await r.json()).entries||{};rebuild();changed()}}catch{}}
-const api={t,markdown,rulesDocument,highlight,describe,reveal,setLanguage,setDraft,setGame,translate,get locale(){return locale},get revision(){return revision},get catalog(){return catalog},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn)},number(value,options={}){return new Intl.NumberFormat(locale==='fr'?'fr-FR':'en-US',options).format(value)}};
+const api={t,markdown,rulesDocument,highlight,describe,reveal,setLanguage,setDraft,setGame,translate,get locale(){return locale},get numberLocale(){return numberLocale},get revision(){return revision},get catalog(){return catalog},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn)},number(value,options={}){return new Intl.NumberFormat(numberLocale||(locale==='fr'?'fr-FR':'en-US'),options).format(value)}};
 window.CrashI18n=api;
 // Any embedding site can select a supported language, but only our immediate
 // parent may do so. Editable dictionaries remain restricted to same-origin Composer.
