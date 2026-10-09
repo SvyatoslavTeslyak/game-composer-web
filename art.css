@@ -112,3 +112,5 @@
 .art-prompt-text{margin:0;padding:var(--space-16);background:var(--inspector-well);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--space-8);font-size:var(--inspector-type-md);line-height:1.6;white-space:pre-wrap;user-select:text}
 .art-prompt-text mark,.art-prompt-note mark{background:color-mix(in srgb,var(--inspector-accent) calc(var(--alpha-faint) * 100%),transparent);color:var(--inspector-accent);font-weight:600;border-radius:var(--space-4);padding:0 var(--space-4)}
 .art-prompt-note{margin:0;font-size:var(--inspector-type-sm);color:var(--inspector-muted)}
+.art-link{color:var(--inspector-accent);font-weight:600;text-decoration:underline;text-underline-offset:var(--stroke-2)}
+.art-link:hover{text-decoration-thickness:var(--stroke-2)}

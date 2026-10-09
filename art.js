@@ -41,25 +41,22 @@ function layer(source,brand,theme,create=false){
 const groupSlots=(group)=>catalog.slots.filter(s=>s.group===group);
 // A group that must change whole (the hero's clips) is drawn from a layer only when that layer has
 // every one of them, as the game decides (src/platform/skins.ts in a game).
-// A slot such a group may leave out (the hero's second idle) shows the same layer's fallback.
 function picked(source,brand,theme,slot){
  const own=layer(source,brand,theme),group=catalog.groups?.find(g=>g.id===slot.group);
- const picture=own[slot.id]||(slot.optional&&own[slot.fallback])||null;
- if(!picture)return null;
- if(group?.together&&!groupSlots(group.id).every(s=>s.optional||own[s.id]))return null;
- return {picture,repeats:!own[slot.id]};
+ if(!own[slot.id])return null;
+ if(group?.together&&!groupSlots(group.id).every(s=>own[s.id]))return null;
+ return {picture:own[slot.id]};
 }
 /** What the stage shows for one slot: where its picture comes from, and the picture. */
 function shown(slot,source=art){
  const {brand,theme}=look();
  const found=theme&&picked(source,brand,theme,slot);if(found)return {from:'theme',...found};
  const tenant=picked(source,brand,'',slot);if(tenant)return {from:'tenant',...tenant};
- return {from:'game',picture:null,repeats:false};
+ return {from:'game',picture:null};
 }
 /** The card's word for where its picture comes from. */
-function source(slot,{from,repeats}){
- const {theme}=look(),base={theme:'This theme',tenant:theme?'From the tenant':'This tenant',game:'Game’s own'}[from];
- return repeats?base+' · repeats '+(catalog.slots.find(s=>s.id===slot.fallback)?.title||'its fallback'):base;
+function source(slot,{from}){
+ return {theme:'This theme',tenant:look().theme?'From the tenant':'This tenant',game:'Game’s own'}[from];
 }
 const pictureUrl=(slot,picture)=>picture?editors().artUrl(picture.media):buildUrl(game(),slot.file);
 
@@ -85,6 +82,16 @@ function spec(slot){
 // The prompt as the game wrote it, the part a tenant changes marked; copied without the brackets.
 const promptHTML=text=>esc(text).replace(/\[([^\]]+)\]/g,'<mark>$1</mark>');
 const promptText=text=>text.replace(/\[([^\]]+)\]/g,'$1');
+// A text from the game's catalog, escaped, with every tool the catalog links (`links`: name → https
+// address) turned into a link to it.
+function linked(text){
+ let html=esc(text);
+ for(const [name,url] of Object.entries(catalog?.links||{})){
+  if(!/^https:\/\//.test(url))continue;
+  html=html.split(esc(name)).join('<a class="art-link" href="'+esc(url)+'" target="_blank" rel="noopener">'+esc(name)+'</a>');
+ }
+ return html;
+}
 
 // --- Drawing --------------------------------------------------------------------------------
 
@@ -101,14 +108,12 @@ function render(){
   +(!editors()?.enabled?'<small class="sound-warn">Sign in to the shared workspace to add pictures.</small>':!canEdit()?'<small class="sound-warn">Your role can look at these pictures but not change them.</small>':'')
   +(note.text?'<small id="art-message" role="status" class="'+(note.error?'sound-error':'sound-busy')+'">'+esc(note.text)+'</small>':'<small id="art-message" role="status"></small>')
   +'</div>';
- const guide=(catalog.guide||[]).length?'<details class="art-guide"><summary>How to make the pictures</summary>'+catalog.guide.map(section=>'<h3>'+esc(section.title)+'</h3><ul>'+(section.lines||[]).map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul>').join('')+'</details>':'';
+ const guide=(catalog.guide||[]).length?'<details class="art-guide"><summary>How to make the pictures</summary>'+catalog.guide.map(section=>'<h3>'+esc(section.title)+'</h3><ul>'+(section.lines||[]).map(line=>'<li>'+linked(line)+'</li>').join('')+'</ul>').join('')+'</details>':'';
  const groups=(catalog.groups||[]).map(group=>{
   const slots=groupSlots(group.id);if(!slots.length)return '';
   const own=layer(art,look().brand,theme),count=slots.filter(s=>own[s.id]).length;
-  const required=slots.filter(s=>!s.optional),have=required.filter(s=>own[s.id]).length,optional=slots.filter(s=>s.optional);
-  const names=list=>list.map(s=>s.title).join(', ');
-  const spare=optional.length?' '+esc(names(optional))+' is optional: without it the '+esc(group.title.toLowerCase())+' repeats '+esc(names(optional.map(s=>catalog.slots.find(x=>x.id===s.fallback)).filter(Boolean)))+'.':'';
-  const whole=group.together&&have>0&&have<required.length?'<p class="art-note sound-warn">'+have+' of '+required.length+' needed added. The game keeps drawing '+(theme?'the tenant’s':'its own')+' '+esc(group.title.toLowerCase())+' until '+esc(names(required))+' are all here.'+spare+'</p>':group.together?'<p class="art-note">Replace '+esc(names(required))+' together: the game never mixes two sets.'+spare+'</p>':'';
+  const names=esc(slots.map(s=>s.title).join(', '));
+  const whole=group.together&&count>0&&count<slots.length?'<p class="art-note sound-warn">'+count+' of '+slots.length+' added. The game keeps drawing '+(theme?'the tenant’s':'its own')+' '+esc(group.title.toLowerCase())+' until '+names+' are all here.</p>':group.together?'<p class="art-note">Replace '+names+' together: the game never mixes two sets.</p>':'';
   return '<details class="art-group" open><summary>'+esc(group.title)+'<small>'+count+' of '+slots.length+' here</small></summary>'+whole+clipsPanel(group)+'<ul class="art-grid">'+slots.map(row).join('')+'</ul></details>';
  }).join('');
  controls.innerHTML=head+guide+groups;
@@ -238,7 +243,7 @@ function rebuild(group){
  const w=work(group.id),kit=clipsKit(),spec=group.clips;w.sheets={};w.missing=[];
  for(const clip of spec.list){
   const got=w.clips[clip.id];
-  if(!got){if(!clip.optional)w.missing.push('Upload '+clip.title.replace(/^\d+\.\s*/,'')+'.');continue}
+  if(!got){w.missing.push('Upload '+clip.title.replace(/^\d+\.\s*/,'')+'.');continue}
   if(clip.slot){const slot=slotById(clip.slot);w.sheets[slot.id]=kit.sheet(kit.spread(got.frames,slot.sheet.frames),cellCanvas(slot));continue}
   const reference=spec.list.find(c=>c.id===clip.match),refGot=reference&&w.clips[reference.id];
   if(!refGot){w.missing.push(clip.title.replace(/^\d+\.\s*/,'')+' is matched to '+reference.title.replace(/^\d+\.\s*/,'')+': upload that one too.');continue}
@@ -269,21 +274,21 @@ function clipsPanel(group){
  const w=work(group.id),{theme}=look(),t=lookTitles();
  const step=(title,body)=>'<li class="art-step"><h4>'+esc(title)+'</h4>'+body+'</li>';
  const prompt=(text,key)=>'<div class="art-step-prompt"><p>'+promptHTML(text)+'</p><button class="art-button" type="button" data-clip-copy="'+esc(group.id+':'+key)+'">Copy prompt</button></div>';
- const settings=text=>text?'<p class="art-step-settings">'+esc(text)+'</p>':'';
+ const settings=text=>text?'<p class="art-step-settings">'+linked(text)+'</p>':'';
  let steps=step(spec.still.title,prompt(spec.still.prompt,'still')+settings(spec.still.settings));
- if(spec.padded)steps+=step(spec.padded.title,'<p class="art-step-settings">'+esc(spec.padded.about)+'</p><div class="art-step-row"><label class="art-button">'+(w.padded?'Make it again':'Make the padded copy')+'<input type="file" accept="image/png,image/webp,.png,.webp" data-clip-pad="'+esc(group.id)+'" hidden></label>'+(w.padded?'<a class="art-button art-primary" href="'+w.padded+'" download="padded-still.png">Download the padded copy</a>':'')+'</div>');
+ if(spec.padded)steps+=step(spec.padded.title,'<p class="art-step-settings">'+linked(spec.padded.about)+'</p><div class="art-step-row"><label class="art-button">'+(w.padded?'Make it again':'Make the padded copy')+'<input type="file" accept="image/png,image/webp,.png,.webp" data-clip-pad="'+esc(group.id)+'" hidden></label>'+(w.padded?'<a class="art-button art-primary" href="'+w.padded+'" download="padded-still.png">Download the padded copy</a>':'')+'</div>');
  for(const clip of spec.list){
   const got=w.clips[clip.id];
   steps+=step(clip.title,prompt(clip.prompt,clip.id)+settings(clip.settings)
    +'<div class="art-step-row"><label class="art-button'+(got?'':' art-primary')+'">'+(got?'Replace the clip':'Upload the clip')+'<input type="file" accept=".webp,.gif,image/webp,image/gif" data-clip="'+esc(group.id)+':'+esc(clip.id)+'" hidden></label>'+(got?'<small>'+esc(got.name)+' · '+got.frames.length+' frames</small>':'')+'</div>'
    +(got&&clip.split?picker(clip,got,w):''));
  }
- const targets=groupSlots(group.id).filter(slot=>w.sheets[slot.id]),ready=groupSlots(group.id).every(slot=>slot.optional||w.sheets[slot.id]);
+ const targets=groupSlots(group.id),ready=targets.every(slot=>w.sheets[slot.id]);
  const result=Object.keys(w.sheets).length||w.missing.length?'<div class="art-made"><h4>The sheets these clips make</h4>'
-  +'<ul class="art-made-list">'+groupSlots(group.id).map(slot=>'<li><canvas class="art-anim" width="120" height="120" data-anim="'+esc(slot.id)+'"></canvas><strong>'+esc(slot.title)+'</strong><small>'+(w.sheets[slot.id]?px(cell(slot),cell(slot))+' frames · '+slot.sheet.frames:slot.optional?'Optional: repeats '+esc(catalog.slots.find(s=>s.id===slot.fallback)?.title||''):'Not made yet')+'</small></li>').join('')+'</ul>'
+  +'<ul class="art-made-list">'+targets.map(slot=>'<li><canvas class="art-anim" width="120" height="120" data-anim="'+esc(slot.id)+'"></canvas><strong>'+esc(slot.title)+'</strong><small>'+(w.sheets[slot.id]?px(cell(slot),cell(slot))+' frames · '+slot.sheet.frames:'Not made yet')+'</small></li>').join('')+'</ul>'
   +(w.missing.length?'<ul class="art-missing">'+w.missing.map(m=>'<li>'+esc(m)+'</li>').join('')+'</ul>':'')
   +(canEdit()?'<button class="art-button art-primary art-save" type="button" data-clip-save="'+esc(group.id)+'"'+(ready&&!busy?'':' disabled')+'>Save the '+targets.length+' sheets for '+esc(theme?'the '+t.theme+' theme':t.brand)+'</button>':'')+'</div>':'';
- return '<section class="art-clips"><details'+(Object.keys(w.clips).length||w.padded?' open':'')+'><summary>Make the '+esc(group.title.toLowerCase())+' in '+esc(spec.tool)+'</summary><p class="art-step-settings">'+esc(spec.about)+'</p><ol class="art-steps">'+steps+'</ol>'+result+'</details></section>';
+ return '<section class="art-clips"><details'+(Object.keys(w.clips).length||w.padded?' open':'')+'><summary>Make the '+esc(group.title.toLowerCase())+' in '+esc(spec.tool)+'</summary><p class="art-step-settings">'+linked(spec.about)+'</p><ol class="art-steps">'+steps+'</ol>'+result+'</details></section>';
 }
 /** The made sheets play in their little windows at the game's speed. */
 function animate(){
@@ -297,19 +302,14 @@ function animate(){
  }
 }
 async function saveClips(group){
- const {brand,theme}=look(),g=game(),w=work(group.id),targets=groupSlots(group.id).filter(slot=>w.sheets[slot.id]);
+ const {brand,theme}=look(),g=game(),w=work(group.id),targets=groupSlots(group.id);
  return change(group.id,async()=>{
   const saved={};
   for(const slot of targets){
    const blob=await clipsKit().png(w.sheets[slot.id]);
    saved[slot.id]={media:await editors().uploadArt(g,{brand,theme,slot:slot.id},blob),name:slot.title+' (from clips)'};
   }
-  await editors().changeArt(g,draft=>{
-   // The set replaces the group whole: an optional sheet these clips did not make goes, so an
-   // earlier hero's second idle never plays next to this one.
-   const own=layer(draft,brand,theme,true);for(const slot of groupSlots(group.id))delete own[slot.id];
-   Object.assign(own,saved);return draft;
-  });
+  await editors().changeArt(g,draft=>{Object.assign(layer(draft,brand,theme,true),saved);return draft});
  },'The '+group.title.toLowerCase()+'’s '+targets.length+' sheets saved in the draft for '+(theme?'this theme':'this tenant')+'. They reach players once released from Changes.');
 }
 async function clipInput(input){
