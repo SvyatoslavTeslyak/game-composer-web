@@ -88,8 +88,10 @@
  const syncDebug=()=>{const shown=DEBUG_GAMES.includes(game())&&engine()==='pixi';debugSection.hidden=!shown;debugSwitch.checked=debugPanel()};
  debugSwitch.onchange=()=>{try{localStorage.setItem(DEBUG_KEY,debugSwitch.checked?'1':'0')}catch{}load()};
  window.addEventListener('composer-target',syncDebug);window.addEventListener('composer-engine',syncDebug);
+ // A sound saved while the game kept running (a round was on) is heard only after a reload.
+ let soundsChanged=false;
  async function load(){
-  clearInterval(timer);const request=++generation;syncDebug();
+  soundsChanged=false;clearInterval(timer);const request=++generation;syncDebug();
   presetSelect.value=savedPreset();presetSelect.disabled=live();syncInspector();
   document.querySelectorAll('[data-placeholder-only]').forEach(row=>row.hidden=live());
 
@@ -134,8 +136,17 @@
  window.addEventListener('composer-engine',()=>load());
  window.addEventListener('lotomobil-session',()=>{if(game()==='road')load()});
 window.addEventListener('composer-target',follow);
+ window.addEventListener('composer-sounds-saved',()=>{soundsChanged=true});
+ window.ComposerLive={async reload(){
+  if(live()&&inRound()&&!await ask('Reload the game? The round in progress is dropped and the game starts again.'))return;
+  load();
+ }};
  window.addEventListener('composer-workspace',event=>{
-  if(event.detail==='layout'||event.detail==='look'||event.detail==='translates'){if(deferred){deferred=false;load()}return}
+  if(event.detail==='layout'||event.detail==='look'||event.detail==='translates'){
+   if(deferred){deferred=false;load()}
+   else if(soundsChanged&&live()&&!frame.src.endsWith('about:blank'))status.textContent='Sounds changed while this round was running · Reload game to hear them.';
+   return;
+  }
   // A game behind a hidden frame keeps running, and keeps playing its audio.
   if(!live()||frame.src.endsWith('about:blank'))return;
   if(inRound()){status.textContent='Round in progress · '+window.ComposerTarget.entry().title+' keeps running in the background.';return}
@@ -178,7 +189,12 @@ window.addEventListener('composer-target',follow);
 (()=>{
  const fit=document.querySelector('#fit'),frame=document.querySelector('#frame');
  const button=document.createElement('button');button.type='button';button.id='preview-fullscreen';button.className='wb-button';
- button.innerHTML=icon('fullscreen')+'<span>Full screen</span>';button.setAttribute('aria-pressed','false');fit.append(button);
+ button.innerHTML=icon('fullscreen')+'<span>Full screen</span>';button.setAttribute('aria-pressed','false');
+ // The game's own buttons sit together in the corner of the preview: Reload game (live.js above) and this one.
+ const actions=document.createElement('div');actions.id='preview-actions';
+ const reload=document.createElement('button');reload.type='button';reload.id='preview-reload';reload.className='wb-button';reload.title='Start the game again with the latest saved sounds, texts and look';
+ reload.innerHTML=icon('reload')+'<span>Reload game</span>';reload.onclick=()=>window.ComposerLive?.reload();
+ actions.append(reload,button);fit.append(actions);
  let full=false,native=false;
  function paint(on){full=on;fit.classList.toggle('preview-fullscreen',on);button.querySelector('span').textContent=on?'Minimize':'Full screen';button.setAttribute('aria-pressed',String(on));}
  async function exit(){paint(false);if(document.fullscreenElement===fit)await document.exitFullscreen().catch(()=>{});native=false;button.focus({preventScroll:true});}

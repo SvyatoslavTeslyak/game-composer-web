@@ -21,6 +21,9 @@ const current=()=>window.ComposerTarget.source();
 const sourceOf=id=>catalog()?.sources.find(s=>s.id===id)||null;
 const isGame=()=>current()?.build?.kind==='game';
 const gain=db=>Math.min(1,Math.pow(10,db/20));
+// A level reads as a share of full volume, which grows as the slider moves right; the decibels
+// stay beside it for whoever tunes the manifest. A bare "-10.0 dB" read as 10 going down.
+const levelText=db=>'<b>'+Math.round(100*Math.pow(10,db/20))+'%</b><small>'+(db<0?'−':db>0?'+':'')+Math.abs(db).toFixed(1)+' dB</small>';
 const baseName=file=>file.split('/').pop();
 function message(text,error=false){if(error)window.ComposerUX?.status('error',text);const node=$('#sound-message');if(node){node.textContent=text;node.classList.toggle('sound-error',error)}}
 
@@ -41,6 +44,9 @@ function adopt(){
  }
 }
 const events=sid=>drafts[sid]?.events||[];
+// A game's background music has its own group, apart from the scene's effects, so it is found at once.
+const isMusic=e=>e.group==='music'||/^music(_|$)/.test(e.id);
+const sceneEvents=own=>(own?.events||[]).filter(e=>e.group!=='interface'&&!e.runtime_unused);
 const eventAt=(sid,index)=>events(sid)[index];
 
 async function load(keepMessage=false){
@@ -57,12 +63,14 @@ async function load(keepMessage=false){
 
 function render(){
  const game=isGame(),own=drafts[targetId()],kit=drafts[KIT];
- if(!game||!own)group='interface';
+ if(!game||!own||(group==='music'&&!sceneEvents(own).some(isMusic)))group='interface';
+ const music=sceneEvents(own).filter(isMusic).length;
  const item=(id,label,count,disabled)=>'<button type="button" data-group="'+id+'" aria-pressed="'+(group===id)+'"'+(disabled?' disabled title="Pick a game to see its scene sounds"':'')+'><span>'+label+'</span>'+(count===null?'':'<small><b>'+count+'</b></small>')+'</button>';
  controls.innerHTML='<section class="panel-sec"><h3>Moments</h3><nav class="panel-nav" id="sound-groups" aria-label="Sound group">'
    +item('interface','Interface events',kit?kit.events.length:0,!kit)
    // The shared kit has no scene of its own, so the item is left out rather than greyed.
-   +(game?item('scene','Scene sounds',own?own.events.length:null,!own):'')
+   +(game?item('scene','Scene sounds',own?sceneEvents(own).length-music:null,!own):'')
+   +(game&&music?item('music','Music',music,false):'')
   +'</nav></section>'
   +'<section class="panel-sec"><h3>Find</h3><input id="sound-search" type="search" placeholder="Event name or description" aria-label="Find a sound"></section>'
   +(!window.ComposerDraftEditors?.enabled&&catalog().generation.available?'<section class="panel-sec"><small>Sound generation is available.</small></section>':'')
@@ -85,7 +93,10 @@ function sections(game,own){
  const indexed=sid=>events(sid).map((event,index)=>[event,index]);
  if(group==='scene'){
   if(!own)return '<p class="sound-note">This game has no assets/audio/sounds.json yet. Add one in the Fruit Boom format, have the game play its events from it, then reload.</p>';
-  return grid(targetId(),indexed(targetId()).filter(([e])=>e.group!=='interface'&&!e.runtime_unused));
+  return grid(targetId(),indexed(targetId()).filter(([e])=>e.group!=='interface'&&!e.runtime_unused&&!isMusic(e)));
+ }
+ if(group==='music'){
+  return grid(targetId(),indexed(targetId()).filter(([e])=>e.group!=='interface'&&!e.runtime_unused&&isMusic(e)));
  }
  const overrides=indexed(targetId()).filter(([e])=>e.group==='interface'),ids=new Set(overrides.map(([e])=>e.id));
  const kit=indexed(KIT).filter(([e])=>!ids.has(e.id)),named=kit.filter(([e])=>e.fallback),base=kit.filter(([e])=>!e.fallback);
@@ -114,7 +125,7 @@ function card(event,index,sid){
   +'<h3>'+esc(event.label||event.id)+'</h3>'
   +'<p class="sound-trigger">'+esc(event.trigger||'')+'</p>'
   +(silent?'<p class="sound-warn">No sound chosen: this event is silent.</p>':'')
-  +'<label class="sound-slider"><span>Volume</span><input type="range" data-volume min="-40" max="6" step="0.5" value="'+volume+'"><output>'+volume.toFixed(1)+' dB</output></label>'
+  +'<label class="sound-slider"><span>Volume</span><input type="range" data-volume min="-40" max="6" step="0.5" value="'+volume+'"><output>'+levelText(volume)+'</output></label>'
   +'<ol class="sound-takes">'+rows.map(row=>takeRow(event,row,sid,chosen)).join('')+'</ol>'
   +(canAddTake()?'<div class="sound-card-actions"><label class="sound-replace">Add a sound<input type="file" data-take-add accept="'+AUDIO_ACCEPT+'"></label></div>':'')
   +'<details class="sound-prompt"><summary>Details</summary>'
@@ -138,6 +149,18 @@ function takeRow(event,{take,pick,from},sid,chosen){
 }
 
 const engineId=()=>window.ComposerTarget.engine;
+// The game preview asks here for the sounds it should play (frame-sounds.js): the manifests the
+// way this page shows them, with the shared draft over the library. The kit's and the game's
+// requests at one boot share one catalog read.
+let previewCatalog=null;
+window.ComposerSoundPreview={
+ mediaUrl:path=>window.ComposerDraftEditors.mediaUrl(path),
+ manifest(kind){
+  const id=kind==='kit'?KIT:targetId();
+  if(!previewCatalog){previewCatalog=request('studio/catalog?engine='+encodeURIComponent(engineId()));setTimeout(()=>{previewCatalog=null},3000)}
+  return previewCatalog.then(data=>data.sources?.find(s=>s.id===id)?.manifest||null,()=>null);
+ }
+};
 const audioUrl=(file,sid)=>String(file).startsWith('media:')?window.ComposerDraftEditors.mediaUrl(String(file).slice(6)):window.ComposerHosting?.audioUrl(sid,file)||'studio/audio?source='+encodeURIComponent(sid)+'&engine='+encodeURIComponent(engineId())+'&file='+encodeURIComponent(file)+'&v='+stamp;
 // Durations load a few at a time with one retry; bursts of metadata requests fail intermittently.
 let probes=[],probing=0;
@@ -188,7 +211,7 @@ async function savePending(){
   await request('studio/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   if(JSON.stringify(events(sid))===submitted)dirty.delete(sid);
  }
- flagDirty();
+ flagDirty();window.dispatchEvent(new Event('composer-sounds-saved'));
  if(dirty.size){await savePending();return}
  if(window.ComposerDraftEditors?.enabled){message('Saved '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · in the shared draft. Send it from Changes.');return}
  message('Saved'+(isGame()&&pending.includes(targetId())?'. Rebuild the game to hear it there.':'.'));
@@ -212,7 +235,7 @@ async function addTake(sid,eventIndex,file){
  const event=eventAt(sid,eventIndex);
  message('Uploading '+file.name+'…');
  await request('studio/upload?source='+encodeURIComponent(sid)+'&engine='+encodeURIComponent(engineId())+'&event='+encodeURIComponent(event.id)+'&take='+event.takes.length,{method:'POST',headers:{'X-File-Name':encodeURIComponent(file.name),'Content-Type':'application/octet-stream'},body:file});
- await load(true);
+ await load(true);window.dispatchEvent(new Event('composer-sounds-saved'));
  message(window.ComposerDraftEditors?.enabled?'Added '+file.name+' to '+(event.label||event.id)+' · in the draft; it reaches players once released from Changes.':'Added a sound for '+event.id+(sid!==KIT?'. Rebuild the game so its build carries it.':'.'));
 }
 
@@ -240,7 +263,7 @@ report.addEventListener('click',event=>{
 report.addEventListener('input',event=>{
  const input=event.target;const card=input.closest('[data-event]');if(!card)return;
  const sid=card.dataset.source,sound=eventAt(sid,Number(card.dataset.event));
- if('volume' in input.dataset){sound.volume_db=Number(input.value);input.nextElementSibling.textContent=sound.volume_db.toFixed(1)+' dB';markDirty(sid)}
+ if('volume' in input.dataset){sound.volume_db=Number(input.value);input.nextElementSibling.innerHTML=levelText(sound.volume_db);markDirty(sid)}
  if('jitter' in input.dataset){sound.pitch_jitter=Number(input.value);input.nextElementSibling.textContent='±'+Math.round(sound.pitch_jitter*100)+'%';markDirty(sid)}
  if('prompt' in input.dataset){sound.prompt=input.value;markDirty(sid)}
 });
@@ -249,7 +272,11 @@ report.addEventListener('change',event=>{
  const input=event.target;const card=input.closest('[data-event]');if(!card)return;
  const sid=card.dataset.source,index=Number(card.dataset.event),sound=eventAt(sid,index);
  if(input.dataset.takeChoice!==undefined&&input.checked){const pick=Number(input.dataset.takeChoice);sound.takes.forEach((take,i)=>{take.enabled=i===pick});render();markDirty(sid)}
- if('takeAdd' in input.dataset&&input.files[0])addTake(sid,index,input.files[0]).catch(error=>message(error.message,true));
+ // A picked file is offered for compression first; the window hands back what to add, or nothing.
+ if('takeAdd' in input.dataset&&input.files[0]){
+  const picked=input.files[0];input.value='';stop();
+  window.ComposerSoundCompress.choose(picked,{label:sound.label||sound.id}).then(file=>file&&addTake(sid,index,file)).catch(error=>message(error.message,true));
+ }
 });
 
 window.addEventListener('composer-workspace',event=>{
@@ -258,6 +285,9 @@ window.addEventListener('composer-workspace',event=>{
 });
 // Switching the game switches the scene half; the dirty guard below already asked about unsaved work.
 window.addEventListener('composer-target',()=>{if(!loaded)return;stop();adopt();render();message('')});
+// A Discard in Changes: unsaved sound edits go without asking (the person just chose to discard),
+// and the catalog is read again with the draft as it is now.
+window.addEventListener('composer-draft-reset',()=>{if(!loaded)return;stop();dirty.clear();flagDirty();load(true)});
 // target.js refreshes the catalog on focus and after a rebuild; a clean draft follows it.
 window.addEventListener('composer-catalog',()=>{if(loaded&&!dirty.size){adopt();render()}});
 // Edits save themselves, so leaving only has to flush what is still waiting.

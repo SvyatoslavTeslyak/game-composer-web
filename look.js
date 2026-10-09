@@ -553,6 +553,9 @@ frame.addEventListener('load',()=>{if(catalog&&(!editing||window.ComposerTarget?
 window.addEventListener('composer-workspace',()=>{if(catalog&&sheet)placeEditor()});
 window.ComposerTarget.guard(()=>{if(gf.dirty){$('#game-fonts-note').textContent='Save or cancel the fonts before switching games.';$('#game-fonts-note').classList.add('sound-error');return false}if(dirty){say('Save or cancel your design edits before switching games.',true);return false}return true});
 window.addEventListener('composer-target',()=>{catalog=null;editing=false;clear();open().catch(e=>say(e.message,true))});
+// A Discard in Changes: open edits are dropped and the brands read again from the draft as it is
+// now, so the stage shows the kept look at once, without reloading Composer or the game.
+window.addEventListener('composer-draft-reset',()=>{dirty=false;gf.dirty=false;catalog=null;editing=false;clear();open().catch(e=>say(e.message,true))});
 // The Library gave a brand a family: the brands are read again so the cards and the stage show it.
 window.addEventListener('composer-brand-fonts',()=>{if(editing)return;catalog=null;open().catch(e=>say(e.message,true))});
 // Another tab (Library) can change a brand's faces; the pick is read again when it says so.

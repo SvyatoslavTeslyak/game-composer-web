@@ -192,7 +192,7 @@
 .tx-type-sec [data-text-type]{display:inline-flex;align-items:center;gap:5px}
 .tx-type-sec [data-text-type] .tx-kind-icon{width:13px;height:13px}
 /* Texts and Brands show the stage beside what is being edited; there is nothing to see full screen. */
-#room.translations-workspace #preview-fullscreen,body:has(#look-tab[aria-pressed=true]) #preview-fullscreen{display:none}
+#room.translations-workspace #preview-actions,body:has(#look-tab[aria-pressed=true]) #preview-actions{display:none}
 /* How the table works, said where it is used; the note above the preview speaks only about the picked text. */
 .translations-heading{flex-wrap:wrap;row-gap:4px}
 .tx-hint{flex-basis:100%;margin:2px 0 0;font-size:12px;color:var(--inspector-muted)}

@@ -129,7 +129,10 @@
   if(payload.audio){const data=await original('studio/catalog?engine=pixi');for(const [id,patch] of Object.entries(payload.audio)){const m=data.sources.find(s=>s.id===id)?.manifest;if(m){out._labels.events[id]=Object.fromEntries(m.events.map(e=>[e.id,e.label||e.id]));out.audio[id]={events:patch.events.map(c=>m.events.find(e=>e.id===c.id)).filter(Boolean).map(e=>({id:e.id,volume_db:e.volume_db??null,pitch_jitter:e.pitch_jitter||0,...('prompt' in e?{prompt:e.prompt}:{}),takes:e.takes.map(t=>({enabled:t.enabled!==false}))}))}}}}
   return out;
  }
- window.ComposerDraftEditors={get enabled(){return enabled()},baseline,applyAudio,mediaUrl,shared,sharedCatalog,comparisonCatalog,ownDesign,SHARED};
+ // After a Discard the cloud draft has gone back: the copies kept here would hand the editors the
+ // discarded values, so they are dropped and the next read fetches the draft as it is now.
+ function forget(g){for(const k of [...snapshots.keys()])if(k.startsWith(g+':')||k.startsWith(SHARED+':'))snapshots.delete(k)}
+ window.ComposerDraftEditors={get enabled(){return enabled()},baseline,applyAudio,mediaUrl,shared,sharedCatalog,comparisonCatalog,ownDesign,forget,SHARED};
  window.fetch=async(input,options={})=>{
   const url=new URL(input instanceof Request?input.url:input,location.href),path=url.pathname.slice(base.pathname.length),method=(options.method||'GET').toUpperCase();
   if(url.origin!==base.origin||!url.pathname.startsWith(base.pathname)||!(/^(brands\/|studio\/(catalog|save|restore|upload))/.test(path)))return nativeFetch(input,options);

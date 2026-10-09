@@ -605,7 +605,9 @@ function cancelAll(){const d=current();if(!d||saving)return;d.edits={};activeKey
 async function load(){stopStateInspection();stopHistoryPreview();activeKey='';importReview=null;$('#translation-preview-view').value='';const id=++loadId;target=window.ComposerTarget?.value||$('#target').value||'kit';try{if(!drafts.has(target)||!Object.keys(drafts.get(target).edits||{}).length){const data=await request();if(id!==loadId)return;data.edits={};drafts.set(target,data)}render();apply()}catch(e){controls.innerHTML='<p>'+esc(e.message)+'</p>'}}
 language.onchange=()=>{rows();try{localStorage.setItem('crash-language',language.value)}catch{}apply();if(typeof showcaseLink==='function')showcaseLink()};
 frame.addEventListener('load',()=>{stopStateInspection();stopHistoryPreview();apply();try{frame.contentWindow.addEventListener('crash-i18n-ready',apply,{once:true})}catch{}});
-window.addEventListener('composer-storage',()=>{drafts.clear();load()});window.addEventListener('composer-target',load);$('#target').addEventListener('change',()=>setTimeout(load,0));
+window.addEventListener('composer-storage',()=>{drafts.clear();load()});
+// A Discard in Changes: unsaved texts are dropped and the draft read again; apply() puts them on the game.
+window.addEventListener('composer-draft-reset',()=>{drafts.clear();load()});window.addEventListener('composer-target',load);$('#target').addEventListener('change',()=>setTimeout(load,0));
 window.addEventListener('beforeunload',e=>{if(importReview?.changes.length||[...drafts.values()].some(d=>Object.keys(d.edits||{}).length)){e.preventDefault();e.returnValue=''}});
 let lastScope='';setInterval(()=>{if(!live()||!current())return;enforcePreviewWindow();const scope=target+':'+currentPreset();if(scope!==lastScope){lastScope=scope;category='all';if(activeKey&&!available().some(([key])=>key===activeKey)){activeKey='';stopStateInspection();apply()}render()}},400);
 load();
