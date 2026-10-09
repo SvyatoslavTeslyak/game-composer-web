@@ -282,6 +282,26 @@ class TabbedControls {
    b.classList.toggle('has-value',value!=='');b.classList.toggle('is-pending',!!st.pending)}
  }
  /** One flat state object per frame, the same one the standard controls read. */
+ /**
+  * The GO title keeps its usual size. Only when it and its arrow would not fit the button (a long
+  * word such as TRAVERSER beside CASH OUT on a phone) is the pair centred and the title made
+  * smaller, by just as much as it must to fit within the button's padding.
+  */
+ fitGoTitle(){
+  const title=this.slots.tbGoTitle,go=title.closest('button');if(!go)return;
+  const key=title.textContent+'|'+go.clientWidth+'|'+title.classList.contains('go-label');
+  if(key===this.goFitKey)return;this.goFitKey=key;
+  title.style.fontSize='';go.classList.remove('go-fit');
+  if(!title.classList.contains('go-label')||!title.offsetWidth)return;
+  const style=getComputedStyle(go),inset=parseFloat(style.paddingLeft)+parseFloat(style.paddingRight);
+  const dial=title.nextElementSibling?.offsetWidth?title.nextElementSibling:null;
+  const box=go.getBoundingClientRect(),own=title.getBoundingClientRect(),right=dial?dial.getBoundingClientRect().right:own.right;
+  if(own.left>=box.left+parseFloat(style.paddingLeft)&&right<=box.right-parseFloat(style.paddingRight))return;
+  go.classList.add('go-fit');
+  // Only the words shrink: the arrow's ring and the gap beside it keep their size.
+  const fixed=(dial?(parseFloat(style.columnGap)||0)+dial.offsetWidth:0)+(parseFloat(getComputedStyle(title).marginLeft)||0),room=go.clientWidth-inset-fixed;
+  if(own.width>room)title.style.fontSize=Math.max(CrashTokens.TYPE_12,Math.floor(parseFloat(getComputedStyle(title).fontSize)*room/own.width))+'px';
+ }
  sync(s,features,config={}){
   const risk=this.q('.risk');const hasRisk=typeof s.risk==='number'&&Number.isFinite(s.risk);risk.hidden=!hasRisk&&s.game!=='road';risk.style.visibility='';
   if(hasRisk){const pct=Math.round(Math.min(1,Math.max(0,s.risk))*100);this.text('riskPct',pct+' %');const lit=Math.round(pct/10);[...this.q('.risk-meter').children].forEach((seg,i)=>{seg.className=i<lit?'on tier-'+(i<3?'low':i<6?'mid':'high'):''})}else{this.text('riskPct','0 %');for(const seg of this.q('.risk-meter').children)seg.className=''}
@@ -307,6 +327,8 @@ class TabbedControls {
   // Mid-round the button is a step, not a stake: Goat Road's GO, and any game that sends no subtitle.
   // state.goLabelOnly shows the title with its icon, and no amount, at any time (Plinko's DROP).
   const nextLane=!!s.goLabelOnly||s.showCash&&(s.game==='road'||s.goSubtitle==='');const goFigure=(s.game==='road'&&!s.showCash)?s.bet:(s.goSubtitle||s.bet);coinSlot(this.slots.tbGoAmount,goFigure);this.slots.tbGoAmount.hidden=nextLane;this.slots.tbGoAmount.classList.toggle('is-label',!!s.showCash||!!s.goSubtitleIsLabel);this.text('tbGoTitle',s.goTitle||(nextLane?'GO':'BET'));this.slots.tbGoTitle.classList.toggle('go-label',!!nextLane);
+  // The title is translated after it is written, so its fit is checked whenever it or the button changes size.
+  if(!this.goFitObserver&&typeof ResizeObserver==='function'){this.goFitObserver=new ResizeObserver(()=>this.fitGoTitle());this.goFitObserver.observe(this.slots.tbGoTitle);this.goFitObserver.observe(this.slots.tbGoTitle.closest('button'))}
   const cash=this.q('[data-action=cash]');cash.hidden=!s.showCash;cash.disabled=!s.canCash||!!s.win;moneySlot(this.slots.tbCash,s.cash);// Only the figure decides whether an amount is long: a leading $ is not a digit, and a
   // plain $1056.82 was being shrunk as if it were a million.
   for(const key of ['tbCash','tbGoAmount'])this.slots[key].classList.toggle('long-amount',(this.slots[key].textContent.match(/\d/g)||[]).length>7);
@@ -612,9 +634,17 @@ class GameUI {
   root.innerHTML='<div class="big-win-rays" aria-hidden="true"></div><div class="big-win-rain" aria-hidden="true">'+drops+'</div><div class="big-win-card"><div class="big-win-title"></div><div class="big-win-amount">'+esc(money(0))+'</div><div class="big-win-x">'+esc(multiple.toFixed(2))+'× your bet</div><div class="big-win-tap">Tap to continue</div></div><div class="big-win-flash" aria-hidden="true"></div>';
   this.host.append(root);
   const title=root.querySelector('.big-win-title'),figure=root.querySelector('.big-win-amount');
+  // The title and the amount stay on one line and shrink, only as far as they must, to the
+  // screen's width. Checked whenever either changes size: the title is translated after it is
+  // written (GENYEN EKSTRA is far wider than EPIC WIN), and the amount grows as it counts up.
+  // The title also leaves room for its tier-up pop, which peaks at 1.18 times its size
+  // (@keyframes big-win-burst), so it is not cut at the edges for that moment either.
+  const fit=el=>{el.style.removeProperty('--big-win-fit');const room=(root.clientWidth-2*CrashTokens.SPACE_16)/(el===title?1.18:1),wide=Math.max(el.offsetWidth,el.scrollWidth);if(wide>room)el.style.setProperty('--big-win-fit',(room/wide).toFixed(3))};
+  const fitting=typeof ResizeObserver==='function'?new ResizeObserver(()=>{if(!root.isConnected){fitting.disconnect();return}fit(title);fit(figure)}):null;
+  if(fitting){fitting.observe(title);fitting.observe(figure)}
   let level=-1;
   const showers=root.querySelector('.big-win-rain');
-  const show=i=>{if(i===level)return;level=i;const t=reached[i];root.dataset.tier=t.key||String(i);root.setAttribute('aria-label',t.name);title.textContent=t.name;title.style.removeProperty('--big-win-fit');const room=root.clientWidth-32,wide=Math.max(title.offsetWidth,title.scrollWidth);if(wide>room)title.style.setProperty('--big-win-fit',(room/wide).toFixed(3));if(i>0&&!reduced){root.classList.remove('tier-up');void root.offsetWidth;root.classList.add('tier-up');showers.insertAdjacentHTML('beforeend',shower(18,70,0))}cue(t.sound);onTier(t,i)};
+  const show=i=>{if(i===level)return;level=i;const t=reached[i];root.dataset.tier=t.key||String(i);root.setAttribute('aria-label',t.name);title.textContent=t.name;fit(title);if(i>0&&!reduced){root.classList.remove('tier-up');void root.offsetWidth;root.classList.add('tier-up');showers.insertAdjacentHTML('beforeend',shower(18,70,0))}cue(t.sound);onTier(t,i)};
   // Each tier gets its stretch of the count: the first runs up to the next threshold, the last
   // slows to the final figure so its digits land one by one.
   const stretch=hurried?.9:1.7,last=hurried?1.1:2.2;
@@ -622,7 +652,7 @@ class GameUI {
   const total=marks.reduce((sum,m)=>sum+m.seconds,0);
   return new Promise(resolve=>{
    const started=performance.now();let finished=false,closed=false,lastTick=0,frameId=0;
-   const close=()=>{if(closed)return;closed=true;cancelAnimationFrame(frameId);root.classList.add('is-leaving');setTimeout(()=>{root.remove();resolve(reached[reached.length-1])},reduced?0:280)};
+   const close=()=>{if(closed)return;closed=true;cancelAnimationFrame(frameId);fitting?.disconnect();root.classList.add('is-leaving');setTimeout(()=>{root.remove();resolve(reached[reached.length-1])},reduced?0:280)};
    const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frameId);show(reached.length-1);figure.textContent=money(amount);root.classList.add('is-done');if(!hold)setTimeout(close,hurried?1200:2600)};
    const frame=now=>{if(finished)return;let t=(now-started)/1000,i=0;while(i<marks.length-1&&t>marks[i].seconds){t-=marks[i].seconds;i++}
     const m=marks[i],k=Math.min(1,t/m.seconds),eased=i===marks.length-1?1-Math.pow(1-k,2.2):k;

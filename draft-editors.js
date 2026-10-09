@@ -75,7 +75,8 @@
  function applyAudio(manifest,patch){
   if(!patch)return manifest;
   for(const change of patch.events||[]){
-   const event=manifest.events.find(e=>e.id===change.id);if(!event)throw Error('Sound catalog changed. Reload before saving.');
+   // A sound the game has removed since the draft was saved is skipped; the next save drops it.
+   const event=manifest.events.find(e=>e.id===change.id);if(!event)continue;
    const known=event.takes.filter(t=>!t.media).length;
    if(change.takes.length<known)throw Error('Sound files changed. Reload before saving.');
    for(const field of ['volume_db','pitch_jitter','prompt'])if(field in change)event[field]=change[field];

@@ -124,36 +124,6 @@
       ]
     },
     {
-      "id": "squash_goat",
-      "label": "Goat squash",
-      "trigger": "The goat character is caught.",
-      "volume_db": -10,
-      "pitch_jitter": 0.02,
-      "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "takes": [
-        {
-          "file": "assets/audio/elevenlabs/squash_goat.ogg",
-          "enabled": true,
-          "source": "elevenlabs"
-        }
-      ]
-    },
-    {
-      "id": "squash_chicken",
-      "label": "Chicken squash",
-      "trigger": "The chicken character is caught.",
-      "volume_db": -10,
-      "pitch_jitter": 0.02,
-      "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "takes": [
-        {
-          "file": "assets/audio/elevenlabs/squash_chicken.ogg",
-          "enabled": true,
-          "source": "elevenlabs"
-        }
-      ]
-    },
-    {
       "id": "squash_dog",
       "label": "Dog squash",
       "trigger": "The dog character is caught.",

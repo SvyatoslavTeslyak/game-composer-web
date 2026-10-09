@@ -1,13 +1,26 @@
 {
   "version": 1,
   "entries": {
+    "road_cash_out": {
+      "source": "CASH OUT",
+      "en": "CASH OUT",
+      "fr": "CASH OUT",
+      "group": "Bet panel & messages",
+      "games": [
+        "road"
+      ],
+      "ht": "CASH OUT",
+      "usage": [
+        "text"
+      ],
+      "previewState": "round-dependent"
+    },
     "cash_out_145fd2": {
       "source": "CASH OUT",
       "en": "CASH OUT",
       "fr": "ENCAISSER",
       "group": "Bet panel & messages",
       "games": [
-        "road",
         "haul",
         "gold",
         "boom",
@@ -224,13 +237,13 @@
     },
     "go_f63f96": {
       "source": "GO",
-      "en": "GO",
-      "fr": "GO",
+      "en": "CROSS",
+      "fr": "TRAVERSER",
       "group": "Bet panel & messages",
       "games": [
         "road"
       ],
-      "ht": "ALE",
+      "ht": "JANBE",
       "usage": [
         "text"
       ],
@@ -466,13 +479,26 @@
         "text"
       ]
     },
+    "road_play": {
+      "source": "PLAY",
+      "en": "CROSS",
+      "fr": "TRAVERSER",
+      "group": "Bet panel & messages",
+      "games": [
+        "road"
+      ],
+      "ht": "JANBE",
+      "usage": [
+        "text"
+      ],
+      "previewState": "ready"
+    },
     "play_42c5cd": {
       "source": "PLAY",
       "en": "PLAY",
       "fr": "JOUER",
       "group": "Bet panel & messages",
       "games": [
-        "road",
         "haul",
         "gold",
         "fuel"
@@ -3306,8 +3332,8 @@
     "road_rules_document": {
       "source": "Guide the goat across the road one lane at a time. Every lane you clear raises the multiplier.\n\nPress **CASH OUT** at any lane to bank the current multiplier on your stake.\n\nSome lanes carry traffic. Step into one and the round ends with nothing.\n\nChoose Easy, Medium or Hard. Higher difficulty increases risk and reward. The risk meter shows the failure probability of the next step; in API mode it appears when the server supplies that probability.",
       "en": "Guide the goat across the road one lane at a time. Every lane you clear raises the multiplier.\n\nPress **CASH OUT** at any lane to bank the current multiplier on your stake.\n\nSome lanes carry traffic. Step into one and the round ends with nothing.\n\nChoose Easy, Medium or Hard. Higher difficulty increases risk and reward. The risk meter shows the failure probability of the next step; in API mode it appears when the server supplies that probability.",
-      "fr": "Guidez la chèvre sur la route, une voie à la fois. Chaque voie franchie augmente le multiplicateur.\n\nAppuyez sur **ENCAISSER** à n’importe quelle voie pour encaisser votre mise au multiplicateur actuel.\n\nDes véhicules circulent sur certaines voies. Si vous en heurtez un, la manche se termine sans gain.\n\nChoisissez Facile, Moyen ou Difficile. Une difficulté plus élevée augmente le risque et le gain. La jauge indique la probabilité d’échec du prochain pas ; en mode API, elle apparaît lorsque le serveur fournit cette probabilité.",
-      "ht": "Ede kabrit la travèse wout la yon liy alafwa. Chak liy ou travèse ogmante miltiplikatè a.\n\nPeze **PRAN LAJAN** nan nenpòt liy pou pran gany miz ou a dapre miltiplikatè aktyèl la.\n\nGen liy kote machin ap pase. Si ou antre nan youn, tou a fini san ou pa genyen anyen.\n\nChwazi Fasil, Mwayen oswa Difisil. Plis nivo a difisil, se plis risk la ak rekonpans lan ogmante. Ba risk la montre pwobabilite pou pwochen pa a echwe; nan mòd API, li parèt lè sèvè a bay pwobabilite sa a.",
+      "fr": "Guidez la chèvre sur la route, une voie à la fois. Chaque voie franchie augmente le multiplicateur.\n\nAppuyez sur **CASH OUT** à n’importe quelle voie pour encaisser votre mise au multiplicateur actuel.\n\nDes véhicules circulent sur certaines voies. Si vous en heurtez un, la manche se termine sans gain.\n\nChoisissez Facile, Moyen ou Difficile. Une difficulté plus élevée augmente le risque et le gain. La jauge indique la probabilité d’échec du prochain pas ; en mode API, elle apparaît lorsque le serveur fournit cette probabilité.",
+      "ht": "Ede kabrit la travèse wout la yon liy alafwa. Chak liy ou travèse ogmante miltiplikatè a.\n\nPeze **CASH OUT** nan nenpòt liy pou pran gany miz ou a dapre miltiplikatè aktyèl la.\n\nGen liy kote machin ap pase. Si ou antre nan youn, tou a fini san ou pa genyen anyen.\n\nChwazi Fasil, Mwayen oswa Difisil. Plis nivo a difisil, se plis risk la ak rekonpans lan ogmante. Ba risk la montre pwobabilite pou pwochen pa a echwe; nan mòd API, li parèt lè sèvè a bay pwobabilite sa a.",
       "label": "How to play · Content",
       "format": "markdown",
       "group": "Rules",

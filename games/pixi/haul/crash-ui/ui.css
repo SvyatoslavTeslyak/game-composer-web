@@ -194,6 +194,12 @@
 .crash-ui .action .go-dial:has(.go-arrow){display:none}
 .crash-ui .action-title.go-label~.go-dial:has(.go-arrow){display:inline-flex;
  margin-right:calc(-1 * (var(--type-24) + var(--space-8)))}
+/* A title too long for its button (ui.js fitGoTitle) is centred together with its arrow, so the
+   arrow stays inside; the script then takes the title's size down only as far as it must. */
+.crash-ui .action.go.go-fit .action-title.go-label~.go-dial:has(.go-arrow){margin-right:0}
+/* The arrow's ring leaves clear space on its right; the title gets the same on its left, so the
+   pair sits evenly in the button. */
+.crash-ui .action.go.go-fit .action-title.go-label{margin-left:var(--space-8)}
 /* The artwork fills its box, so the row gives the pair the small gap between them. */
 .crash-ui .tabbed-controls .actions .action.go:has(.action-title.go-label){flex-direction:row;gap:var(--space-8)}
 .crash-ui .actions .action .money{white-space:nowrap}
@@ -1341,7 +1347,7 @@
 .crash-ui .big-win[data-tier=mega] .big-win-title{font-size:calc(var(--type-64) * var(--big-win-fit,1))}
 .crash-ui .big-win[data-tier=epic] .big-win-title{font-size:calc(var(--type-72) * var(--big-win-fit,1))}
 @keyframes big-win-pop{from{transform:scale(.3)}}
-.crash-ui .big-win-amount{font-family:var(--font-numbers),sans-serif;font-size:var(--type-52);font-weight:900;font-variation-settings:"wght" 900;font-variant-numeric:tabular-nums;color:var(--text);text-shadow:0 var(--space-4) 0 color-mix(in srgb,var(--shadow) calc(var(--alpha-strong) * 100%),transparent),0 0 var(--space-24) color-mix(in srgb,var(--big-win-glow) calc(var(--alpha-strong) * 100%),transparent)}
+.crash-ui .big-win-amount{font-family:var(--font-numbers),sans-serif;font-size:calc(var(--type-52) * var(--big-win-fit,1));white-space:nowrap;font-weight:900;font-variation-settings:"wght" 900;font-variant-numeric:tabular-nums;color:var(--text);text-shadow:0 var(--space-4) 0 color-mix(in srgb,var(--shadow) calc(var(--alpha-strong) * 100%),transparent),0 0 var(--space-24) color-mix(in srgb,var(--big-win-glow) calc(var(--alpha-strong) * 100%),transparent)}
 .crash-ui .big-win.is-done .big-win-amount{animation:big-win-pop calc(var(--motion-ms) * 2.5) cubic-bezier(.2,1.6,.4,1)}
 .crash-ui .big-win-x{font-size:var(--type-16);font-weight:800;font-variation-settings:"wght" 800;color:var(--big-win-mid)}
 .crash-ui .big-win-tap{margin-top:var(--space-16);font-size:var(--type-12);letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
@@ -1350,6 +1356,7 @@
 .crash-ui .big-win.tier-up .big-win-title{animation:big-win-burst var(--big-win-beat) cubic-bezier(.2,1.6,.4,1)}
 .crash-ui .big-win.tier-up .big-win-flash{animation:big-win-flash var(--big-win-beat) ease-out}
 .crash-ui .big-win.tier-up .big-win-card{animation:big-win-shake calc(var(--motion-ms) * 3) ease-out}
+/* Its 1.18 peak is the margin ui.js celebrate() leaves when it fits a long title to the screen. */
 @keyframes big-win-burst{0%{transform:scale(.4) rotate(-6deg)}60%{transform:scale(1.18) rotate(2deg)}100%{transform:none}}
 @keyframes big-win-flash{0%{opacity:1}100%{opacity:0}}
 @keyframes big-win-shake{0%,100%{translate:0 0}20%{translate:calc(var(--space-8) * -1) var(--space-4)}40%{translate:var(--space-6) calc(var(--space-4) * -1)}60%{translate:calc(var(--space-4) * -1) var(--space-4)}80%{translate:var(--space-4) 0}}
