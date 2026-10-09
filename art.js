@@ -103,20 +103,20 @@ function render(){
   return;
  }
  const where=theme?'the '+t.theme+' theme of '+t.brand:t.brand;
- const head='<div class="art-head"><h2>Pictures for '+esc(where)+'</h2>'
-  +'<small>'+(theme?'Anything this theme leaves out comes from '+esc(t.brand)+', and from the game after that.':'Anything left out is the game’s own. A theme of '+esc(t.brand)+' can change pictures again on top.')+' Change the tenant or theme in the top bar.</small>'
+ // How it all works sits behind the small button beside the title, in a window of its own.
+ const head='<div class="art-head"><div class="art-head-row"><h2>Pictures for '+esc(where)+'</h2>'
+  +'<button class="art-button art-help" type="button" data-guide title="How to make the pictures" aria-label="How to make the pictures">?</button></div>'
   +(!editors()?.enabled?'<small class="sound-warn">Sign in to the shared workspace to add pictures.</small>':!canEdit()?'<small class="sound-warn">Your role can look at these pictures but not change them.</small>':'')
   +(note.text?'<small id="art-message" role="status" class="'+(note.error?'sound-error':'sound-busy')+'">'+esc(note.text)+'</small>':'<small id="art-message" role="status"></small>')
   +'</div>';
- const guide=(catalog.guide||[]).length?'<details class="art-guide"><summary>How to make the pictures</summary>'+catalog.guide.map(section=>'<h3>'+esc(section.title)+'</h3><ul>'+(section.lines||[]).map(line=>'<li>'+linked(line)+'</li>').join('')+'</ul>').join('')+'</details>':'';
  const groups=(catalog.groups||[]).map(group=>{
   const slots=groupSlots(group.id);if(!slots.length)return '';
   const own=layer(art,look().brand,theme),count=slots.filter(s=>own[s.id]).length;
   const names=esc(slots.map(s=>s.title).join(', '));
   const whole=group.together&&count>0&&count<slots.length?'<p class="art-note sound-warn">'+count+' of '+slots.length+' added. The game keeps drawing '+(theme?'the tenant’s':'its own')+' '+esc(group.title.toLowerCase())+' until '+names+' are all here.</p>':group.together?'<p class="art-note">Replace '+names+' together: the game never mixes two sets.</p>':'';
-  return '<details class="art-group" open><summary>'+esc(group.title)+'<small>'+count+' of '+slots.length+' here</small></summary>'+whole+clipsPanel(group)+'<ul class="art-grid">'+slots.map(row).join('')+'</ul></details>';
+  return '<details class="art-group" open><summary>'+esc(group.title)+(count?'<small>'+count+' of '+slots.length+' replaced</small>':'')+'</summary>'+whole+clipsPanel(group)+'<ul class="art-grid">'+slots.map(row).join('')+'</ul></details>';
  }).join('');
- controls.innerHTML=head+guide+groups;
+ controls.innerHTML=head+groups;
  animate();
 }
 function row(slot){
@@ -153,6 +153,15 @@ function view(slot){
   +'<div class="art-viewer-foot"><dl class="art-spec">'+spec(slot)+'</dl><a class="art-button art-primary" href="'+esc(url)+'" download="'+esc(slot.file.split('/').pop())+'">Download</a></div>';
  viewer.showModal();
 }
+/** How the layers work and the game's guide for whoever makes the pictures. */
+function showGuide(){
+ const {theme}=look(),t=lookTitles();
+ const layers=theme?'Pictures here belong to the '+t.theme+' theme of '+t.brand+'. Anything the theme leaves out comes from '+t.brand+', and from the game after that.':'Pictures here belong to '+t.brand+'. Anything left out is the game’s own, and a theme of '+t.brand+' can change pictures again on top.';
+ viewer.innerHTML='<div class="art-viewer-head"><strong>How to make the pictures</strong><button class="art-button art-close" type="button" data-close aria-label="Close">×</button></div>'
+  +'<div class="art-guide-body"><p class="art-prompt-note">'+esc(layers)+' Change the tenant or theme in the top bar.</p>'
+  +(catalog.guide||[]).map(section=>'<section><h3>'+esc(section.title)+'</h3><ul>'+(section.lines||[]).map(line=>'<li>'+linked(line)+'</li>').join('')+'</ul></section>').join('')+'</div>';
+ viewer.classList.add('is-guide');viewer.showModal();
+}
 /** The slot's prompt, large and readable, the part a tenant changes marked, with Copy. */
 function showPrompt(slot){
  viewer.innerHTML='<div class="art-viewer-head"><strong>'+esc(slot.title)+' · prompt</strong><button class="art-button art-close" type="button" data-close aria-label="Close">×</button></div>'
@@ -161,7 +170,7 @@ function showPrompt(slot){
   +'<div class="art-viewer-foot"><dl class="art-spec">'+spec(slot)+'</dl><button class="art-button art-primary" type="button" data-copy-prompt="'+esc(slot.id)+'">Copy prompt</button></div>';
  viewer.classList.add('is-prompt');viewer.showModal();
 }
-viewer.addEventListener('close',()=>viewer.classList.remove('is-prompt'));
+viewer.addEventListener('close',()=>viewer.classList.remove('is-prompt','is-guide'));
 viewer.addEventListener('click',event=>{
  const copy=event.target.closest('[data-copy-prompt]');if(!copy)return;
  const slot=catalog.slots.find(s=>s.id===copy.dataset.copyPrompt);
@@ -348,6 +357,7 @@ controls?.addEventListener('change',event=>{
 });
 controls?.addEventListener('click',event=>{
  const button=event.target.closest('button');if(!button)return;
+ if('guide' in button.dataset){showGuide();return}
  if(button.dataset.pick){pick(button);return}
  if(button.dataset.clipSave){saveClips(catalog.groups.find(g=>g.id===button.dataset.clipSave));return}
  if(button.dataset.clipCopy){

@@ -10,16 +10,10 @@
  #room.art-workspace #fit{grid-column:2;grid-row:1;min-width:0;min-height:0}
 }
 #art-report small{display:block}
-.art-head{display:grid;gap:var(--space-4);margin:0 0 var(--space-16);max-width:80ch}
+.art-head{display:grid;gap:var(--space-4);margin:0 0 var(--space-16)}
 .art-head h2{font-size:var(--inspector-type-xl);margin:0}
 .art-head p,.art-head small{margin:0;color:var(--inspector-muted);font-size:var(--inspector-type-base)}
 .art-head code{font-size:var(--inspector-type-sm);color:var(--inspector-accent)}
-.art-guide{margin:0 0 var(--space-16);padding:var(--space-12) var(--space-16);background:var(--inspector-card);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--inspector-radius-card)}
-.art-guide summary{cursor:pointer;font-weight:600;color:var(--inspector-accent)}
-.art-guide[open]{columns:2 calc(var(--space-48) * 7);column-gap:var(--space-32)}
-.art-guide[open] summary{column-span:all;margin-bottom:var(--space-4)}
-.art-guide h3{font-size:var(--inspector-type-md);margin:var(--space-12) 0 var(--space-4);break-after:avoid}
-.art-guide ul{margin:0;padding-left:var(--space-16);display:grid;gap:var(--space-4);color:var(--inspector-muted);font-size:var(--inspector-type-sm);line-height:1.45}
 .art-group{margin:0 0 var(--space-24)}
 .art-group>summary{cursor:pointer;display:flex;align-items:center;gap:var(--space-12);font-size:var(--inspector-type-lg);font-weight:600;padding:var(--space-6) 0 var(--space-8)}
 .art-group>summary small{display:inline;font-size:var(--inspector-type-sm);font-weight:400;color:var(--inspector-muted)}
@@ -99,13 +93,13 @@
 .art-part{display:inline-block;margin-left:var(--space-8);padding:0 var(--space-6);border-radius:var(--space-6);border:var(--stroke-1) solid currentColor}
 .art-part.is-part-0{color:var(--inspector-accent)}.art-part.is-part-1{color:var(--inspector-warning)}
 /* Every section that folds says so: a chevron before its title, pointing down while open. */
-.art-group>summary,.art-guide>summary,.art-clips>details>summary{list-style:none;display:flex;align-items:center;gap:var(--space-8);cursor:pointer;user-select:none}
-.art-group>summary::-webkit-details-marker,.art-guide>summary::-webkit-details-marker,.art-clips>details>summary::-webkit-details-marker{display:none}
-.art-group>summary::before,.art-guide>summary::before,.art-clips>details>summary::before{content:'';flex:none;box-sizing:border-box;width:var(--space-8);height:var(--space-8);margin:0 var(--space-4);border-right:var(--stroke-2) solid currentColor;border-bottom:var(--stroke-2) solid currentColor;transform:rotate(-45deg);transition:transform var(--motion-ms) ease}
-.art-group[open]>summary::before,.art-guide[open]>summary::before,.art-clips>details[open]>summary::before{transform:rotate(45deg) translate(calc(var(--space-4) * -0.5),calc(var(--space-4) * -0.5))}
+.art-group>summary,.art-clips>details>summary{list-style:none;display:flex;align-items:center;gap:var(--space-8);cursor:pointer;user-select:none}
+.art-group>summary::-webkit-details-marker,.art-clips>details>summary::-webkit-details-marker{display:none}
+.art-group>summary::before,.art-clips>details>summary::before{content:'';flex:none;box-sizing:border-box;width:var(--space-8);height:var(--space-8);margin:0 var(--space-4);border-right:var(--stroke-2) solid currentColor;border-bottom:var(--stroke-2) solid currentColor;transform:rotate(-45deg);transition:transform var(--motion-ms) ease}
+.art-group[open]>summary::before,.art-clips>details[open]>summary::before{transform:rotate(45deg) translate(calc(var(--space-4) * -0.5),calc(var(--space-4) * -0.5))}
 .art-group>summary::before{width:var(--space-12);height:var(--space-12);color:var(--inspector-muted)}
 .art-group>summary:hover::before{color:var(--inspector-accent)}
-@media(prefers-reduced-motion:reduce){.art-group>summary::before,.art-guide>summary::before,.art-clips>details>summary::before{transition:none}}
+@media(prefers-reduced-motion:reduce){.art-group>summary::before,.art-clips>details>summary::before{transition:none}}
 /* The prompt window: the text large and easy to read, the part a tenant changes marked. */
 .art-viewer.is-prompt{width:min(calc(100vw - var(--space-48)),calc(var(--space-48) * 15))}
 .art-prompt-body{display:grid;gap:var(--space-12);padding:var(--space-4) var(--space-16) var(--space-16);overflow:auto}
@@ -114,3 +108,13 @@
 .art-prompt-note{margin:0;font-size:var(--inspector-type-sm);color:var(--inspector-muted)}
 .art-link{color:var(--inspector-accent);font-weight:600;text-decoration:underline;text-underline-offset:var(--stroke-2)}
 .art-link:hover{text-decoration-thickness:var(--stroke-2)}
+/* The title row: the small help button stands on the right, opposite the title. */
+.art-head-row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-12)}
+.art-help{flex:none;width:var(--space-32);padding:0;border-radius:50%;font-size:var(--inspector-type-md);color:var(--inspector-accent);border-color:var(--inspector-accent)}
+/* The guide window: the layers first, then the game's guide in columns. */
+.art-viewer.is-guide{width:min(calc(100vw - var(--space-48)),calc(var(--space-48) * 20))}
+.art-guide-body{overflow:auto;padding:var(--space-4) var(--space-16) var(--space-16);columns:2 calc(var(--space-48) * 7);column-gap:var(--space-32)}
+.art-guide-body>p{column-span:all;margin:0 0 var(--space-8)}
+.art-guide-body section{break-inside:avoid-column}
+.art-guide-body h3{font-size:var(--inspector-type-md);margin:var(--space-12) 0 var(--space-4)}
+.art-guide-body ul{margin:0;padding-left:var(--space-16);display:grid;gap:var(--space-4);color:var(--inspector-muted);font-size:var(--inspector-type-sm);line-height:1.45}
