@@ -1,0 +1,432 @@
+{
+  "version": 1,
+  "about": "The pictures a tenant or a theme may replace. Composer's Assets tab reads this file from the build, offers each slot for upload and, on release, writes the chosen files into `brands`. The game looks a picture up here by its default file: a theme's picture first, then the tenant's, then the default. Only pictures change; sizes on the road, lanes, speeds and the maths stay the same for everyone. Each slot's prompt describes the current picture for an image generator; the part in square brackets is what a tenant or theme changes.",
+  "links": {
+    "SpriteCook": "https://spritecook.ai"
+  },
+  "guide": [
+    {
+      "title": "How a set of pictures works",
+      "lines": [
+        "Pick the tenant (and the theme, if the pictures are for one) in the top bar. Everything you upload here belongs to that choice.",
+        "A theme only needs the pictures it changes: anything it leaves out comes from its tenant, and anything the tenant leaves out comes from the game.",
+        "Start every picture from the current one: Download gives you the file the game draws now, at its size. Paint over it, keep the canvas size and the transparent background, and upload it back.",
+        "Every picture comes with a prompt for an image generator. Change the part in [square brackets] to the tenant's or theme's subject and keep the rest: it holds the view, the size and the framing the game needs. Copy prompt copies it without the brackets.",
+        "Upload PNG or WebP with a transparent background. Composer stores it as PNG. Keep each file under 8 MB.",
+        "A picture must keep the proportions of the one it replaces (the size shown under its name). A different size with the same proportions is fine: the game scales it."
+      ]
+    },
+    {
+      "title": "The hero: three sheets, same behaviour",
+      "lines": [
+        "The hero always does the same things: it stands (Idle), hops to the next lane (Jump) and lands (Landing). The three sheets are replaced together, so the hero never changes mid-hop.",
+        "It is made in SpriteCook, in two steps. First generate the hero as one still picture (detailed art, model gemini-3.1-flash-image, transparent background), side view facing right, the whole body in the picture. Fix small mistakes with an edit before going on.",
+        "Then animate that still in SpriteCook twice: Idle from the still itself (detailed, 12 frames, WebP), and the jump from a copy with room around the hero (Make the padded copy, in the Hero section) with model pixel-engine-v1.5, which keeps the head in profile. The one jump animation makes both Jump and Landing.",
+        "Upload the two animated WebPs in the Hero section. Composer cuts them into the sheets the game plays: Idle as a 4 × 3 grid of 256 × 256 px frames; from the jump, the three poses in the air as Jump and four touchdown poses as Landing, 2 × 2 grids of 400 × 400 px frames, scaled to stand exactly where the idle stands. Check the picked jump frames and change them if the clip moves differently.",
+        "Idle plays over and over while the hero waits, so its last frame must flow back into its first.",
+        "Before saving, play the clips next to each other: the face, the ears and the body must not change between frames, and the jump must not turn the head toward the viewer. A hop lasts a fifth of a second, so any jump in shape between frames reads as a glitch.",
+        "A sheet can still be uploaded by itself: a grid of square frames as listed under each picture, the hero horizontally centred in each cell with the feet on the same line near the bottom edge.",
+        "Check it in the preview: stand, press PLAY, step a few lanes and lose once."
+      ]
+    },
+    {
+      "title": "Traffic",
+      "lines": [
+        "Six vehicles, always six, each with its own speed and share of the traffic. Every one is seen from above with its front at the bottom of the picture; the lane going the other way turns it round.",
+        "A tenant may use one picture for several or all six: upload it once and choose Use for every traffic picture.",
+        "The picture is fitted into the vehicle's box on the road without being stretched, so a narrower or wider picture than the current one leaves a gap or is drawn smaller."
+      ]
+    },
+    {
+      "title": "The route",
+      "lines": [
+        "The street, the rooftops, the stairs, the pier and the harbour can all be repainted. Only the look changes: where the gaps are, where the hero stands and how a lane gives way stay the same.",
+        "Road surfaces repeat from top to bottom, so their top and bottom edges must meet without a seam. Keep the current tile's layout: open ground where the current one has it, gaps (Gap and Gap, second look) in the same place.",
+        "The barrier is cut into its left post, boom and right post at fixed places: keep the three parts where the current picture has them.",
+        "The boat sits in the middle third of its picture; the capsize sheet is 4 × 4 frames of the boat rolling over."
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "hero",
+      "title": "Hero",
+      "together": true,
+      "clips": {
+        "tool": "SpriteCook",
+        "about": "The hero is made in SpriteCook in two steps: first one still picture of the character, then two animations made from that still, the idle and the jump. Upload them here and Composer cuts them into the three sheets the game plays; the one jump animation makes both Jump and Landing.",
+        "still": {
+          "title": "1. The hero, still",
+          "prompt": "Full-body game character, side view facing right, standing calmly on all four legs: [a lanky Haitian street dog (chen peyi) with spotted tan fur, big round eyes, a goofy grin and a Haitian-flag bandana]. The whole body in the picture from the ears to the paws and the tail, nothing cropped, centred, the feet at the bottom. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. Transparent background, no ground shadow, no text.",
+          "settings": "In SpriteCook, generate a still: detailed art (not pixel), model gemini-3.1-flash-image, square 1:1, transparent background, smart crop on. Pick the variation that is clearly side-on, then remove anything extra (a second tongue, a stray paw) with an edit before animating."
+        },
+        "padded": {
+          "title": "2. A copy with room to jump",
+          "share": 0.64,
+          "about": "A jump animated from the tight still loses the ears and the tail at the frame edge. Make a copy with the hero at 64% of a 1024 × 1024 canvas here, upload it to SpriteCook and animate the jump from that copy."
+        },
+        "list": [
+          {
+            "id": "idle",
+            "title": "3. Idle",
+            "slot": "hero-idle",
+            "frames": 12,
+            "prompt": "Idle loop: [breathing, a blink, the ears and the tongue wobbling]. The character stays in place on the same spot. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer. The last frame flows back into the first.",
+            "settings": "In SpriteCook, animate the still: detailed mode, 12 frames, output WebP, background removal Basic."
+          },
+          {
+            "id": "jump",
+            "title": "4. Jump",
+            "frames": 12,
+            "from": "padded",
+            "match": "idle",
+            "prompt": "A forward bound, as if over a puddle: [a short crouch, a leap with the legs stretched out, the front paws landing first, then back to standing]. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer.",
+            "settings": "In SpriteCook, animate the padded copy: model pixel-engine-v1.5 in detailed mode, 12 frames, output WebP, background removal Basic. The default model turns heads toward the viewer mid-jump. This one animation makes both Jump and Landing.",
+            "split": [
+              {
+                "slot": "hero-jump",
+                "title": "In the air",
+                "frames": [
+                  4,
+                  5,
+                  6
+                ],
+                "about": "The poses in the air, played over the hop."
+              },
+              {
+                "slot": "hero-landing",
+                "title": "Touchdown",
+                "frames": [
+                  7,
+                  8,
+                  9,
+                  11
+                ],
+                "about": "Front paws down to standing, played on the ground after it."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "vehicles",
+      "title": "Traffic",
+      "oneForAll": true
+    },
+    {
+      "id": "street",
+      "title": "Street"
+    },
+    {
+      "id": "route",
+      "title": "Route"
+    },
+    {
+      "id": "celebration",
+      "title": "Wins and effects"
+    }
+  ],
+  "slots": [
+    {
+      "id": "hero-idle",
+      "group": "hero",
+      "title": "Idle",
+      "file": "art/goat/atlas/dog/idle.webp",
+      "size": [
+        1024,
+        768
+      ],
+      "sheet": {
+        "columns": 4,
+        "rows": 3,
+        "frames": 12,
+        "fps": 8
+      },
+      "prompt": "Idle loop: [breathing, a blink, the ears and the tongue wobbling]. The character stays in place on the same spot. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer. The last frame flows back into the first."
+    },
+    {
+      "id": "hero-jump",
+      "group": "hero",
+      "title": "Jump",
+      "file": "art/goat/atlas/dog/jump.webp",
+      "size": [
+        800,
+        800
+      ],
+      "sheet": {
+        "columns": 2,
+        "rows": 2,
+        "frames": 3,
+        "fps": 8
+      },
+      "prompt": "A forward bound, as if over a puddle: [a short crouch, a leap with the legs stretched out, the front paws landing first, then back to standing]. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer."
+    },
+    {
+      "id": "hero-landing",
+      "group": "hero",
+      "title": "Landing",
+      "file": "art/goat/atlas/dog/landing.webp",
+      "size": [
+        800,
+        800
+      ],
+      "sheet": {
+        "columns": 2,
+        "rows": 2,
+        "frames": 4,
+        "fps": 18
+      },
+      "prompt": "A forward bound, as if over a puddle: [a short crouch, a leap with the legs stretched out, the front paws landing first, then back to standing]. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer."
+    },
+    {
+      "id": "vehicle-tap-tap",
+      "group": "vehicles",
+      "title": "Tap-tap",
+      "file": "art/vehicles/tap_tap.png",
+      "size": [
+        290,
+        640
+      ],
+      "prompt": "A single top-down game illustration of [a Haitian tap-tap bus painted in bright red, blue and yellow folk art, with a roof rack of luggage], seen from almost straight above with the front of the vehicle at the bottom of the picture. Centred and filling the canvas edge to edge in a 290 × 640 px portrait frame. Transparent background. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No shadow, no road, no text except on the vehicle itself. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
+      "id": "vehicle-tuk-tuk",
+      "group": "vehicles",
+      "title": "Tuk-tuk",
+      "file": "art/vehicles/tuk_tuk.png",
+      "size": [
+        304,
+        640
+      ],
+      "prompt": "A single top-down game illustration of [a yellow three-wheeled tuk-tuk taxi with a canvas roof], seen from almost straight above with the front of the vehicle at the bottom of the picture. Centred and filling the canvas edge to edge in a 304 × 640 px portrait frame. Transparent background. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No shadow, no road, no text except on the vehicle itself. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
+      "id": "vehicle-motorcycle",
+      "group": "vehicles",
+      "title": "Motorcycle",
+      "file": "art/vehicles/motorcycle.png",
+      "size": [
+        225,
+        640
+      ],
+      "prompt": "A single top-down game illustration of [a red moto-taxi motorcycle with a rider in a cap and a passenger in a flowered shirt holding a basket], seen from almost straight above with the front of the vehicle at the bottom of the picture. Centred and filling the canvas edge to edge in a 225 × 640 px portrait frame. Transparent background. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No shadow, no road, no text except on the vehicle itself. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
+      "id": "vehicle-pickup",
+      "group": "vehicles",
+      "title": "Pickup",
+      "file": "art/vehicles/pickup.png",
+      "size": [
+        297,
+        640
+      ],
+      "prompt": "A single top-down game illustration of [a red pickup truck carrying crates of tomatoes and watermelons], seen from almost straight above with the front of the vehicle at the bottom of the picture. Centred and filling the canvas edge to edge in a 297 × 640 px portrait frame. Transparent background. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No shadow, no road, no text except on the vehicle itself. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
+      "id": "vehicle-minibus",
+      "group": "vehicles",
+      "title": "Minibus",
+      "file": "art/vehicles/minibus.png",
+      "size": [
+        292,
+        640
+      ],
+      "prompt": "A single top-down game illustration of [a mint-green minibus with blue and red bundles tied on its roof rack], seen from almost straight above with the front of the vehicle at the bottom of the picture. Centred and filling the canvas edge to edge in a 292 × 640 px portrait frame. Transparent background. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No shadow, no road, no text except on the vehicle itself. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
+      "id": "vehicle-cargo-truck",
+      "group": "vehicles",
+      "title": "Cargo truck",
+      "file": "art/vehicles/cargo_truck.png",
+      "size": [
+        308,
+        640
+      ],
+      "prompt": "A single top-down game illustration of [a blue cargo truck loaded with sacks and crates of tropical fruit], seen from almost straight above with the front of the vehicle at the bottom of the picture. Centred and filling the canvas edge to edge in a 308 × 640 px portrait frame. Transparent background. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No shadow, no road, no text except on the vehicle itself. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
+      "id": "street-dirt",
+      "group": "street",
+      "title": "Road",
+      "file": "art/road/haitian_dirt_v2.png",
+      "size": [
+        768,
+        768
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 768 × 768 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. [A dusty brown dirt road with faint tyre tracks, small stones and patches of packed earth], even across the whole tile. Nothing tall and nothing that stands out: cars drive over it. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no lighting gradient across the tile."
+    },
+    {
+      "id": "street-pavement",
+      "group": "street",
+      "title": "Pavement",
+      "file": "art/road/sidewalk_shop.png",
+      "size": [
+        768,
+        1365
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 768 × 1365 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. [A tan stone-paved pavement in a market street]: market stalls with fruit crates and a striped awning along the left edge, a yellow-painted kerb along the right edge, open paving in the middle where the hero stands. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no lighting gradient across the tile."
+    },
+    {
+      "id": "street-barrier",
+      "group": "street",
+      "title": "Barrier",
+      "file": "art/road/barrier_haiti.png",
+      "size": [
+        768,
+        246
+      ],
+      "prompt": "A single game illustration of [a level-crossing barrier in a Haitian street]: a chunky blue post on the left with a hand-painted sign, a red-and-white striped boom with a STOP plate across the middle, and a matching post on the right, each post on a stone block with a traffic cone or plants at its foot. Seen from slightly above the front. Keep the three parts where the current picture has them: the left post in the first fifth of the width, the boom across the middle three fifths in the upper third of the height, the right post in the last fifth. 768 × 246 px, transparent background. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No ground, no shadow. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
+      "id": "route-rooftop",
+      "group": "route",
+      "title": "Rooftop",
+      "file": "art/road/haitian_rooftop.png",
+      "size": [
+        1152,
+        2048
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 1152 × 2048 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. [A walkway across rusty teal corrugated-iron rooftops with orange rust patches]: low parapets with potted plants, old tyres and tin cans along the left and right edges, a clear open strip down the middle. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no lighting gradient across the tile."
+    },
+    {
+      "id": "route-rooftop-gap",
+      "group": "route",
+      "title": "Rooftop, gap",
+      "file": "art/road/haitian_rooftop_gap.png",
+      "size": [
+        1152,
+        2048
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 1152 × 2048 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. The same rooftop as the Rooftop picture, with identical edges, but [one sheet of corrugated iron in the middle torn away, leaving a dark hole] the hero falls through. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no lighting gradient across the tile."
+    },
+    {
+      "id": "route-rooftop-gap-b",
+      "group": "route",
+      "title": "Rooftop, gap, second look",
+      "file": "art/road/haitian_rooftop_gap_b.png",
+      "size": [
+        1152,
+        2048
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 1152 × 2048 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. The same rooftop as the Rooftop picture, with identical edges, but [a different hole in the middle: a broken patch with an old tyre lying in it], leaving a dark gap. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no lighting gradient across the tile."
+    },
+    {
+      "id": "route-stairs",
+      "group": "route",
+      "title": "Stairs",
+      "file": "art/road/harbor_stairs.png",
+      "size": [
+        1152,
+        2048
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 1152 × 2048 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. [Wide sandstone steps climbing up towards the harbour]: iron railings running across at the top and the bottom, tropical plants in the corners. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no lighting gradient across the tile."
+    },
+    {
+      "id": "route-pier",
+      "group": "route",
+      "title": "Pier",
+      "file": "art/road/harbor_pier.png",
+      "size": [
+        1152,
+        2048
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 1152 × 2048 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. [A wooden pier of weathered planks running from top to bottom over turquoise sea water]: mooring posts and ropes along both sides, a strip of water showing at the left and right edges. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no lighting gradient across the tile."
+    },
+    {
+      "id": "route-pier-gap",
+      "group": "route",
+      "title": "Pier, gap",
+      "file": "art/road/harbor_pier_gap.png",
+      "size": [
+        1152,
+        2048
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 1152 × 2048 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. The same pier as the Pier picture, with identical edges, but [a few planks in the middle broken and loose], opening a gap to the water below. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no lighting gradient across the tile."
+    },
+    {
+      "id": "route-pier-gap-b",
+      "group": "route",
+      "title": "Pier, gap, second look",
+      "file": "art/road/harbor_pier_gap_b.png",
+      "size": [
+        1152,
+        2048
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 1152 × 2048 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. The same pier as the Pier picture, with identical edges, but [a square trapdoor of lighter, newer planks in the middle] that gives way. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no lighting gradient across the tile."
+    },
+    {
+      "id": "route-water",
+      "group": "route",
+      "title": "Water",
+      "file": "art/road/harbor_water.png",
+      "size": [
+        1152,
+        2048
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 1152 × 2048 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. [Clear turquoise tropical sea water with soft ripples and light caustics], even across the whole tile. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no lighting gradient across the tile."
+    },
+    {
+      "id": "route-boat",
+      "group": "route",
+      "title": "Boat",
+      "file": "art/road/harbor_boat.png",
+      "size": [
+        1980,
+        1980
+      ],
+      "prompt": "A single top-down game illustration of [a small wooden rowboat painted teal and orange, with a basket of fruit at the bow], seen straight from above with the bow at the top. The boat runs the full height of a square 1980 × 1980 px transparent canvas and sits in its middle third; the rest of the canvas stays empty. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No water, no shadow. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
+      "id": "route-capsize",
+      "group": "route",
+      "title": "Boat capsizing",
+      "file": "art/road/boat_capsize/capsize_atlas.webp",
+      "size": [
+        1024,
+        1024
+      ],
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "frames": 16,
+        "fps": 15
+      },
+      "prompt": "Sprite sheet for a 2D mobile game: 4 columns × 4 rows of equal square cells, each cell exactly 256 × 256 px, 1024 × 1024 px in all, 16 frames read left to right, top to bottom, transparent background. [The same rowboat as the Boat picture], seen from straight above, rolling over and sinking: first upright, then tipping onto its side with splashes and ripple rings, then upside down showing its hull. The boat stays centred and the same length in every cell. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No water surface, no grid lines."
+    },
+    {
+      "id": "win-rain-1",
+      "group": "celebration",
+      "title": "Win rain, first",
+      "file": "art/celebration/dog.png",
+      "size": [
+        192,
+        192
+      ],
+      "prompt": "A single small game icon, 192 × 192 px, transparent background: [the hero, a lanky cartoon street dog with spotted tan fur, big round eyes and a blue-and-red bandana, leaping happily with its legs stretched out], side view, centred, filling the frame. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
+      "id": "win-rain-2",
+      "group": "celebration",
+      "title": "Win rain, second",
+      "file": "art/celebration/coin.png",
+      "size": [
+        192,
+        192
+      ],
+      "prompt": "A single small game icon, 192 × 192 px, transparent background: [a shiny gold coin with a raised letter P], front view, centred, filling most of the frame. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
+      "id": "impact",
+      "group": "celebration",
+      "title": "Impact puff",
+      "file": "art/effects/impact-poof.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "A single game effect illustration, 1024 × 1024 px, transparent background: [a puffy cream-coloured cartoon dust cloud with small gold stars and short speed lines bursting out], centred, filling about three quarters of the frame. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    }
+  ],
+  "brands": {}
+}

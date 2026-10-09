@@ -61,7 +61,9 @@ window.Lotomobil={
  headers(){return session?{Authentication:session.auth}:{}},
  async request(path,options={}){
   if(!session)throw Error('Log in to Lotomobil first.');
-  if(path!=='/payment/account'&&!/^\/v[12]\/betting\/runner\//.test(path))throw Error('Unsupported game endpoint.');
+  // Beside the Runner API, one QA debug call: the game's debug panel setting where rounds are hit.
+  const debugStep=/^\/v1\/debug\/betting\/runner\/crash-at-step\?step=\d+$/.test(path)&&options.method==='POST';
+  if(path!=='/payment/account'&&!debugStep&&!/^\/v[12]\/betting\/runner\//.test(path))throw Error('Unsupported game endpoint.');
   if(path==='/payment/account'&&options.method&&options.method!=='GET')throw Error('Unsupported account method.');
   const requestSession=session;
   try{return await json('api'+path,{...options,headers:{...options.headers,...this.headers()}})}

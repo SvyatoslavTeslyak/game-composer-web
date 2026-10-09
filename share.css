@@ -104,6 +104,7 @@
 #changes-card .changes-standing .wb-button{flex:none;min-height:28px;padding:0 10px;font-size:12px}#changes-card .changes-standing .wb-button.primary{background:var(--inspector-accent);border-color:var(--inspector-accent);color:var(--inspector-on-accent);font-weight:600}
 #changes-card .changes-card-note{margin:8px 0 0;font-size:12px;color:var(--inspector-muted)}
 .review-audio{display:block;width:100%;max-width:280px;height:32px}
+.review-picture{display:block;max-width:calc(var(--space-40) * 4);max-height:calc(var(--space-40) * 3);object-fit:contain;border-radius:var(--space-6);background:repeating-conic-gradient(var(--inspector-border) 0 25%,transparent 0 50%) 0 0/var(--space-12) var(--space-12)}
 /* Changes, compact: the tabs, one quiet line, the changes, the actions under them. */
 .cloud-dialog .review-header-actions{display:flex;gap:8px;align-items:center}
 .cloud-dialog .review-header-actions .wb-button{width:36px;height:36px;padding:0;display:grid;place-items:center;font-size:16px}

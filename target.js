@@ -124,13 +124,13 @@ if(ENGINES.some(e=>e.id===wantedEngine))engine=wantedEngine;
 options();engineOptions();
 select.onchange=()=>{const wanted=select.value;if(!set(wanted))select.value=value};
 if(engineSelect)engineSelect.onchange=()=>{const wanted=engineSelect.value;if(!setEngine(wanted))engineSelect.value=engine};
-window.addEventListener('composer-workspace',event=>{workspace=event.detail;$('#workspace-title').textContent=({layout:'Game',look:'Tenants',library:'Library',math:'Math',sound:'Sounds',translates:'Texts'})[workspace]||'Game';options();writeHash()});
+window.addEventListener('composer-workspace',event=>{workspace=event.detail;$('#workspace-title').textContent=({layout:'Game',look:'Tenants',library:'Library',math:'Math',sound:'Sounds',translates:'Texts',art:'Assets'})[workspace]||'Game';options();writeHash()});
 window.addEventListener('hashchange',()=>{
  const opened=hash();
  if(opened.tab==='math')opened.tab='layout';
  if(opened.game)set(opened.game);
  if(opened.engine)setEngine(opened.engine);
- if(['layout','look','library','math','sound'].includes(opened.tab)&&opened.tab!==workspace)$('#'+opened.tab+'-tab').click();
+ if(['layout','look','library','math','sound','art'].includes(opened.tab)&&opened.tab!==workspace)$('#'+opened.tab+'-tab').click();
  writeHash();
 });
 // Manifests edited outside Composer, and finished builds, appear when the window regains focus.
@@ -153,7 +153,7 @@ function leaveHidden(){if(offered(value))return;const next=TARGETS.find(t=>t.liv
 // Restore the workspace only once every tab module has subscribed.
 window.addEventListener('DOMContentLoaded',async()=>{
  await window.ComposerAuth.ready;
- if(['look','library','sound','translates'].includes(opening.tab))$('#'+opening.tab+'-tab').click();else writeHash();
+ if(['look','library','sound','translates','art'].includes(opening.tab))$('#'+opening.tab+'-tab').click();else writeHash();
  refresh().catch(error=>say(error.message+' — start Composer with tools/preview.py so studio/ routes are available.',true));
 });
 window.ComposerAuth.ready.then(()=>{

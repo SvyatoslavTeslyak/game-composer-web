@@ -11,16 +11,20 @@
  const game=()=>window.ComposerTarget?.value;
  const SHARED='shared';let sharedScope=null;
  async function read(g,s){
-  const pending=s==='audio'?document.querySelector('#sound-tab.workspace-dirty'):window.ComposerLook?.dirty;
+  // Assets saves each picture as it is added, so its section is always read fresh.
+  const pending=s==='art'?false:s==='audio'?document.querySelector('#sound-tab.workspace-dirty'):window.ComposerLook?.dirty;
   if(pending&&snapshots.has(key(g,s)))return clone(snapshots.get(key(g,s)));
   const value=result(await ComposerAuth.client.from('composer_drafts').select('*').eq('game_id',g).single());
   snapshots.set(key(g,s),clone(value));return value;
  }
  async function save(g,s,value){
-  if(!ComposerAuth.has(s==='design'?'design.edit':'audio.edit',g))throw Error('You do not have permission to edit this section.');
+  if(!ComposerAuth.has(s==='design'||s==='art'?'design.edit':'audio.edit',g))throw Error('You do not have permission to edit this section.');
   const old=snapshots.get(key(g,s));if(!old)throw Error('Reload this section before saving.');
   window.ComposerUX?.status('saving');
   let saved;try{saved=result(await ComposerAuth.client.rpc('composer_save_section',{p_game:g,p_revision:old.revision,p_section:s,p_value:value}));}catch(error){window.ComposerUX?.status('error',error.message);throw error}
+  // The draft is one row: every section's copy of it moves to the new revision, or the next save
+  // from another tab would be refused as "Draft changed".
+  for(const k of [...snapshots.keys()])if(k.startsWith(g+':'))snapshots.set(k,clone(saved));
   snapshots.set(key(g,s),clone(saved));window.dispatchEvent(new CustomEvent('composer-draft-saved',{detail:{game:g,section:s,revision:saved.revision}}));return saved;
  }
  const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
@@ -114,8 +118,38 @@
   const audio=clone(old.payload.audio||{});audio[source]=audioPatch(manifest);await save(g,'audio',audio);
   return json({saved:true,cloud:true,media:path});
  }
+ // A picture a tenant or theme draws instead of the game's own (Assets, art.js): a PNG in the
+ // composer-art bucket under the game's folder, <game>/art/<tenant>[/<theme>]/<slot>-<hash>.png,
+ // named by the draft's `art` section. Apply locally copies it beside the configuration.
+ const ART_BUCKET='composer-art',ART_LIMIT=8*1024*1024;
+ const artUrl=path=>ComposerAuth.client.storage.from(ART_BUCKET).getPublicUrl(path).data.publicUrl;
+ async function readArt(g){return clone((await read(g,'art')).payload.art||{})}
+ // Read fresh, changed, saved: the draft's other sections may have moved on since this tab looked.
+ async function changeArt(g,change){
+  if(!ComposerAuth.has('design.edit',g))throw Error('You do not have permission to change this game’s pictures.');
+  const art=change(await readArt(g))||{};
+  for(const [brand,entry] of Object.entries(art)){
+   if(entry.slots&&!Object.keys(entry.slots).length)delete entry.slots;
+   for(const [theme,slots] of Object.entries(entry.themes||{}))if(!Object.keys(slots).length)delete entry.themes[theme];
+   if(entry.themes&&!Object.keys(entry.themes).length)delete entry.themes;
+   if(!Object.keys(entry).length)delete art[brand];
+  }
+  return save(g,'art',art);
+ }
+ async function uploadArt(g,{brand,theme,slot},blob){
+  if(!ComposerAuth.has('design.edit',g))throw Error('You do not have permission to change this game’s pictures.');
+  if(!blob?.size||blob.size>ART_LIMIT)throw Error('The picture must be larger than 0 and at most 8 MB as a PNG. Make it smaller and try again.');
+  const digest=[...new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))].slice(0,8).map(b=>b.toString(16).padStart(2,'0')).join('');
+  const path=[g,'art',brand,...(theme?[theme]:[]),slot+'-'+digest+'.png'].join('/');
+  const {error}=await ComposerAuth.client.storage.from(ART_BUCKET).upload(path,blob,{contentType:'image/png',upsert:false,cacheControl:'31536000'});
+  // The same picture added before is already there under its own name; that is not an error.
+  if(error&&!/exists|duplicate/i.test(error.message))throw Error(/bucket|not found/i.test(error.message)?'Picture storage is not set up yet: apply migration 202610090001_art_media.sql.':error.message||'Upload failed.');
+  return path;
+ }
  async function baseline(payload,g){
-  const out={translations:{},design:{brands:{}},audio:{},_labels:{translations:{},brands:{},events:{}}};
+  const out={translations:{},design:{brands:{}},audio:{},art:{},_labels:{translations:{},brands:{},events:{},slots:{}}};
+  // The game ships its own pictures; a draft's are all additions. Slot names come from the build.
+  if(payload.art){try{const r=await nativeFetch('games/pixi/'+encodeURIComponent(g)+'/skins.json',{cache:'no-store'});if(r.ok)for(const slot of (await r.json()).slots||[])out._labels.slots[slot.id]=slot.title}catch{}}
   if(payload.translations){const data=await original('translations?game='+encodeURIComponent(g===SHARED?'kit':g));out.translations=data.overrides||{};for(const [id,values] of Object.entries(payload.translations)){const entry=data.catalog.entries[id];if(entry){out._labels.translations[id]=entry.source;out.translations[id]={...Object.fromEntries(Object.keys(values).map(lang=>[lang,entry[lang]||entry.source])),...out.translations[id]}}}}
   if(payload.design){
    // A game's own entry for a brand (its seasons and faces) is compared with the shared brand it
@@ -133,7 +167,7 @@
  // After a Discard the cloud draft has gone back: the copies kept here would hand the editors the
  // discarded values, so they are dropped and the next read fetches the draft as it is now.
  function forget(g){for(const k of [...snapshots.keys()])if(k.startsWith(g+':')||k.startsWith(SHARED+':'))snapshots.delete(k)}
- window.ComposerDraftEditors={get enabled(){return enabled()},baseline,applyAudio,mediaUrl,shared,sharedCatalog,comparisonCatalog,ownDesign,forget,SHARED};
+ window.ComposerDraftEditors={get enabled(){return enabled()},baseline,applyAudio,mediaUrl,artUrl,readArt,changeArt,uploadArt,shared,sharedCatalog,comparisonCatalog,ownDesign,forget,SHARED};
  window.fetch=async(input,options={})=>{
   const url=new URL(input instanceof Request?input.url:input,location.href),path=url.pathname.slice(base.pathname.length),method=(options.method||'GET').toUpperCase();
   if(url.origin!==base.origin||!url.pathname.startsWith(base.pathname)||!(/^(brands\/|studio\/(catalog|save|restore|upload))/.test(path)))return nativeFetch(input,options);

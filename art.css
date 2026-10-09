@@ -1,0 +1,114 @@
+/* Assets (art.js): a tenant's or theme's pictures, one card per slot of the game's skins.json.
+   The cards fill the room on the left and the game stands beside them on the right; the side
+   panel is put away while Assets is open. */
+/* Side by side on a desktop; on a phone (responsive.css) the cards and the game stack. */
+@media(min-width:1001px){
+ body.art-workspace{grid-template-columns:var(--inspector-size-76) 0 minmax(0,1fr)}
+ body.art-workspace aside#side{display:none}
+ #room.art-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(calc(var(--space-48) * 7),calc(var(--space-48) * 9));grid-template-rows:minmax(0,1fr);gap:0 var(--space-24);padding:var(--space-24);background-image:none}
+ #room.art-workspace #art-report{grid-column:1;grid-row:1;min-width:0;min-height:0;overflow:auto;padding-right:var(--space-8)}
+ #room.art-workspace #fit{grid-column:2;grid-row:1;min-width:0;min-height:0}
+}
+#art-report small{display:block}
+.art-head{display:grid;gap:var(--space-4);margin:0 0 var(--space-16);max-width:80ch}
+.art-head h2{font-size:var(--inspector-type-xl);margin:0}
+.art-head p,.art-head small{margin:0;color:var(--inspector-muted);font-size:var(--inspector-type-base)}
+.art-head code{font-size:var(--inspector-type-sm);color:var(--inspector-accent)}
+.art-guide{margin:0 0 var(--space-16);padding:var(--space-12) var(--space-16);background:var(--inspector-card);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--inspector-radius-card)}
+.art-guide summary{cursor:pointer;font-weight:600;color:var(--inspector-accent)}
+.art-guide[open]{columns:2 calc(var(--space-48) * 7);column-gap:var(--space-32)}
+.art-guide[open] summary{column-span:all;margin-bottom:var(--space-4)}
+.art-guide h3{font-size:var(--inspector-type-md);margin:var(--space-12) 0 var(--space-4);break-after:avoid}
+.art-guide ul{margin:0;padding-left:var(--space-16);display:grid;gap:var(--space-4);color:var(--inspector-muted);font-size:var(--inspector-type-sm);line-height:1.45}
+.art-group{margin:0 0 var(--space-24)}
+.art-group>summary{cursor:pointer;display:flex;align-items:center;gap:var(--space-12);font-size:var(--inspector-type-lg);font-weight:600;padding:var(--space-6) 0 var(--space-8)}
+.art-group>summary small{display:inline;font-size:var(--inspector-type-sm);font-weight:400;color:var(--inspector-muted)}
+.art-note{margin:0 0 var(--space-12);font-size:var(--inspector-type-sm);color:var(--inspector-muted)}
+.art-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--space-48) * 5),1fr));gap:var(--space-12);align-items:stretch}
+/* A card: the picture, its name and source, what it must be, the prompt, then the actions. */
+.art-card{display:flex;flex-direction:column;gap:var(--space-8);padding:var(--space-12);background:var(--inspector-card);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--inspector-radius-card);min-width:0}
+.art-card.is-busy{opacity:.7}
+.art-thumb{--thumb-height:calc(var(--space-48) * 3);display:grid;place-items:center;height:var(--thumb-height);padding:var(--space-8);border:0;border-radius:var(--space-8);cursor:zoom-in;background:repeating-conic-gradient(var(--inspector-border) 0 25%,transparent 0 50%) 0 0/var(--space-16) var(--space-16)}
+.art-thumb:focus-visible{outline:var(--stroke-2) solid var(--inspector-accent);outline-offset:var(--stroke-2)}
+/* The picture at its own proportions, as large as its box allows; the grid is laid exactly over it. */
+.art-frame{position:relative;display:block;width:min(100%,calc((var(--thumb-height) - var(--space-16)) * var(--ratio)));aspect-ratio:var(--ratio)}
+.art-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}
+.art-cells{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 var(--stroke-1) var(--inspector-accent);background-image:linear-gradient(to right,var(--inspector-accent) var(--stroke-1),transparent var(--stroke-1)),linear-gradient(to bottom,var(--inspector-accent) var(--stroke-1),transparent var(--stroke-1));background-size:calc(100% / var(--cols)) calc(100% / var(--rows));opacity:.7}
+.art-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-8);min-width:0}
+.art-card-head strong{font-size:var(--inspector-type-md);line-height:1.3}
+.art-badge{flex:none;font-size:var(--inspector-type-xs);line-height:1.6;padding:0 var(--space-6);border-radius:var(--space-6);border:var(--stroke-1) solid var(--inspector-border);color:var(--inspector-muted);white-space:nowrap}
+.art-from-tenant,.art-from-theme{border-color:var(--inspector-accent);color:var(--inspector-accent)}
+.art-spec{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:var(--space-4) var(--space-12);margin:0;padding:var(--space-8);background:var(--inspector-well);border-radius:var(--space-6);font-size:var(--inspector-type-sm)}
+.art-spec dt{color:var(--inspector-muted)}
+.art-spec dd{margin:0;font-variant-numeric:tabular-nums}
+.art-spec b{color:var(--inspector-accent)}
+.art-file{margin:0;font-size:var(--inspector-type-sm);color:var(--inspector-muted)}
+.art-file{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Every action the same height; the upload is the one in colour. */
+.art-actions{display:grid;gap:var(--space-6);margin-top:auto}
+.art-pair{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:var(--space-6)}
+.art-button{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-6);box-sizing:border-box;width:100%;height:var(--space-32);padding:0 var(--space-12);font:600 var(--inspector-type-sm)/1 var(--inspector-sans);color:var(--inspector-text);background:var(--inspector-surface);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--space-8);cursor:pointer;text-decoration:none;white-space:nowrap}
+.art-button:hover{background:var(--inspector-surface-hover)}
+.art-button:focus-visible{outline:var(--stroke-2) solid var(--inspector-accent);outline-offset:var(--stroke-2)}
+.art-button:disabled,.art-button.is-disabled{opacity:.5;cursor:default;pointer-events:none}
+.art-primary{color:var(--inspector-on-accent);background:var(--inspector-accent);border-color:var(--inspector-accent)}
+.art-primary:hover{background:var(--inspector-accent);filter:brightness(1.08)}
+.art-quiet{background:none;color:var(--inspector-accent);border-style:dashed}
+/* The closer look: the picture as large as the window allows, its grid over it. */
+.art-viewer{width:min(calc(100vw - var(--space-48)),calc(var(--space-48) * 22));max-height:calc(100vh - var(--space-48));padding:0;color:var(--inspector-text);background:var(--inspector-bg);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--inspector-radius-card);overflow:hidden}
+.art-viewer::backdrop{background:var(--inspector-scrim)}
+.art-viewer[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+.art-viewer-head,.art-viewer-foot{display:flex;align-items:center;gap:var(--space-12);padding:var(--space-12) var(--space-16)}
+.art-viewer-head strong{font-size:var(--inspector-type-lg)}
+.art-viewer-head .art-close{margin-left:auto;width:var(--space-32);padding:0;font-size:var(--inspector-type-lg)}
+.art-viewer-foot{justify-content:space-between;flex-wrap:wrap}
+.art-viewer-foot .art-button{width:auto}
+.art-viewer-stage{--thumb-height:calc(100vh - var(--space-48) * 5 - var(--space-16) * 2);display:grid;place-items:center;min-height:0;padding:var(--space-16);background:repeating-conic-gradient(var(--inspector-border) 0 25%,transparent 0 50%) 0 0/var(--space-24) var(--space-24)}
+.art-viewer-stage .art-frame{width:min(100%,calc(var(--thumb-height) * var(--ratio)));max-height:var(--thumb-height)}
+/* Making a group from animated clips (the hero): the steps, the frame picker, the sheets made. */
+.art-clips{margin:0 0 var(--space-16)}
+.art-clips>details{padding:var(--space-12) var(--space-16);background:var(--inspector-card);border:var(--stroke-1) solid var(--inspector-accent);border-radius:var(--inspector-radius-card)}
+.art-clips summary{cursor:pointer;font-weight:600;color:var(--inspector-accent)}
+.art-steps{margin:var(--space-12) 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--space-48) * 7),1fr));gap:var(--space-12)}
+.art-step{display:flex;flex-direction:column;gap:var(--space-8);padding:var(--space-12);background:var(--inspector-well);border-radius:var(--space-8);min-width:0}
+.art-step h4{margin:0;font-size:var(--inspector-type-md)}
+.art-step-prompt{display:grid;gap:var(--space-6)}
+.art-step-prompt p{margin:0;max-height:calc(var(--space-48) * 3);overflow:auto;font-size:var(--inspector-type-sm);line-height:1.45}
+.art-step-prompt mark{background:none;color:var(--inspector-accent);font-weight:600}
+.art-step-prompt .art-button{justify-self:start;width:auto}
+.art-step-settings{margin:0;font-size:var(--inspector-type-xs);color:var(--inspector-muted);line-height:1.45}
+.art-step-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-8);margin-top:auto}
+.art-step-row .art-button{width:auto}
+.art-step-row small{color:var(--inspector-muted);font-size:var(--inspector-type-xs)}
+.art-pick p{margin:0 0 var(--space-6);font-size:var(--inspector-type-sm)}
+.art-frames{list-style:none;margin:0 0 var(--space-6);padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--space-48) + var(--space-24)),1fr));gap:var(--space-6)}
+.art-frame-pick{display:grid;gap:var(--space-4);width:100%;padding:var(--space-4);background:var(--inspector-card);border:var(--stroke-2) solid var(--inspector-border);border-radius:var(--space-6);color:var(--inspector-muted);font-size:var(--inspector-type-xs);cursor:pointer}
+.art-frame-pick img{width:100%;aspect-ratio:1;object-fit:contain}
+.art-frame-pick span{text-align:center;font-variant-numeric:tabular-nums}
+.art-frame-pick.is-part-0{border-color:var(--inspector-accent);color:var(--inspector-accent)}
+.art-frame-pick.is-part-1{border-color:var(--inspector-warning);color:var(--inspector-warning)}
+.art-made{margin-top:var(--space-12);display:grid;gap:var(--space-8)}
+.art-made h4{margin:0;font-size:var(--inspector-type-md)}
+.art-made-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:var(--space-12)}
+.art-made-list li{display:grid;justify-items:center;gap:var(--space-4);font-size:var(--inspector-type-sm)}
+.art-made-list small{color:var(--inspector-muted);font-size:var(--inspector-type-xs)}
+.art-anim{border-radius:var(--space-8);background:repeating-conic-gradient(var(--inspector-border) 0 25%,transparent 0 50%) 0 0/var(--space-12) var(--space-12)}
+.art-missing{margin:0;padding-left:var(--space-16);color:var(--inspector-warning);font-size:var(--inspector-type-sm)}
+.art-save{justify-self:start;width:auto}
+.art-step:has(.art-pick){grid-column:1/-1}
+.art-part{display:inline-block;margin-left:var(--space-8);padding:0 var(--space-6);border-radius:var(--space-6);border:var(--stroke-1) solid currentColor}
+.art-part.is-part-0{color:var(--inspector-accent)}.art-part.is-part-1{color:var(--inspector-warning)}
+/* Every section that folds says so: a chevron before its title, pointing down while open. */
+.art-group>summary,.art-guide>summary,.art-clips>details>summary{list-style:none;display:flex;align-items:center;gap:var(--space-8);cursor:pointer;user-select:none}
+.art-group>summary::-webkit-details-marker,.art-guide>summary::-webkit-details-marker,.art-clips>details>summary::-webkit-details-marker{display:none}
+.art-group>summary::before,.art-guide>summary::before,.art-clips>details>summary::before{content:'';flex:none;box-sizing:border-box;width:var(--space-8);height:var(--space-8);margin:0 var(--space-4);border-right:var(--stroke-2) solid currentColor;border-bottom:var(--stroke-2) solid currentColor;transform:rotate(-45deg);transition:transform var(--motion-ms) ease}
+.art-group[open]>summary::before,.art-guide[open]>summary::before,.art-clips>details[open]>summary::before{transform:rotate(45deg) translate(calc(var(--space-4) * -0.5),calc(var(--space-4) * -0.5))}
+.art-group>summary::before{width:var(--space-12);height:var(--space-12);color:var(--inspector-muted)}
+.art-group>summary:hover::before{color:var(--inspector-accent)}
+@media(prefers-reduced-motion:reduce){.art-group>summary::before,.art-guide>summary::before,.art-clips>details>summary::before{transition:none}}
+/* The prompt window: the text large and easy to read, the part a tenant changes marked. */
+.art-viewer.is-prompt{width:min(calc(100vw - var(--space-48)),calc(var(--space-48) * 15))}
+.art-prompt-body{display:grid;gap:var(--space-12);padding:var(--space-4) var(--space-16) var(--space-16);overflow:auto}
+.art-prompt-text{margin:0;padding:var(--space-16);background:var(--inspector-well);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--space-8);font-size:var(--inspector-type-md);line-height:1.6;white-space:pre-wrap;user-select:text}
+.art-prompt-text mark,.art-prompt-note mark{background:color-mix(in srgb,var(--inspector-accent) calc(var(--alpha-faint) * 100%),transparent);color:var(--inspector-accent);font-weight:600;border-radius:var(--space-4);padding:0 var(--space-4)}
+.art-prompt-note{margin:0;font-size:var(--inspector-type-sm);color:var(--inspector-muted)}

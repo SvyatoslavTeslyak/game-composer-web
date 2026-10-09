@@ -142,7 +142,8 @@ window.addEventListener('composer-target',follow);
   load();
  }};
  window.addEventListener('composer-workspace',event=>{
-  if(event.detail==='layout'||event.detail==='look'||event.detail==='translates'){
+  // Assets shows the game beside its pictures, so the frame stays loaded there too.
+  if(event.detail==='layout'||event.detail==='look'||event.detail==='translates'||event.detail==='art'){
    if(deferred){deferred=false;load()}
    else if(soundsChanged&&live()&&!frame.src.endsWith('about:blank'))status.textContent='Sounds changed while this round was running · Reload game to hear them.';
    return;

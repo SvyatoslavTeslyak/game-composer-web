@@ -20,7 +20,7 @@ window.fetch=async(input,options={})=>{
  const url=new URL(input instanceof Request?input.url:input,location.href);
  const basePath=new URL('./',location.href).pathname;
  const route=url.pathname.startsWith(basePath)?'/'+url.pathname.slice(basePath.length):url.pathname;
- if(url.origin===location.origin&&!['GET','HEAD','OPTIONS'].includes(method)&&!/^\/(auth\/login\/(player|otp)|api\/v[12]\/betting\/runner\/)/.test(route)){
+ if(url.origin===location.origin&&!['GET','HEAD','OPTIONS'].includes(method)&&!/^\/(auth\/login\/(player|otp)|api\/v[12]\/betting\/runner\/|api\/v1\/debug\/betting\/runner\/crash-at-step$)/.test(route)){
   let permission=null,game=null;
   if(route==='/settings/showcase'){permission='releases.publish';if(state.member?.role!=='admin')throw Error('Admin access required');}
   else if(route==='/release/apply'){permission='releases.publish';game=window.ComposerTarget?.value;if(state.member?.role!=='admin')throw Error('Admin access required');}

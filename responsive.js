@@ -6,7 +6,7 @@
  const backdrop=document.createElement('button');backdrop.id='mobile-backdrop';backdrop.type='button';backdrop.setAttribute('aria-label','Close controls');backdrop.hidden=true;document.body.append(backdrop);
  const close=document.createElement('button');close.id='mobile-controls-close';close.type='button';close.className='wb-button';close.textContent='Done';side.prepend(close);
  let mode='layout',view='editor',returnFocus=null,editorScroll=0;
- const currentMode=()=>['layout','look','library','sound','translates','math'].find(id=>$('#'+id+'-tab')?.getAttribute('aria-pressed')==='true')||'layout';
+ const currentMode=()=>['layout','look','library','sound','translates','math','art'].find(id=>$('#'+id+'-tab')?.getAttribute('aria-pressed')==='true')||'layout';
  function sheet(open){
   open=open&&media.matches;document.body.classList.toggle('mobile-controls-open',open);backdrop.hidden=!open;$('#mobile-controls').setAttribute('aria-expanded',String(open));side.inert=media.matches&&!open;
   for(const node of [room,bar,$('.appbar'),$('.workspace-rail')])node.inert=open;
@@ -16,7 +16,7 @@
  function paint(){
   mode=currentMode();document.body.dataset.mobileMode=mode;document.body.dataset.mobileView=view;
   bar.querySelector('[role=group]').hidden=mode!=='translates';
-  $('#mobile-controls').textContent=mode==='translates'?'Filters':mode==='look'?'Edit tenant':mode==='library'?'Library sections':mode==='sound'?'Sound filters':'Game controls';
+  $('#mobile-controls').textContent=mode==='translates'?'Filters':mode==='look'?'Edit tenant':mode==='library'?'Library sections':mode==='sound'?'Sound filters':mode==='art'?'Pictures':'Game controls';
   for(const b of bar.querySelectorAll('[data-mobile-view]'))b.setAttribute('aria-pressed',String(b.dataset.mobileView===view));
   side.inert=media.matches&&!document.body.classList.contains('mobile-controls-open');
  }

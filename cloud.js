@@ -55,7 +55,7 @@ window.ComposerCloud={
 async function sharedTextsOffered(){return !!(await window.ComposerDraftEditors?.shared?.().catch(()=>false))&&ComposerAuth.has('workspace.view',SHARED)}
 function canSwitch(){return !document.querySelector('.workspace-dirty')&&!window.ComposerLook?.dirty}
 
-const sectionNames={translations:'Translations',design:'Design',audio:'Sounds'};
+const sectionNames={translations:'Translations',design:'Design',audio:'Sounds',art:'Assets'};
 const feedback=document.createElement('span');feedback.id='changes-feedback';feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');button.after(feedback);
 const isReviewer=()=>ComposerAuth.member?.role!=='art_director'&&ComposerAuth.has('drafts.review',game());
 let feedbackTimer;
@@ -89,6 +89,8 @@ const ownPart=design=>sharedBrands&&window.ComposerDraftEditors?.ownDesign?windo
 // What a person counts as one change. A sound moment's choice of sound is one change, however many
 // takes it switched off, switched on or added; the list shows it as one "Sound" line too.
 function heard(section,path){
+ // A picture is one change, whichever of its file and name moved.
+ if(section==='art')return 'art:'+path.split('/').filter(Boolean).slice(0,-1).join('/');
  if(section!=='audio')return section+':'+path;
  const p=path.split('/').filter(Boolean);return 'audio:'+p.slice(0,3).join('/')+'/'+(p[3]==='takes'?'sound':p[3]);
 }
@@ -254,7 +256,7 @@ function renderProgress(){
 // The road from a saved edit to the sites, for whoever opens Changes and finds nothing waiting.
 function howItWorks(){
  const where=scope===SHARED?'the shared draft of the tenants':'the cloud draft of '+esc(scopeTitle());
- return '<ol class="review-help"><li>Save an edit in Tenants, Texts or Sounds. It lands in '+where+', shared with your team.</li><li>Send changes to Admin. An Admin reviews saved changes here, before or after they are sent.</li><li>Apply locally, on the Admin’s computer, writes the accepted state to <code>configurations/'+esc(scope===SHARED?SHARED:game())+'.json</code>.</li><li>Commit and push that file. GitHub rebuilds the game and publishes Composer web and Showcase.</li></ol>';
+ return '<ol class="review-help"><li>Save an edit in Tenants, Texts, Sounds or Assets. It lands in '+where+', shared with your team.</li><li>Send changes to Admin. An Admin reviews saved changes here, before or after they are sent.</li><li>Apply locally, on the Admin’s computer, writes the accepted state to <code>configurations/'+esc(scope===SHARED?SHARED:game())+'.json</code>.</li><li>Commit and push that file. GitHub rebuilds the game and publishes Composer web and Showcase.</li></ol>';
 }
 // Something happened to a version since Changes was last opened: the button says so until it is.
 function unreadNotices(){return notices.filter(n=>!n.read_at)}
@@ -266,6 +268,11 @@ function reviewGroup(section,row,payload,baseline){
  const pretty=v=>String(v||'Setting').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[_-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
  if(section==='translations')return {key:p[0],title:labels?.translations?.[p[0]]||p[0],category:'Languages',label:({en:'English',fr:'French',ht:'Creole'}[p[1]]||p[1])};
  if(section==='audio')return {key:p.slice(0,3).join('/'),title:(p[0]==='kit'?'Interface sounds':'Scene sounds')+' · '+(labels?.events?.[p[0]]?.[p[2]]||pretty(p[2])),category:'Sound settings',label:p.slice(3).map(v=>({volume_db:'Volume (dB)',pitch_jitter:'Pitch variation',takes:'Take',enabled:'Enabled',media:'Added sound',name:'File name'})[v]||pretty(v)).join(' · ')};
+ // A picture: <tenant>/slots/<slot>/… or <tenant>/themes/<theme>/<slot>/….
+ if(section==='art'){
+  const theme=p[1]==='themes',slot=theme?p[3]:p[2],tenant=window.ComposerLook?.catalog?.brands?.[p[0]],themeTitle=theme?(tenant?.themes?.[p[2]]?.title||pretty(p[2])):'';
+  return {key:p.slice(0,theme?4:3).join('/'),title:(tenant?.title||pretty(p[0]))+(theme?' · '+themeTitle:'')+' · '+(labels?.slots?.[slot]||pretty(slot)),category:'Pictures',label:({media:'Picture',name:'File name'})[p[theme?4:3]]||pretty(p[theme?4:3])};
+ }
  const brand=payload?.design?.brands?.[p[1]]||baseline?.design?.brands?.[p[1]],title=brand?.title||labels?.brands?.[p[1]]||pretty(p[1]);
  const theme=p[2]==='themes',tail=p.slice(theme?4:2),themeId=p[3];
  const category=({roles:'Colors',overrides:'Component styles',fonts:'Fonts'})[tail[0]]||'General';
@@ -273,7 +280,10 @@ function reviewGroup(section,row,payload,baseline){
 }
 // A sound the team added shows as a player, so a reviewer hears it before accepting it.
 const ADDED_SOUND=/^[a-z][a-z0-9_]*\/[a-z][a-z0-9_]*\/[a-z0-9_-]+-[0-9a-f]{16}\.(wav|ogg|mp3)$/;
+// A picture added in Assets shows as itself, so a reviewer sees it before accepting it.
+const ADDED_PICTURE=/^[a-z][a-z0-9_]*\/art\/[a-z][a-z0-9-]*(\/[a-z][a-z0-9-]*)?\/[a-z0-9-]+-[0-9a-f]{16}\.png$/;
 function reviewValue(value){
+ if(typeof value==='string'&&ADDED_PICTURE.test(value)&&window.ComposerDraftEditors?.artUrl)return '<img class="review-picture" alt="" loading="lazy" src="'+esc(window.ComposerDraftEditors.artUrl(value))+'">';
  if(typeof value==='string'&&ADDED_SOUND.test(value)&&window.ComposerDraftEditors?.mediaUrl)return '<audio class="review-audio" controls preload="none" src="'+esc(window.ComposerDraftEditors.mediaUrl(value))+'"></audio>';
  const swatch=typeof value==='string'&&/^#[0-9a-f]{3,8}$/i.test(value)?'<span class="review-swatch" style="background:'+value+'" aria-hidden="true"></span>':'';
  return swatch+esc(showValue(value));

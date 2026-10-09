@@ -4,8 +4,9 @@
   "cloudDraftSections": [
     "translations",
     "design",
-    "audio"
+    "audio",
+    "art"
   ],
-  "files": 2947,
-  "bytes": 241186292
+  "files": 595,
+  "bytes": 82954323
 }
