@@ -885,7 +885,6 @@
 
 .crash-ui.has-tabbed-controls .setting input.switch::before{box-sizing:border-box}
 
-.crash-ui.has-tabbed-controls .is-menu-popover .modal-body>[data-action=refill]{display:flex;width:100%;max-width:none;justify-self:stretch;align-self:stretch;justify-content:center;margin-inline:0}
 
 /* Equal outer content padding on all four sides. */
 .crash-ui.has-tabbed-controls .panel:not(.navigation-only){padding:var(--space-16)}
@@ -991,7 +990,6 @@
 .crash-ui.has-menu-drawer .drawer-tab:hover{background:color-mix(in srgb,var(--text) 6%,transparent);color:var(--text)}
 .crash-ui.has-menu-drawer .drawer-tab[aria-selected=true]{background:color-mix(in srgb,var(--action-go) 14%,var(--surface));color:var(--action-go)}
 .crash-ui.has-menu-drawer .drawer-tab:focus-visible{outline-offset:calc(-1 * var(--stroke-3))}
-.crash-ui.has-menu-drawer .is-menu-drawer .modal-body>.button[data-action=refill]{width:100%;margin-top:var(--space-16)}
 @media(max-width:599px){.crash-ui.has-menu-drawer .modal-layer.is-menu-drawer .modal{width:100%;padding:var(--space-16) max(var(--space-16),var(--safe-area-right,env(safe-area-inset-right))) max(var(--space-16),var(--safe-area-bottom,env(safe-area-inset-bottom))) max(var(--space-16),var(--safe-area-left,env(safe-area-inset-left)))}}
 .crash-ui.has-menu-drawer .modal-layer.is-menu-drawer .modal:has(.bets-table){--table-inset:var(--space-24)}
 .crash-ui.has-menu-drawer .is-menu-drawer .modal-body:has(>.bets-table){margin-inline:calc(-1 * var(--table-inset));scrollbar-gutter:auto}

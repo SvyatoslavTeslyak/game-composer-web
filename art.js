@@ -12,7 +12,7 @@
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const controls=$('#art-report');
-const ACCEPT='image/png,image/webp,.png,.webp';
+const ACCEPT='image/png,image/webp,image/jpeg,.png,.webp,.jpg,.jpeg';
 /** Phones cannot hold a texture larger than this on a side. */
 const MAX_SIDE=4096;
 /** How far a picture's proportions may stray from the slot's before it is refused. */
@@ -39,10 +39,24 @@ function layer(source,brand,theme,create=false){
  return (theme?source[brand]?.themes?.[theme]:source[brand]?.slots)||{};
 }
 const groupSlots=(group)=>catalog.slots.filter(s=>s.group===group);
+/**
+ * A layer of the draft laid over the same layer the game already ships (its skins.json brands),
+ * as the release lays them (tools/review_assets.py merge_layer): slot by slot, except that a group
+ * that must change whole comes whole from the draft once the draft has any of it.
+ */
+function mergeLayer(base,top,manifest=catalog){
+ const together=new Set((manifest?.groups||[]).filter(g=>g.together).map(g=>g.id));
+ const groupOf=Object.fromEntries((manifest?.slots||[]).map(s=>[s.id,s.group]));
+ const out={...base};
+ for(const id of Object.keys(top))if(together.has(groupOf[id]))for(const [slot,group] of Object.entries(groupOf))if(group===groupOf[id])delete out[slot];
+ return Object.assign(out,top);
+}
+/** The pictures one look draws: the game's own for that tenant or theme, the draft's over them. */
+const merged=(brand,theme)=>mergeLayer(layer(catalog?.brands||{},brand,theme),layer(art,brand,theme));
 // A group that must change whole (the hero's clips) is drawn from a layer only when that layer has
 // every one of them, as the game decides (src/platform/skins.ts in a game).
 function picked(source,brand,theme,slot){
- const own=layer(source,brand,theme),group=catalog.groups?.find(g=>g.id===slot.group);
+ const own=source===art?merged(brand,theme):layer(source,brand,theme),group=catalog.groups?.find(g=>g.id===slot.group);
  if(!own[slot.id])return null;
  if(group?.together&&!groupSlots(group.id).every(s=>own[s.id]))return null;
  return {picture:own[slot.id]};
@@ -54,11 +68,14 @@ function shown(slot,source=art){
  const tenant=picked(source,brand,'',slot);if(tenant)return {from:'tenant',...tenant};
  return {from:'game',picture:null};
 }
-/** The card's word for where its picture comes from. */
-function source(slot,{from}){
- return {theme:'This theme',tenant:look().theme?'From the tenant':'This tenant',game:'Game’s own'}[from];
+/** The card's word for where its picture comes from; one the game itself ships says so. */
+function source(slot,{from,picture}){
+ const base={theme:'This theme',tenant:look().theme?'From the tenant':'This tenant',game:'Game’s own'}[from];
+ return typeof picture==='string'?base+' · in the game':base;
 }
-const pictureUrl=(slot,picture)=>picture?editors().artUrl(picture.media):buildUrl(game(),slot.file);
+// A picture the draft adds lives in Composer's storage; one the game ships for a tenant is a file
+// of its build, named by its path.
+const pictureUrl=(slot,picture)=>!picture?buildUrl(game(),slot.file):typeof picture==='string'?buildUrl(game(),picture):editors().artUrl(picture.media);
 
 // --- Titles ---------------------------------------------------------------------------------
 
@@ -69,6 +86,8 @@ function lookTitles(){
 const px=(w,h)=>w+' × '+h+' px';
 /** A sprite sheet's frame at the slot's own size: square, the sheet's width over its columns. */
 const cell=slot=>slot.size[0]/slot.sheet.columns;
+/** The picture's edge drawn over it, and a sheet's frames inside it, so its canvas is plain to see. */
+const cellsOf=slot=>'<i class="art-cells" style="--cols:'+(slot.sheet?.columns||1)+';--rows:'+(slot.sheet?.rows||1)+'"></i>';
 /** What the picture must be: its size, and for a sprite sheet the grid and the size of one frame. */
 function spec(slot){
  const [w,h]=slot.size;
@@ -111,7 +130,7 @@ function render(){
   +'</div>';
  const groups=(catalog.groups||[]).map(group=>{
   const slots=groupSlots(group.id);if(!slots.length)return '';
-  const own=layer(art,look().brand,theme),count=slots.filter(s=>own[s.id]).length;
+  const own=merged(look().brand,theme),count=slots.filter(s=>own[s.id]).length;
   const names=esc(slots.map(s=>s.title).join(', '));
   const whole=group.together&&count>0&&count<slots.length?'<p class="art-note sound-warn">'+count+' of '+slots.length+' added. The game keeps drawing '+(theme?'the tenant’s':'its own')+' '+esc(group.title.toLowerCase())+' until '+names+' are all here.</p>':group.together?'<p class="art-note">Replace '+names+' together: the game never mixes two sets.</p>':'';
   return '<details class="art-group" open><summary>'+esc(group.title)+(count?'<small>'+count+' of '+slots.length+' replaced</small>':'')+'</summary>'+whole+clipsPanel(group)+'<ul class="art-grid">'+slots.map(row).join('')+'</ul></details>';
@@ -125,8 +144,8 @@ function row(slot){
  const badge=source(slot,shown(slot));
  const edit=canEdit(),working=busy===slot.id,locked=busy?' disabled':'';
  const url=pictureUrl(slot,picture),[w,h]=slot.size;
- // A sheet's grid is drawn over its picture, so the frames the game cuts can be seen.
- const cells=slot.sheet?'<i class="art-cells" style="--cols:'+slot.sheet.columns+';--rows:'+slot.sheet.rows+'"></i>':'';
+ // The picture's edge, and a sheet's grid, drawn over it: the canvas and the frames the game cuts.
+ const cells=cellsOf(slot);
  return '<li class="art-card'+(working?' is-busy':'')+'" data-slot="'+esc(slot.id)+'">'
   +'<button class="art-thumb" type="button" data-view title="Look closer"><span class="art-frame" style="--ratio:'+(w/h).toFixed(4)+'"><img alt="" loading="lazy" src="'+esc(url)+'">'+cells+'</span></button>'
   +'<div class="art-card-head"><strong>'+esc(slot.title)+'</strong><span class="art-badge art-from-'+from+'">'+badge+'</span></div>'
@@ -146,7 +165,7 @@ function say(text,error=false){note={text,error};const node=$('#art-message');if
 const viewer=document.createElement('dialog');viewer.className='art-viewer';viewer.setAttribute('aria-label','Picture');document.body.append(viewer);
 function view(slot){
  const {from,picture}=shown(slot),url=pictureUrl(slot,picture),[w,h]=slot.size;
- const cells=slot.sheet?'<i class="art-cells" style="--cols:'+slot.sheet.columns+';--rows:'+slot.sheet.rows+'"></i>':'';
+ const cells=cellsOf(slot);
  const badge=source(slot,shown(slot));
  viewer.innerHTML='<div class="art-viewer-head"><strong>'+esc(slot.title)+'</strong><span class="art-badge art-from-'+from+'">'+badge+'</span><button class="art-button art-close" type="button" data-close aria-label="Close">×</button></div>'
   +'<div class="art-viewer-stage"><span class="art-frame" style="--ratio:'+(w/h).toFixed(4)+'"><img alt="'+esc(slot.title)+'" src="'+esc(url)+'">'+cells+'</span></div>'
@@ -182,11 +201,13 @@ viewer.addEventListener('click',event=>{if(event.target===viewer||event.target.c
 // --- Checking and storing a picture ---------------------------------------------------------
 
 const isPng=bytes=>bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47;
+const isJpeg=bytes=>bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff;
 /** The picture as the slot needs it, as a PNG, or an error that says what to change. */
 async function prepare(file,slot){
  const head=new Uint8Array(await file.slice(0,16).arrayBuffer());
  const webp=String.fromCharCode(...head.slice(0,4))==='RIFF'&&String.fromCharCode(...head.slice(8,12))==='WEBP';
- if(!isPng(head)&&!webp)throw Error(file.name+' is not a PNG or WebP picture.');
+ // A JPG suits an opaque picture (a sky); like a WebP it is redrawn as a PNG below.
+ if(!isPng(head)&&!webp&&!isJpeg(head))throw Error(file.name+' is not a PNG, WebP or JPG picture.');
  let bitmap;try{bitmap=await createImageBitmap(file)}catch{throw Error(file.name+' could not be read as a picture.')}
  const {width,height}=bitmap,[w,h]=slot.size,want=w/h,got=width/height;
  const grid=slot.sheet?' (a '+slot.sheet.columns+' × '+slot.sheet.rows+' grid of square frames, each '+px(cell(slot),cell(slot))+' at that size)':'';
@@ -195,7 +216,7 @@ async function prepare(file,slot){
  if(slot.sheet&&(width%slot.sheet.columns||height%slot.sheet.rows)){bitmap.close();throw Error(file.name+' is '+width+' × '+height+', which does not split into '+slot.sheet.columns+' × '+slot.sheet.rows+' whole frames. Use '+w+' × '+h+' or another size that divides evenly.')}
  const warning=width<w/2?' It is less than half the size of the current picture, so it may look soft on large screens.':'';
  if(isPng(head)){bitmap.close();return {blob:file,warning}}
- // A WebP is redrawn as a PNG: the release ships PNG, which every browser decodes.
+ // A WebP or JPG is redrawn as a PNG: the release ships PNG, which every browser decodes.
  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
  canvas.getContext('2d').drawImage(bitmap,0,0);bitmap.close();
  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('The picture could not be converted to PNG.')),'image/png'));
@@ -386,12 +407,27 @@ window.addEventListener('composer-workspace',event=>{
  document.body.classList.toggle('art-workspace',on);$('#room').classList.toggle('art-workspace',on);
  if(on){note={text:'',error:false};load()}
 });
-window.addEventListener('composer-target',()=>{catalog=null;catalogFor=null;art={};for(const timer of timers)clearInterval(timer);timers=[];if(active())load()});
+window.addEventListener('composer-target',()=>{catalog=null;catalogFor=null;art={};for(const timer of timers)clearInterval(timer);timers=[];syncTab();if(active())load()});
+// Assets is offered only for a game whose build names pictures to replace (its skins.json); for
+// any other game the tab is hidden, and leaving it open there goes back to Game.
+const tab=$('#art-tab');
+async function syncTab(){
+ const g=game(),found=catalogFor===g&&catalog?catalog:await readCatalog(g);
+ if(g!==game()||!tab)return;
+ if(found&&catalogFor!==g){catalog=found;catalogFor=g}
+ tab.dataset.unavailable=found?'':'1';tab.disabled=!found;
+ tab.hidden=!found||!window.ComposerAuth?.canWorkspace?.('art');
+ if(!found&&active())$('#layout-tab').click();
+}
+window.ComposerAuth?.ready?.then(syncTab);
+document.addEventListener('composer-permissions',syncTab);
 window.addEventListener('composer-draft-reset',()=>{if(loaded)load()});
 // Another tenant or theme on the stage: its pictures, in the list and in the game.
 window.addEventListener('composer-look',()=>{
  if(active())render();
- if(catalogFor===game()&&catalog&&Object.keys(art).length)window.ComposerLive?.reload();
+ // The game picks its pictures when it loads, so a tenant or theme with pictures of its own, in the
+ // draft or in the build itself (skins.json brands), needs the game loaded again to show them.
+ if(catalogFor===game()&&catalog&&(Object.keys(art).length||Object.keys(catalog.brands||{}).length))window.ComposerLive?.reload();
 });
 
 // The game preview asks here which pictures to draw (frame-art.js): the build's catalog with the
@@ -400,13 +436,15 @@ window.ComposerArtPreview={
  async manifest(built){
   const g=game(),draft=await readDraft(g);
   if(g===game()){art=draft;if(!catalog){catalog=built;catalogFor=g}}
-  const brands={};
+  // The build's own pictures for each tenant and theme, the draft's laid over them.
+  const brands=structuredClone(built.brands||{});
   const urls=slots=>Object.fromEntries(Object.entries(slots||{}).map(([id,p])=>[id,editors().artUrl(p.media)]));
-  for(const [brand,entry] of Object.entries(draft)){
-   brands[brand]={slots:urls(entry.slots),themes:Object.fromEntries(Object.entries(entry.themes||{}).map(([t,s])=>[t,urls(s)]))};
+  for(const [brand,entry] of Object.entries(editors()?.enabled?draft:{})){
+   const into=brands[brand]||={};
+   if(entry.slots)into.slots=mergeLayer(into.slots,urls(entry.slots),built);
+   for(const [theme,slots] of Object.entries(entry.themes||{})){into.themes||={};into.themes[theme]=mergeLayer(into.themes[theme],urls(slots),built)}
   }
-  // Signed out, the build's own released pictures stay as they are.
-  return {...built,brands:editors()?.enabled?brands:built.brands||{},look:look()};
+  return {...built,brands,look:look()};
  }
 };
 })();

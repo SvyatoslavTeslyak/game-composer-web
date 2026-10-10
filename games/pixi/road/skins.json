@@ -428,5 +428,22 @@
       "prompt": "A single game effect illustration, 1024 × 1024 px, transparent background: [a puffy cream-coloured cartoon dust cloud with small gold stars and short speed lines bursting out], centred, filling about three quarters of the frame. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
     }
   ],
-  "brands": {}
+  "brands": {
+    "numba-ghana": {
+      "slots": {
+        "hero-idle": "art/skins/numba-ghana/hero-idle-a49e112609f42521.png",
+        "hero-jump": "art/skins/numba-ghana/hero-jump-58cb7d5f0fbed70e.png",
+        "hero-landing": "art/skins/numba-ghana/hero-landing-47ba5f5eb1fd21a3.png",
+        "win-rain-1": "art/skins/numba-ghana/win-rain-1-b7a0d8c43c5e89ae.png"
+      }
+    },
+    "numba-nigeria": {
+      "slots": {
+        "hero-idle": "art/skins/numba-nigeria/hero-idle-30bfafd9be8a4a87.png",
+        "hero-jump": "art/skins/numba-nigeria/hero-jump-cdb3959c47695bdf.png",
+        "hero-landing": "art/skins/numba-nigeria/hero-landing-14facc5ff227d651.png",
+        "win-rain-1": "art/skins/numba-nigeria/win-rain-1-2a441e16ab24f549.png"
+      }
+    }
+  }
 }

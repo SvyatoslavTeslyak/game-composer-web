@@ -495,7 +495,6 @@ class GameUI {
   // MIN and MAX from the stake sheet do what the panel's do, then the sheet steps aside.
   if((action==='min'||action==='max')&&this.modal==='stake'){this.send(action,{});this.close();return}
   if(action==='chooseDifficulty'){this.send('difficulty',{index:Number(value)});this.close();return}
-  if(action==='refill'){this.send('refill',{});this.close();return}
   if(action==='preset'){this.send('bet',{value:Number(value)});return}
   this.send(action,{});
  }
@@ -737,8 +736,9 @@ class GameUI {
  limitOptions(){
   const s=this.state,result={auto_steps:{title:'Cash out after',values:[0,3,5,10,15,20],suffix:s.game==='road'?' steps':s.game==='boom'?' slices':' sec'},auto_cashout:{title:'Cash out at',values:[0,1.25,1.5,2,3,5,10,20],suffix:'×'}};
   // Only for games whose scene actually repaints: Fuel Run draws painted art layers that a
-  // palette no longer touches, so the row offered a choice that changed nothing.
-  if(!['road','fuel'].includes(s.game))result.theme={title:s.game==='boom'?'Atmosphere':'Next session atmosphere',values:s.game==='haul'?['Caribbean','Sunset']:s.game==='boom'?['Tropical','Sunset']:['Treasure','Market'],suffix:''};
+  // palette no longer touches, so the row offered a choice that changed nothing. Fruit Boom
+  // draws its atmosphere at random each session; the player no longer picks it.
+  if(!['road','fuel','boom'].includes(s.game))result.theme={title:'Next session atmosphere',values:s.game==='haul'?['Caribbean','Sunset']:['Treasure','Market'],suffix:''};
   return result;
  }
  limitText(value,suffix){return value===0?'Off':String(value)+suffix}
@@ -845,7 +845,7 @@ class GameUI {
     ?(content.options?.[0]?.rewardLabel?'<div class="level-sheet-head" aria-hidden="true">'+esc(content.options[0].rewardLabel)+'</div>':'')+'<div class="option-list level-sheet" role="radiogroup" aria-label="Difficulty">'+(content.options||[]).map((v,i)=>this.radioOption('chooseDifficulty',i,i===s.difficulty,v.title,'',v.reward,'')).join('')+'</div>'
     :'<p class="modal-description">'+esc(content.description||'Higher risk. Bigger rewards.')+'</p><p class="modal-note">'+esc(content.limits||'')+'</p><div class="option-list" role="radiogroup" aria-label="Difficulty">'+(content.options||[]).map((v,i)=>this.radioOption('chooseDifficulty',i,i===s.difficulty,v.title,v.description,v.reward,v.rewardLabel)).join('')+'</div>';
   }
-  if(kind==='menu'&&this.tabbed){body.innerHTML=(this.config.menuSettings||['sound','music','haptics']).map(k=>'<label class="setting">'+({sound:'Sound',music:'Music',haptics:'Vibration'}[k])+'<input class="switch" type="checkbox" role="switch" data-setting="'+k+'" '+(s.settings?.[k]?'checked':'')+'></label>').join('')+(this.config.refill!==false&&this.state?.refill!==false?button('refill','Refill to $1,000','flat-button'):'')}
+  if(kind==='menu'&&this.tabbed){body.innerHTML=(this.config.menuSettings||['sound','music','haptics']).map(k=>'<label class="setting">'+({sound:'Sound',music:'Music',haptics:'Vibration'}[k])+'<input class="switch" type="checkbox" role="switch" data-setting="'+k+'" '+(s.settings?.[k]?'checked':'')+'></label>').join('')}
   if(kind==='menu'&&!this.tabbed){
    body.innerHTML=(this.config.menuSettings||['sound','music','haptics']).map(k=>'<label class="setting">'+({sound:'Sound',music:'Music',haptics:'Vibration',reduced_motion:'Reduce motion'}[k])+'<input class="switch" type="checkbox" role="switch" data-setting="'+k+'" '+(s.settings?.[k]?'checked':'')+'></label>').join('');
    const limits=this.limitOptions();
@@ -856,7 +856,6 @@ class GameUI {
     body.innerHTML+='<p class="modal-note"><span>First limit reached cashes out.</span> <span>'+(s.game==='road'?'Auto stops after each round.':'Auto starts the next round until switched off or balance is too low.')+'</span></p>';
    }
    if(this.config.rulesHTML||window.CrashI18n?.rulesDocument?.())body.innerHTML+=button('rules','How to play','flat-button');
-   if(this.config.refill!==false&&this.state?.refill!==false)body.innerHTML+=button('refill','Refill to $1,000','flat-button');
    body.innerHTML+='<p class="modal-note centered">'+esc(this.config.menuNote||'Progress saved on this device')+'</p>';
   }
   if(kind==='rules')body.innerHTML=(this.rulesFrom==='tab'?'':'<button class="text-button back-button" data-action="back">← Back to menu</button>')+(this.config.rulesHTML||'<p class=muted>No rules provided.</p>');
@@ -942,7 +941,6 @@ class GameUI {
    const rowLeft=this.q('.profile').getBoundingClientRect().left;
    layer.style.setProperty('--account-anchor-left',Math.max(edge,Math.min(rowLeft,innerWidth-width-edge))+'px');
    layer.style.setProperty('--menu-anchor-bottom',rect.bottom+'px');layer.style.setProperty('--menu-anchor-right',(innerWidth-rect.right)+'px');
-   const refill=this.q('.modal [data-action=refill]');if(refill)refill.disabled=this.config.refill===false||this.state.refill===false||this.state.canBet===false;
   }
   const placeholder=this.tabbed?.q('.tabs-placeholder');
   if(placeholder&&innerWidth<CrashTokens.CRASH_MEDIUM_BREAKPOINT){
