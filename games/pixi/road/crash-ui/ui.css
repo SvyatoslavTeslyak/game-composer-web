@@ -769,6 +769,21 @@
 /* The balance belongs to the same family as the buttons on either side of it: one face, one
    depth, gold kept for the level. */
 .crash-ui.has-tabbed-controls .profile>.balance{min-height:var(--tap-min);background:linear-gradient(var(--button-top),var(--button-bottom));border:var(--stroke-1) solid color-mix(in srgb,var(--button-edge) calc(var(--alpha-strong) * 100%),transparent);box-shadow:inset 0 0 0 var(--stroke-2) color-mix(in srgb,var(--button-edge) calc(var(--alpha-faint) * 100%),transparent),0 var(--web-control-depth) 0 var(--button-side);transition:transform var(--motion-fast-ms),box-shadow var(--motion-fast-ms)}
+/* Until a game turns config.balanceTopUp on, the balance leads nowhere, so it is a read-out
+   rather than a button, and it is drawn pressed into the header where the buttons stand out of
+   it: darker at the top, with the rim's shadow falling inside its top edge. Nothing gives under
+   a finger. */
+.crash-ui .profile>div.balance{cursor:default}
+/* The buttons beside it stand on a side as deep as --web-control-depth; the recess reaches down to
+   that same ground, so the header is one even band, its top level with the buttons' faces. */
+.crash-ui.has-tabbed-controls .profile:has(>div.balance)>*{align-self:start}
+.crash-ui.has-tabbed-controls .profile>div.balance{
+ min-height:calc(var(--tap-min) + var(--web-control-depth));
+ background:linear-gradient(color-mix(in srgb,var(--surface-inset) 55%,var(--shadow)),var(--surface-inset));
+ border-color:color-mix(in srgb,var(--shadow) calc(var(--alpha-strong) * 100%),transparent);
+ box-shadow:inset 0 var(--space-4) var(--space-8) color-mix(in srgb,var(--shadow) calc(var(--alpha-strong) * 100%),transparent),
+  inset 0 var(--stroke-2) var(--stroke-2) color-mix(in srgb,var(--shadow) calc(var(--alpha-strong) * 100%),transparent);
+ transition:none}
 /* A pixel wider than tall: enough to sit evenly between the pills without reading as an oval. */
 .crash-ui.has-tabbed-controls .profile>.icon-button{width:calc(var(--tap-min) + var(--stroke-1));min-width:calc(var(--tap-min) + var(--stroke-1));height:var(--tap-min);aspect-ratio:auto;border-radius:var(--radius-pill)}
 .crash-ui.has-tabbed-controls .profile>.icon-button:active,.crash-ui.has-tabbed-controls .profile>.identity:active{transform:translateY(var(--web-control-depth))}
