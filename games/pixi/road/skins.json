@@ -422,10 +422,10 @@
       "title": "Home",
       "file": "art/road/home_hut.png",
       "size": [
-        640,
-        597
+        720,
+        712
       ],
-      "prompt": "A single top-down game illustration of [a tiny Haitian hut with a patched corrugated tin roof in turquoise and coral and a thatch fringe, pastel blue walls, an open wooden door with warm light inside, a stone doorstep, a red dog bowl and a potted plant], seen from high above so the roof fills most of the picture and only a strip of the front wall shows at the bottom, with the doorstep at the bottom centre. Centred and filling a 640 × 597 px frame. Transparent background. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No ground, no text. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+      "prompt": "A single top-down game illustration of [a grand Haitian gingerbread villa: an elaborate red and turquoise tin roof with gold ribs, several gables and two small pointed turrets, white lacework fretwork along every eave, a carved balcony over the entrance, pastel walls with louvered shutters and warmly lit windows, wide open double doors with golden light inside, marble steps, lanterns, pots of hibiscus and palms, a red dog bowl and a woven doormat], seen from high above so the roof fills most of the picture and only a strip of the front facade shows at the bottom, with the open door at the bottom centre. Centred and filling a 720 × 712 px frame. Transparent background. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No ground, no text. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
     },
     {
       "id": "win-rain-1",
