@@ -395,6 +395,39 @@
       "prompt": "Sprite sheet for a 2D mobile game: 4 columns × 4 rows of equal square cells, each cell exactly 256 × 256 px, 1024 × 1024 px in all, 16 frames read left to right, top to bottom, transparent background. [The same rowboat as the Boat picture], seen from straight above, rolling over and sinking: first upright, then tipping onto its side with splashes and ripple rings, then upside down showing its hull. The boat stays centred and the same length in every cell. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No water surface, no grid lines."
     },
     {
+      "id": "route-home-lawn",
+      "group": "route",
+      "title": "Home lawn",
+      "file": "art/road/home_lawn.png",
+      "size": [
+        1152,
+        2048
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 1152 × 2048 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. [The garden of the hero's home past the end of the road: a green lawn with banana leaves, hibiscus and potted plants along the left and right edges], the same as the Home yard picture without its path. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no buildings, no lighting gradient across the tile."
+    },
+    {
+      "id": "route-home-yard",
+      "group": "route",
+      "title": "Home yard",
+      "file": "art/road/home_yard.png",
+      "size": [
+        1152,
+        2048
+      ],
+      "prompt": "One single seamless texture tile for a top-down mobile game, not a grid of tiles, seen straight from above, 1152 × 2048 px. It repeats from top to bottom, so the top and bottom edges must join without a seam. [The yard by the house: the Home lawn with a light sandstone path running straight across the middle from the left edge to the right edge]. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No text, no people, no vehicles, no buildings, no lighting gradient across the tile."
+    },
+    {
+      "id": "route-home-hut",
+      "group": "route",
+      "title": "Home",
+      "file": "art/road/home_hut.png",
+      "size": [
+        640,
+        597
+      ],
+      "prompt": "A single top-down game illustration of [a tiny Haitian hut with a patched corrugated tin roof in turquoise and coral and a thatch fringe, pastel blue walls, an open wooden door with warm light inside, a stone doorstep, a red dog bowl and a potted plant], seen from high above so the roof fills most of the picture and only a strip of the front wall shows at the bottom, with the doorstep at the bottom centre. Centred and filling a 640 × 597 px frame. Transparent background. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. No ground, no text. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
       "id": "win-rain-1",
       "group": "celebration",
       "title": "Win rain, first",
