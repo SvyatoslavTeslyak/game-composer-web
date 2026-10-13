@@ -6,6 +6,9 @@ $('#fit').append($('#translation-preview-note'));
 const language=$('#language'),controls=$('#translates-controls'),report=$('#translates-report'),frame=$('#frame'),drafts=new Map();let target='kit',query='',missing=false,loadId=0,area='ui',category='all',textType='all';
 const languages=['en','fr','ht'],labels={en:'English',fr:'Français',ht:'Kreyòl ayisyen'};
 const texts=value=>Object.fromEntries(languages.map(lang=>[lang,value[lang]??'']));
+// An open edit remembers what it was started from, so a save can tell a colleague's change,
+// saved meanwhile, from its own (translation-table.js).
+const {seen,clashLangs}=TranslationTable,startEdit=(d,key)=>TranslationTable.startEdit(d,key,target!=='kit');
 try{const saved=localStorage.getItem('crash-language');language.value=languages.includes(saved)?saved:'en'}catch{}
 const current=()=>drafts.get(target);
 // The slots and Plinko build their own bet panel. Each exposes a handle on window with its own
@@ -188,11 +191,13 @@ async function importTable(file){
  importReview={game:id,preset:currentPreset(),revision:d.revision,changes};rows();report.scrollTop=0;notify(changes.length+(changes.length===1?' text changes':' texts change')+' · review before saving.');
  }catch(error){notify(error.message)}
 }
+// The file's texts are saved as edits started from what the file was compared with, so they go
+// through the same save as typed ones: a colleague's texts saved meanwhile stay, and a text both
+// changed is asked about.
 async function saveImport(){
- if(saving||!importReview)return;const review=importReview,id=review.game,d=current();if(id!==target||currentPreset()!==review.preset||d.revision!==review.revision){notify('Translations changed. Import the file again.');return}
- const overrides=structuredClone(d.overrides),entries={};for(const change of review.changes){if(id==='kit')entries[change.key]=change.after;else overrides[change.key]=change.after}
- saving=true;rows();try{const data=await request({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:d.revision,entries,overrides})},id);data.edits={};drafts.set(id,data);if(target===id){importReview=null;apply();notify('Imported '+review.changes.length+(review.changes.length===1?' text':' texts')+' into '+(id==='kit'?'the shared catalog.':'this game only.'))}}
- catch(error){if(target===id)notify(error.message)}finally{saving=false;if(target===id)rows()}
+ if(saving||!importReview)return;const review=importReview,id=review.game,d=current();if(id!==target||currentPreset()!==review.preset){notify('Translations changed. Import the file again.');return}
+ d.edits={};for(const change of review.changes)d.edits[change.key]={...texts(change.after),custom:id!=='kit',base:texts(change.before)};
+ importReview=null;await saveKeys(review.changes.map(change=>change.key),'Imported');
 }
 function importMarkup(){
  if(!importReview||importReview.game!==target)return '';const changes=importReview.changes;
@@ -222,7 +227,7 @@ function render(){const d=current();if(!d)return;
   +'<div class="tx-savebar" id="tx-savebar"><small role="status" id="translate-message"></small><span class="translation-row-actions"><button type="button" id="translate-cancel-all">Discard all</button><button type="button" class="translation-save" id="translate-save-all">Save all</button></span></div><div id="tx-table"></div>';
  $('#translate-search').oninput=e=>{query=e.target.value;rows()};
  $('#translate-missing').onclick=e=>{missing=!missing;e.currentTarget.setAttribute('aria-pressed',String(missing));rows()};
- $('#translate-reload').onclick=()=>{if(saving)return;if(Object.keys(current()?.edits||{}).length||importReview?.changes.length){notify('Save or cancel your open edits or the import before reloading.');return}drafts.delete(target);load()};
+ $('#translate-reload').onclick=()=>{if(saving)return;if(importReview?.changes.length){notify('Save or cancel the import before reloading.');return}refreshBase(true)};
  $('#translate-import').disabled=!canEdit();$('#translate-export').onclick=exportTable;$('#translate-import').onclick=()=>$('#translate-file').click();$('#translate-file').onchange=e=>{importTable(e.target.files[0]);e.target.value=''};
  $('#translate-save-all').onclick=saveAll;$('#translate-cancel-all').onclick=cancelAll;
  navigation();syncPreviewWindows();rows();mark();
@@ -358,9 +363,9 @@ function rows(){const d=current();if(!d)return;
  const body=[...groups].sort(([a],[b])=>compareWindows(a,b)).map(([group,list])=>(category==='all'?'<tr class="tx-group"><th colspan="3" scope="rowgroup">'+esc(group)+' <span>'+(()=>{const all=inArea.filter(([,e])=>windowGroup(e)===group).length;return list.length===all?all:list.length+' of '+all})()+'</span></th></tr>':'')+list.map(([key,e])=>{
   const edit=d.edits?.[key],unused=e.usage?.includes('unused'),meta=metaLine(e);
   const scope=edit?scopeMarkup(key,edit.custom):'';
-  const about=(e.label&&e.label!==e.source?'<small>'+esc(e.label)+'</small>':'')+(meta?'<small title="'+esc((e.usage||[]).join(', '))+'">'+esc(meta)+'</small>':'')+(edit?.error?'<small class="translation-error" role="alert">'+esc(edit.error)+'</small>':'');
+  const about=(e.label&&e.label!==e.source?'<small>'+esc(e.label)+'</small>':'')+(meta?'<small title="'+esc((e.usage||[]).join(', '))+'">'+esc(meta)+'</small>':'')+(edit?.error?'<small class="translation-error" role="alert">'+esc(edit.error)+'</small>':'')+(()=>{const clash=edit?clashLangs(d,key,edit):[];return clash.length?'<small class="tx-clash-note" role="status">'+esc(clash.map(l=>labels[l]).join(', '))+' also changed by '+esc(whoSaved(d))+' · saving keeps yours, Admin sees both</small>':''})();
   return '<tr class="translation-row'+(edit?' is-editing':'')+'" data-translation="'+key+'" tabindex="-1">'
-   +languages.map(l=>{const v=valueOf(d,key,e,l),changed=edit&&edit[l]!==(d.overrides[key]?.[l]??e[l]??'');return '<td data-cell="'+l+'" class="tx-cell'+(v?'':' missing')+(changed?' changed':'')+(l===lang?' is-lang':'')+(l==='en'?' has-kinds':'')+'">'+(l==='en'?kindsMarkup(e):'')+(e.format==='markdown'?'<button type="button" class="tx-doc" tabindex="-1" lang="'+l+'" data-doc="'+key+'" data-lang="'+l+'" aria-label="'+esc((e.label||'Document')+' — '+labels[l])+'"><span>'+(esc(docPreview(v))||'<em>Missing · English shows</em>')+'</span><small>'+(editable&&!unused?'Open editor':'Open')+'</small></button>':'<textarea rows="1" tabindex="-1" lang="'+l+'" data-key="'+key+'" data-lang="'+l+'" aria-label="'+esc(e.source)+' — '+labels[l]+'" placeholder="'+(l==='en'?'':'Missing · English shows')+'"'+(editable&&!unused?'':' readonly')+'>'+esc(v)+'</textarea>')+(l==='en'?'<div class="tx-text">'+about+'</div>':'')+'</td>'}).join('')+'</tr>'+(edit?rowActions(key,scope):'');
+   +languages.map(l=>{const v=valueOf(d,key,e,l),changed=edit&&edit[l]!==(edit.base?edit.base[l]:d.overrides[key]?.[l]??e[l]??'');return '<td data-cell="'+l+'" class="tx-cell'+(v?'':' missing')+(changed?' changed':'')+(l===lang?' is-lang':'')+(l==='en'?' has-kinds':'')+'">'+(l==='en'?kindsMarkup(e):'')+(e.format==='markdown'?'<button type="button" class="tx-doc" tabindex="-1" lang="'+l+'" data-doc="'+key+'" data-lang="'+l+'" aria-label="'+esc((e.label||'Document')+' — '+labels[l])+'"><span>'+(esc(docPreview(v))||'<em>Missing · English shows</em>')+'</span><small>'+(editable&&!unused?'Open editor':'Open')+'</small></button>':'<textarea rows="1" tabindex="-1" lang="'+l+'" data-key="'+key+'" data-lang="'+l+'" aria-label="'+esc(e.source)+' — '+labels[l]+'" placeholder="'+(l==='en'?'':'Missing · English shows')+'"'+(editable&&!unused?'':' readonly')+'>'+esc(v)+'</textarea>')+(l==='en'?'<div class="tx-text">'+about+'</div>':'')+'</td>'}).join('')+'</tr>'+(edit?rowActions(key,scope):'');
  }).join('')).join('');
  $('#tx-table').innerHTML=entries.length?'<div class="tx-table-wrap"><table class="tx-table">'+head+'<tbody>'+body+'</tbody></table></div>'
   :'<div class="translation-empty"><h3>'+(query||missing||textType!=='all'||category!=='all'?'No matching texts':'No scene texts for this game')+'</h3><p>'+(query||missing||textType!=='all'||category!=='all'?'Try another text type, window or search.':'This game uses the UI for its messages. Decorative text painted into artwork is not a text label.')+'</p></div>';
@@ -378,8 +383,8 @@ function rows(){const d=current();if(!d)return;
   input.onblur=()=>input.classList.remove('is-typing');
   input.oninput=()=>{
    const {key,lang:l}=input.dataset,e={...d.catalog.entries[key],...d.overrides[key]};
-   d.edits??={};d.edits[key]??={...texts(e),custom:target!=='kit'};d.edits[key][l]=input.value;
-   const original=d.overrides[key]?.[l]??d.catalog.entries[key][l]??'';
+   d.edits??={};d.edits[key]??=startEdit(d,key);d.edits[key][l]=input.value;
+   const original=d.edits[key].base?.[l]??d.overrides[key]?.[l]??d.catalog.entries[key][l]??'';
    input.parentElement.classList.toggle('changed',input.value!==original);input.parentElement.classList.toggle('missing',!input.value);
    const row=input.closest('tr');if(!row.classList.contains('is-editing')){row.classList.add('is-editing');row.insertAdjacentHTML('afterend',rowActions(key,scopeMarkup(key,true)));wireRow(row.nextElementSibling)}
    activeKey=key;apply();mark();
@@ -503,7 +508,7 @@ function openDocument(key,lang){
   +'<footer><small role="status"></small><span class="translation-row-actions"><button type="button" data-doc-cancel>'+(editable?'Cancel':'Close')+'</button>'+(editable?'<button type="button" class="translation-save" data-doc-save>Save</button>':'')+'</span></footer>';
  const editors=[...docDialog.querySelectorAll('.rte')],status=docDialog.querySelector('footer small');let last=editors.find(x=>x.dataset.docLang===lang)||editors[0];
  // What the editors hold goes into the same open edit as the table, so the game preview follows it.
- const sync=editor=>{d.edits??={};d.edits[key]??={...texts({...raw,...d.overrides[key]}),custom:target!=='kit'};d.edits[key][editor.dataset.docLang]=htmlToDoc(editor);activeKey=key;apply();mark()};
+ const sync=editor=>{d.edits??={};d.edits[key]??=startEdit(d,key);d.edits[key][editor.dataset.docLang]=htmlToDoc(editor);activeKey=key;apply();mark()};
  const topIndex=editor=>{const sel=getSelection();let n=sel.rangeCount?sel.getRangeAt(0).startContainer:null;while(n&&n.parentNode!==editor)n=n.parentNode;return n?[...editor.childNodes].indexOf(n):editor.childNodes.length-1};
  // A picture or a block lands in every language, after the same paragraph as in the one being edited.
  const everywhere=html=>{const at=topIndex(last);for(const editor of editors){const ref=editor.childNodes[Math.min(at,editor.childNodes.length-1)];const holder=document.createElement('div');holder.innerHTML=html;const node=holder.firstChild;if(ref)ref.after(node);else editor.append(node);if(!node.nextSibling)node.after(Object.assign(document.createElement('p'),{innerHTML:'<br>'}));sync(editor)}};
@@ -587,19 +592,73 @@ function wireRow(row){
 function scopeClick(event){const d=current(),key=event.currentTarget.dataset.scope,edit=d.edits?.[key];if(!edit)return;edit.custom=!edit.custom;event.currentTarget.textContent=edit.custom?gameName()+' only':'Every game';apply()}
 const saveAll=()=>saveKeys(Object.keys(current()?.edits||{}));
 // Saves the given open texts; any other open edits stay open, still unsaved.
-async function saveKeys(keys){
+//
+// Several people save into one draft, and the draft only takes a save made from its newest
+// revision. So a save is laid over the draft as it is now, not as this window read it: the
+// texts a colleague saved meanwhile stay, and of each text only the languages edited here are
+// written. A language both people changed is saved as written here, and the draft's journal
+// keeps the colleague's too: Admin sees both under Conflicts in Changes and decides there. If
+// someone saves in the moment between reading and writing, it is simply done again.
+async function saveKeys(keys,verb='Saved'){
  const id=target,d=current();keys=keys.filter(key=>d?.edits?.[key]);if(saving||!keys.length)return;
  saving=true;mark();for(const b of report.querySelectorAll('[data-row-save],[data-row-cancel]'))b.disabled=true;
- const overrides=structuredClone(d.overrides),entries={},rest=Object.fromEntries(Object.entries(d.edits).filter(([key])=>!keys.includes(key)));
+ const rest=Object.fromEntries(Object.entries(d.edits).filter(([key])=>!keys.includes(key)));
  // In the cloud a text for every game goes to the shared scope's draft, not into the catalog.
  const cloud=!!window.ComposerCloud?.enabled,sharedKeys=cloud?keys.filter(key=>!d.edits[key].custom):[];
- for(const key of keys){const edit=d.edits[key];if(edit.custom)overrides[key]=texts(edit);else{delete overrides[key];if(!cloud)entries[key]=texts(edit)}}
+ const post=(body,where)=>request({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},where);
+ let merged=false,conflicted=new Set(),last=null;
  try{
-  if(sharedKeys.length){const shared={...(d.shared||{})};for(const key of sharedKeys)shared[key]=texts(d.edits[key]);await request({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:d.sharedRevision,entries:{},overrides:shared})},'shared')}
-  const data=await request({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:d.revision,entries,overrides})},id);data.edits=rest;drafts.set(id,data);if(target===id){apply();saving=false;rows();notify('Saved '+(keys.length===1?'1 text':keys.length+' texts')+' · '+(cloud?(sharedKeys.length===keys.length?'for every game':sharedKeys.length?'in '+gameName()+'’s draft and the shared texts':'in '+gameName()+'’s cloud draft'):id==='kit'?'in the shared catalog':'for '+gameName()))}}
+  for(let attempt=0;;attempt++){
+   const fresh=await request(undefined,id);if(fresh.revision!==d.revision||fresh.sharedRevision!==d.sharedRevision)merged=true;last=fresh;
+   const clashes=keys.flatMap(key=>clashLangs(fresh,key,d.edits[key]).map(lang=>({key,lang})));
+   if(clashes.length)conflicted=new Set([...conflicted,...clashes.map(c=>c.key)]);
+   // A language edited here is written; the others keep whatever the draft has now.
+   const {overrides,entries,shared,sharedChanged}=TranslationTable.mergeWrite(fresh,d.edits,keys,cloud);
+   try{
+    // The shared texts first; if the game's draft then turns out to have moved, the next round
+    // finds them already saved and writes only the game's.
+    if(sharedChanged)await post({revision:fresh.sharedRevision,entries:{},overrides:shared},'shared');
+    const data=await post({revision:fresh.revision,entries,overrides},id);
+    data.edits=rest;drafts.set(id,data);
+    if(target===id){apply();saving=false;rows();notify(verb+' '+(keys.length===1?'1 text':keys.length+' texts')+' · '+(cloud?(sharedKeys.length===keys.length?'for every game':sharedKeys.length?'in '+gameName()+'’s draft and the shared texts':'in '+gameName()+'’s cloud draft'):id==='kit'?'in the shared catalog':'for '+gameName())+(conflicted.size?' · '+conflicted.size+(conflicted.size===1?' text was':' texts were')+' also changed by '+whoSaved(last)+': Admin sees both in Changes':merged?' · with '+whoSaved(fresh)+'’s saved texts kept':''))}
+    break;
+   }catch(error){if(attempt<3&&/changed|reload/i.test(error.message)){merged=true;continue}throw error}
+  }
+ }
  catch(error){if(target===id)notify(error.message)}
  finally{saving=false;if(target===id){mark();for(const b of report.querySelectorAll('[data-row-save],[data-row-cancel]'))b.disabled=false}$('#translates-tab').classList.toggle('workspace-dirty',[...drafts.values()].some(x=>Object.keys(x.edits||{}).length))}
 }
+// Who last saved the draft, as this person may know them. A clash is always someone else's
+// text, so when the last save was this person's own, the colleague is just "a teammate".
+const whoSaved=data=>{const name=(data?.updatedBy&&window.ComposerCloud?.personName?window.ComposerCloud.personName(data.updatedBy):'').replace(/\s*\([^)]*@[^)]*\)$/,'');return name&&name!=='you'?name:'a teammate'};
+// A colleague's saved texts come in by themselves. While the texts are open the draft's revisions
+// are checked every few seconds; a newer draft is laid under the open edits, which keep what they
+// were started from, so a text both changed is marked on its row and asked about on save.
+// Not while a text is being typed in or a document is open: the table would be drawn again under
+// the caret.
+async function refreshBase(asked=false){
+ const id=target,d=current();if(!d||saving)return;
+ const typing=document.activeElement?.matches?.('textarea')&&report.contains(document.activeElement);
+ if(!asked&&(typing||docDialog?.open||importReview))return;
+ try{
+  const fresh=await request(undefined,id);if(id!==target||saving||current()!==d)return;
+  const changed=fresh.revision!==d.revision||fresh.sharedRevision!==d.sharedRevision;
+  if(!changed){if(asked)notify('Up to date · nobody has saved since.');return}
+  Object.assign(d,{catalog:fresh.catalog,overrides:fresh.overrides,shared:fresh.shared,revision:fresh.revision,sharedRevision:fresh.sharedRevision,updatedBy:fresh.updatedBy,updatedAt:fresh.updatedAt});
+  const clashing=Object.entries(d.edits||{}).filter(([key,edit])=>clashLangs(d,key,edit).length).length;
+  rows();apply();notify(whoSaved(fresh)[0].toUpperCase()+whoSaved(fresh).slice(1)+' saved texts · the table shows them'+(clashing?' · '+clashing+' of your open '+(clashing===1?'text was':'texts were')+' changed too':''));
+ }catch(error){if(asked)notify(error.message)}
+}
+// Checked while the page is in view, and at once when the person comes back to it.
+async function checkRevisions(){
+ if(!live()||!window.ComposerCloud?.enabled||!window.ComposerAuth?.session||document.hidden||saving||target==='kit')return;
+ const id=target,d=current();if(!d)return;
+ try{const now=await window.ComposerCloud.revisions(id);if(!now||id!==target||current()!==d)return;if(now.revision!==d.revision||(d.sharedRevision&&now.sharedRevision!==d.sharedRevision))refreshBase()}catch{}
+}
+setInterval(checkRevisions,10000);
+// Admin settled a conflict in Changes: the table shows the text kept.
+window.addEventListener('composer-draft-saved',e=>{if(!saving&&e.detail?.section==='translations'&&e.detail.game===target)refreshBase()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkRevisions()});window.addEventListener('focus',checkRevisions);
 function cancelAll(){const d=current();if(!d||saving)return;d.edits={};activeKey='';stopStateInspection();rows();apply();mark()}
 
 async function load(){stopStateInspection();stopHistoryPreview();activeKey='';importReview=null;$('#translation-preview-view').value='';const id=++loadId;target=window.ComposerTarget?.value||$('#target').value||'kit';try{if(!drafts.has(target)||!Object.keys(drafts.get(target).edits||{}).length){const data=await request();if(id!==loadId)return;data.edits={};drafts.set(target,data)}render();apply()}catch(e){controls.innerHTML='<p>'+esc(e.message)+'</p>'}}

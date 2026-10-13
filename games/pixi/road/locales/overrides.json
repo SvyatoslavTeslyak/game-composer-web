@@ -1,4 +1,45 @@
 {
   "version": 1,
-  "entries": {}
+  "entries": {
+    "medium_d40496": {
+      "en": "Medium",
+      "fr": "Moyen",
+      "ht": "Nòmal"
+    },
+    "candy_1b0a718468da": {
+      "en": "MEGA WIN",
+      "fr": "GROS LOT",
+      "ht": "GWO LO"
+    },
+    "candy_25bf05522314": {
+      "en": "Bet amount",
+      "fr": "Montant de la mise",
+      "ht": "Kantite w ap mize"
+    },
+    "candy_ca5f86adf218": {
+      "en": "BIG WIN",
+      "fr": "GROS GAIN",
+      "ht": "BÈL LAJAN"
+    },
+    "round_history_9b12bb": {
+      "en": "Round history",
+      "fr": "Historique des manches",
+      "ht": "Istorik jwèt la"
+    },
+    "cashed_out_value_e10f63": {
+      "en": "Cashed out, {value}",
+      "fr": "Encaissé, {value}",
+      "ht": "Lajan w ranmase, {value}"
+    },
+    "cashed_out_value_f0e320": {
+      "en": "Cashed out · {value}×",
+      "fr": "Encaissé · {value}×",
+      "ht": "Cashout ou yo · {value}×"
+    },
+    "back_to_previous_page_c6ac7d": {
+      "en": "Back to previous page",
+      "fr": "Retour à la page précédente",
+      "ht": "Tounen nan paj anvan an"
+    }
+  }
 }

@@ -213,3 +213,5 @@
 .translations-workspace #fit{align-content:start}
 #fit>#translation-preview-note{display:none}
 .translations-workspace #fit>#translation-preview-note{display:block;width:100%;min-height:36px;margin:0;padding-top:10px;text-align:center}
+/* A text a colleague saved meanwhile, in the same language as an open edit: said on its row. */
+.tx-text .tx-clash-note,.tx-clash-note{display:block;color:var(--inspector-warning);font-size:var(--inspector-type-xs);line-height:1.5}

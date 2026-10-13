@@ -87,5 +87,33 @@ function reviewSheet(rows,data,game,preset='all'){
  if(!seen.size)throw Error('The file has no texts.');
  return changes;
 }
-root.TranslationTable={encode,parse,review,reviewSheet,SHEET,effective,applicable,context,windowAllowed};
+// Several people save texts into one draft. An open edit remembers what it was started from
+// (`base`), and a save is laid over the draft as it is now: of each text only the languages
+// edited here are written, a colleague's other texts and languages stay, and only a language
+// both changed is a clash, for the person saving to settle.
+// What a person sees for a text: the game's own, else the one every game shares, else the catalog's.
+const seen=(data,key,lang)=>data.overrides?.[key]?.[lang]??data.shared?.[key]?.[lang]??data.catalog.entries[key]?.[lang]??'';
+const seenTexts=(data,key)=>Object.fromEntries(langs.map(l=>[l,seen(data,key,l)]));
+function startEdit(data,key,custom){const now=seenTexts(data,key);return {...now,custom,base:now}}
+const editedLangs=edit=>langs.filter(l=>!edit.base||edit[l]!==edit.base[l]);
+// The languages of an open edit that the draft now holds another text in than the edit started from.
+const clashLangs=(data,key,edit)=>edit.base?editedLangs(edit).filter(l=>{const theirs=seen(data,key,l);return theirs!==edit.base[l]&&theirs!==edit[l]}):[];
+// What saving `keys` writes into `fresh`: the game's texts, the catalog entries (kit, locally) and
+// the shared texts (cloud), with `sharedChanged` false when the shared draft already holds them.
+function mergeWrite(fresh,edits,keys,cloud){
+ const overrides=structuredClone(fresh.overrides||{}),entries={},shared={...(fresh.shared||{})};let sharedChanged=false;
+ // Only the languages edited here are written; what the record already held stays. A language
+ // never edited is not copied in from the catalog: it would read as someone's change and pin
+ // the catalog's words against a later fix there.
+ const value=(record,edit)=>{const out={...(record||{})};for(const l of editedLangs(edit))out[l]=edit[l]??'';return out};
+ for(const key of keys){
+  const edit=edits[key];
+  if(edit.custom){const v=value(fresh.overrides?.[key],edit);if(Object.keys(v).length)overrides[key]=v;else delete overrides[key];continue}
+  delete overrides[key];
+  if(!cloud){entries[key]=value(null,edit);continue}
+  const v=value(fresh.shared?.[key],edit);if(JSON.stringify(shared[key])!==JSON.stringify(v)){shared[key]=v;sharedChanged=true}
+ }
+ return {overrides,entries,shared,sharedChanged};
+}
+root.TranslationTable={encode,parse,review,reviewSheet,SHEET,effective,applicable,context,windowAllowed,seen,seenTexts,startEdit,editedLangs,clashLangs,mergeWrite};
 })(globalThis);

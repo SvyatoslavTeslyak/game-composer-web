@@ -251,3 +251,16 @@
 :root:not([data-appearance=light]) .ask-dialog .ask-danger{background:#c9473f!important;border-color:#c9473f!important}
 .ask-dialog .wb-button.primary{background:var(--inspector-accent);border-color:var(--inspector-accent);color:var(--inspector-on-accent)}
 .ask-dialog .wb-button.primary:hover{background:var(--inspector-accent-hover);border-color:var(--inspector-accent-hover)}
+/* Conflicts: a setting more than one person changed, every value in save order, for Admin to decide. */
+.cloud-dialog .review-conflicts{margin:0 0 18px;padding:12px;border:1px solid var(--inspector-warning);border-radius:var(--inspector-radius-card);background:var(--inspector-well)}
+.cloud-dialog .review-conflicts>h3{margin:0 0 2px;color:var(--inspector-warning)}.cloud-dialog .review-conflicts>.changes-meta{margin:0 0 10px}
+.cloud-dialog .review-conflict{padding:10px 0;border-top:1px solid var(--inspector-border)}.cloud-dialog .review-conflict:first-of-type{border-top:0}
+.cloud-dialog .review-conflict-head{display:flex;gap:8px;align-items:baseline;margin-bottom:6px;font-size:var(--inspector-type-sm)}.cloud-dialog .review-conflict-head span{color:var(--inspector-muted)}
+.cloud-dialog .review-conflict ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.cloud-dialog .review-conflict li{display:grid;grid-template-columns:auto minmax(90px,150px) minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 8px;border-radius:var(--inspector-radius);background:var(--inspector-surface)}
+.cloud-dialog .review-conflict li.is-current{outline:1px solid var(--inspector-accent)}
+.cloud-dialog .review-conflict-who{display:grid;font-size:var(--inspector-type-sm);overflow-wrap:anywhere}.cloud-dialog .review-conflict-who small{color:var(--inspector-muted);font-size:var(--inspector-type-xs)}
+.cloud-dialog .review-conflict-value{font-size:var(--inspector-type-sm);white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
+.cloud-dialog .review-conflict-tag{font-size:var(--inspector-type-xs);color:var(--inspector-accent);white-space:nowrap}
+.cloud-dialog .review-conflict-actions{display:flex;justify-content:flex-end;margin-top:8px}
+@media (max-width:640px){.cloud-dialog .review-conflict li{grid-template-columns:auto 1fr;}.cloud-dialog .review-conflict-value,.cloud-dialog .review-conflict li>button,.cloud-dialog .review-conflict-tag{grid-column:1/-1}}

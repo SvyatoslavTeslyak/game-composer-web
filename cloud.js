@@ -47,8 +47,17 @@ window.ComposerCloud={
    try{saved=await rpc('composer_save_draft',{p_game:id,p_revision:saved.revision,p_payload:{...saved.payload,translations}});}catch(error){window.ComposerUX?.status('error',error.message);throw error}
    window.dispatchEvent(new CustomEvent('composer-draft-saved',{detail:{game:id,section:'translations',revision:saved.revision}}));
   }
-  return {catalog:base.catalog,overrides:saved.payload.translations||{},revision:'cloud:'+saved.revision,shared:sharedDraft?.payload.translations||{},sharedRevision:sharedDraft?'cloud:'+sharedDraft.revision:null};
+  return {catalog:base.catalog,overrides:saved.payload.translations||{},revision:'cloud:'+saved.revision,shared:sharedDraft?.payload.translations||{},sharedRevision:sharedDraft?'cloud:'+sharedDraft.revision:null,updatedBy:saved.updated_by,updatedAt:saved.updated_at};
  },
+ // The draft's revisions alone, game and shared, so an open translations view can tell cheaply
+ // that a colleague has saved since it read them.
+ async revisions(id){
+  await window.ComposerAuth.ready;if(!client||!window.ComposerAuth.session||id==='kit')return null;
+  const rows=check(await client.from('composer_drafts').select('game_id,revision').in('game_id',[id,SHARED])),of=g=>rows.find(r=>r.game_id===g);
+  return {revision:of(id)?'cloud:'+of(id).revision:null,sharedRevision:of(SHARED)?'cloud:'+of(SHARED).revision:null};
+ },
+ // Who a person is, as far as this person may know: a name to an Admin, "a teammate" to others.
+ personName(id){return id===session?.user?.id||id===window.ComposerAuth.session?.user?.id?'you':authorName(id,'a teammate')},
  // Whether a text can be saved for every game: the shared scope exists and this person may edit its texts.
  sharedTexts(){return sharedThere&&ComposerAuth.has('translations.edit',SHARED)}
 };
@@ -123,12 +132,17 @@ function editingBaseline(){return layer(basePayload,published?.payload,sentVersi
 function newChanges(){return changes(layer(basePayload,currentDraft?.payload),editingBaseline())}
 // Whose each unsent change is, from the draft's edit journal (composer_draft_edits): the last
 // edit to touch a setting owns it. Without the journal (an older database) everything counts as
-// the caller's, as before.
+// the caller's, as before. Anyone else who changed the same setting before them is kept as
+// `earlier`, with what they had put there, so the review can say the value was written over.
 function attribute(edits,own=scope==='game'){
- const map=new Map();
+ const map=new Map(),whoOf=o=>o.actor||(o.mine?'me':o.tracked?'team':'untracked');
  for(const e of edits||[])for(const section of Object.keys(sectionNames)){
   const design=section==='design'&&own,before=flat((design?ownPart(e.before?.[section]):e.before?.[section])||{}),after=flat((design?ownPart(e.after?.[section]):e.after?.[section])||{});
-  for(const path of new Set([...Object.keys(before),...Object.keys(after)]))if(before[path]!==after[path])map.set(section+':'+path,{mine:!!e.mine,admin:!!e.by_admin,tracked:!!e.tracked,actor:e.actor||null});
+  for(const path of new Set([...Object.keys(before),...Object.keys(after)]))if(before[path]!==after[path]){
+   const key=section+':'+path,prev=map.get(key),now={mine:!!e.mine,admin:!!e.by_admin,tracked:!!e.tracked,actor:e.actor||null,value:after[path]};
+   const earlier=prev?[...prev.earlier,...(whoOf(prev)!==whoOf(now)?[{actor:prev.actor,mine:prev.mine,tracked:prev.tracked,value:prev.value}]:[])].filter(x=>whoOf(x)!==whoOf(now)):[];
+   map.set(key,{...now,earlier});
+  }
  }
  return map;
 }
@@ -441,9 +455,44 @@ function draftReview(){
  const people=new Map(),counted=new Set();for(const g of rows)for(const r of g.rows){const k=keyOf(g.section,r.path),one=k+'|'+heard(g.section,r.path);if(counted.has(one))continue;counted.add(one);people.set(k,(people.get(k)||0)+1)}
  const nameOf=k=>k===me?'You':k==='team'?'A teammate':k==='untracked'?'Saved before edits were tracked':authorName(k,'A teammate');
  const order=[...people.keys()].sort((a,b)=>(b===me)-(a===me));
- return '<section class="review-queue"><h3>Not sent yet <span class="review-count">'+countChanges(rows)+'</span></h3><div class="cloud-list">'
+ return conflictsHTML()+'<section class="review-queue"><h3>Not sent yet <span class="review-count">'+countChanges(rows)+'</span></h3><div class="cloud-list">'
   +order.map(k=>'<article class="review-version"><div class="review-version-head">'+avatarHTML(k,nameOf(k))+'<span><strong>'+esc(nameOf(k))+'</strong><small>saved, not sent · '+people.get(k)+(people.get(k)===1?' change':' changes')+'</small></span></div>'+diffHTML(layer(basePayload,currentDraft.payload),editingBaseline(),(section,path)=>keyOf(section,path)===k)+(ComposerAuth.member?.role==='admin'&&PERSON.test(k)?'<div class="share-actions"><button class="wb-button discard-changes" data-discard-person="'+esc(k)+'" data-who="'+esc(k===me?'you':authorName(k,'this teammate'))+'">Discard these changes</button></div>':'')+'</article>').join('')
   +'</div><p id="cloud-save-hint"></p><p class="review-message" role="alert"></p><div class="review-actions">'+(localRelease()?'<button class="wb-button primary" id="cloud-apply-draft" title="Writes everything saved for this game, sent or not, to its configuration file on this computer">'+(sentHere?'Apply everything locally':'Apply locally')+'</button>':'')+discard+'</div></section>';
+}
+// Conflicts: a setting more than one person changed in the unsent draft, in another way each.
+// The newest save is what the draft holds; Admin sees every value in the order they were saved,
+// with who saved it, and decides. "Keep this" writes a text back into the draft; "Keep as is"
+// accepts what is there. Either is remembered on this computer against the values it was decided
+// on, so a later different change by anyone brings the conflict back.
+const SETTLED_KEY='composer-conflicts-settled';
+function settledList(){try{return JSON.parse(localStorage.getItem(SETTLED_KEY)||'{}')[game()]||[]}catch{return []}}
+function settle(item,value){try{const all=JSON.parse(localStorage.getItem(SETTLED_KEY)||'{}');all[game()]=[...(all[game()]||[]).filter(x=>!x.startsWith(item.id+'|')),conflictSign(item,value)].slice(-500);localStorage.setItem(SETTLED_KEY,JSON.stringify(all))}catch{}}
+const conflictSign=(item,value)=>item.id+'|'+JSON.stringify([...new Set(item.history.map(h=>h.value??null))].sort())+'|'+JSON.stringify(value??null);
+function conflictItems(){
+ if(!owners||ComposerAuth.member?.role!=='admin')return [];
+ const settled=new Set(settledList()),payload=layer(basePayload,currentDraft?.payload),baseline=editingBaseline(),out=[];
+ // Only what the draft still changes is a decision: a text taken back to what is published is not.
+ const changed=new Set(changes(payload,baseline).flatMap(g=>g.rows.map(r=>g.section+':'+r.path)));
+ for(const [id,o] of owners){
+  if(!changed.has(id)||!o.earlier?.length||!o.earlier.some(x=>x.value!==o.value))continue;
+  const at=id.indexOf(':'),section=id.slice(0,at),path=id.slice(at+1);
+  const item={id,section,path,history:[...o.earlier,{actor:o.actor,mine:o.mine,tracked:o.tracked,value:o.value,current:true}]};
+  if(settled.has(conflictSign(item,o.value)))continue;
+  item.info=reviewGroup(section,{path,before:undefined,after:o.value},payload,baseline);out.push(item);
+ }
+ return out;
+}
+function conflictsHTML(){
+ const items=conflictItems();if(!items.length)return '';
+ // The name alone in the narrow column; the address it was told apart by stays in its tooltip.
+ const me=session?.user?.id,full=h=>h.mine||h.actor===me?'You':h.actor?authorName(h.actor,'A teammate'):h.tracked?'A teammate':'Someone',who=h=>full(h).replace(/\s*\([^)]*@[^)]*\)$/,'');
+ return '<section class="review-conflicts" aria-labelledby="review-conflicts-title"><h3 id="review-conflicts-title">Conflicts <span class="review-count">'+items.length+'</span></h3>'
+  +'<p class="changes-meta">Changed by more than one person. The draft holds the newest save; pick what stays.</p>'
+  +items.map((item,i)=>'<article class="review-conflict"><div class="review-conflict-head"><strong>'+esc(item.info.title)+'</strong>'+(item.info.label?'<span>'+esc(item.info.label)+'</span>':'')+'</div><ol>'
+   +item.history.map((h,j)=>'<li class="'+(h.current?'is-current':'')+'">'+avatarHTML(h.actor||(h.mine?me:''),who(h))+'<span class="review-conflict-who" title="'+esc(full(h))+'">'+esc(who(h))+'<small>'+(j+1)+(j===0?'st':j===1?'nd':j===2?'rd':'th')+' save</small></span><span class="review-conflict-value">'+reviewValue(h.value)+'</span>'
+    +(h.current?'<span class="review-conflict-tag">In the draft</span>':item.section==='translations'?'<button type="button" class="wb-button" data-conflict-keep="'+i+'" data-conflict-value="'+j+'">Keep this</button>':'')+'</li>').join('')
+   +'</ol><div class="review-conflict-actions"><button type="button" class="wb-button primary" data-conflict-settle="'+i+'">Keep as is</button></div></article>').join('')
+  +'</section>';
 }
 async function applyVersion(versionId,id){
  const auth=check(await client.auth.getSession());const response=await fetch('release/apply',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+auth.session.access_token},body:JSON.stringify({version_id:versionId})});const data=await response.json();if(!response.ok)throw Error(data.message||'Could not apply configuration');await refresh();message('Applied locally: '+data.path+'. Review, commit and push to publish.');notify('Configuration ready to commit');
@@ -579,6 +628,19 @@ function render(){
   if(!await ask('Discard the changes '+b.dataset.who+' sent? They are removed from the draft; everyone else\'s stay.'+(later?' '+later+(later===1?' later version carries':' later versions carry')+' them too and will go back to '+(later===1?'its sender':'their senders')+' to send again.':'')))return;
   run(async()=>{await rpc('composer_discard_version',{p_version:b.dataset.discardVersion});await afterDiscard(game());message('Discarded the changes '+b.dataset.who+' sent.')});
  };
+ // A conflict decided: a text written back into the draft, or the draft's text accepted as it is.
+ const conflicts=conflictItems();
+ for(const b of dialog.querySelectorAll('[data-conflict-keep]'))b.onclick=()=>{
+  const item=conflicts[Number(b.dataset.conflictKeep)],pick=item?.history[Number(b.dataset.conflictValue)];if(!item||!pick)return;
+  run(async()=>{
+   const [,key,lang]=item.path.split('/'),cur=await draft(game()),translations=structuredClone(cur.payload.translations||{});
+   translations[key]={...translations[key]};if(pick.value==null)delete translations[key][lang];else translations[key][lang]=pick.value;
+   await rpc('composer_save_draft',{p_game:game(),p_revision:cur.revision,p_payload:{...cur.payload,translations}});
+   settle(item,pick.value);window.dispatchEvent(new CustomEvent('composer-draft-saved',{detail:{game:game(),section:'translations'}}));
+   await refresh();const done='Kept '+item.info.title+' · '+item.info.label+' as '+(pick.mine?'you':'they')+' saved it.';message(done);notify(done);
+  });
+ };
+ for(const b of dialog.querySelectorAll('[data-conflict-settle]'))b.onclick=()=>{const item=conflicts[Number(b.dataset.conflictSettle)];if(!item)return;settle(item,item.history.at(-1).value);render();const done='Kept '+item.info.title+' · '+item.info.label+' as it is in the draft.';message(done);notify(done)};
  // One person's saved, unsent changes, undone in the draft (composer_discard_person).
  for(const b of dialog.querySelectorAll('[data-discard-person]'))b.onclick=async()=>{
   if(busy)return;
