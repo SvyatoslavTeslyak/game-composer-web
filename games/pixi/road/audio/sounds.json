@@ -158,7 +158,7 @@
       "id": "music",
       "label": "Background music",
       "trigger": "Loops in the background while Music is on.",
-      "volume_db": -25.5,
+      "volume_db": -19,
       "pitch_jitter": 0,
       "generator": "ElevenLabs eleven_music_v2",
       "takes": [

@@ -20,7 +20,7 @@ const gameHandle=()=>{try{return ownPanel()?frame.contentWindow?.[OWN_PANEL[targ
 let saving=false,activeKey='',cellLang='en',previousDevice=null,previousZoom=null,importReview=null;
 const live=()=>$('#translates-tab').getAttribute('aria-pressed')==='true';
 function previewData(d){const result=structuredClone(d);for(const [key,edit] of Object.entries(d.edits||{})){if(edit.custom)result.overrides[key]=texts(edit);else{delete result.overrides[key];Object.assign(result.catalog.entries[key],texts(edit))}}return result}
-function apply(){bindPreviewDismiss();if(live())ensureHistoryPreview();const d=current();try{const api=frame.contentWindow.CrashI18n;if(api){if(d)api.setDraft(previewData(d));api.setLanguage(language.value);if(live())highlightText()}}catch{}}
+function apply(){bindPreviewDismiss();guardPreviewFocus();if(live())ensureHistoryPreview();const d=current();try{const api=frame.contentWindow.CrashI18n;if(api){if(d)api.setDraft(previewData(d));api.setLanguage(language.value);if(live())highlightText()}}catch{}}
 const windowNames={bigWin:'Big wins',autoSpin:'Auto Spin',candyPays:'Candy payouts',linePays:'Line pays',award:'Free games award',summary:'Free games summary',plinkoRows:'Rows',stake:'Bet amount',menu:'Settings',account:'Account',rules:'How to play',topbets:'Top bets',mybets:'My bets',betDetails:'My bet details',topBetDetails:'Top bet details',wins:'Live wins',win:'Win',difficulty:'Difficulty','limit:theme':'Atmosphere','limit:auto_steps':'Auto steps','limit:auto_cashout':'Auto cash out','notice:funds':'Notice · not enough funds','notice:offline':'Notice · no connection','notice:error':'Notice · something went wrong','notice:wallet':'Notice · top up balance'};
 function highlightText(){
  const api=frame.contentWindow?.CrashI18n,entry=current()?.catalog.entries[activeKey];
@@ -133,6 +133,17 @@ function syncSelection(){for(const row of report.querySelectorAll('[data-transla
 function clearSelection(){
  if(!live()||!activeKey)return;
  clearTimeout(revealTimer);activeKey='';syncSelection();highlightText();
+}
+// The preview opens windows in the game, and the kit puts focus in them, as it should for a player;
+// with live data it does so once the list arrives, after a person has already gone into a cell.
+// While texts are edited here that took the caret out of the cell, so focus the game takes by itself
+// goes back to the text or row that had it. A click in the game keeps focus there.
+let gamePointer=0,lastTextFocus=null;const guardedDocuments=new WeakSet();
+document.addEventListener('focusin',e=>{if(e.target===frame)return;lastTextFocus=report.contains(e.target)&&e.target.matches('textarea,.translation-row')?e.target:null});
+function guardPreviewFocus(){
+ const win=frame.contentWindow,doc=frame.contentDocument;if(!doc||guardedDocuments.has(doc))return;guardedDocuments.add(doc);
+ doc.addEventListener('pointerdown',()=>{gamePointer=Date.now()},true);
+ win.addEventListener('focus',()=>{if(!live()||Date.now()-gamePointer<1000)return;const back=lastTextFocus;if(back?.isConnected)setTimeout(()=>{if(document.activeElement===frame)back.focus({preventScroll:true})},0)},true);
 }
 // Iframe clicks do not bubble to Composer; listen in both documents.
 const dismissDocuments=new WeakSet();
@@ -379,7 +390,10 @@ function rows(){const d=current();if(!d)return;
   row.onkeydown=event=>{if(event.target!==row)return;cellKeys(event,row)};
  }
  for(const input of report.querySelectorAll('textarea[data-key]')){
-  input.onfocus=()=>{input.classList.add('is-typing');cellLang=input.dataset.lang;focusText(input.dataset.key,input.dataset.lang)};
+  // Focus coming back to a text already on show (the game took it while opening its window, and it
+  // was given back) shows nothing again: opening the window again would take focus again, back and
+  // forth without end, which froze Composer on every text shown in a window of the game.
+  input.onfocus=()=>{input.classList.add('is-typing');cellLang=input.dataset.lang;if(activeKey!==input.dataset.key||language.value!==input.dataset.lang)focusText(input.dataset.key,input.dataset.lang);else syncSelection()};
   input.onblur=()=>input.classList.remove('is-typing');
   input.oninput=()=>{
    const {key,lang:l}=input.dataset,e={...d.catalog.entries[key],...d.overrides[key]};

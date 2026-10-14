@@ -6,6 +6,12 @@
       "fr": "Moyen",
       "ht": "Nòmal"
     },
+    "bet_panels_21dcde": {
+      "ht": "Tablo miz yo"
+    },
+    "candy_0c68cbc0d9eb": {
+      "ht": "GWO KOU"
+    },
     "candy_1b0a718468da": {
       "en": "MEGA WIN",
       "fr": "GROS LOT",
@@ -21,10 +27,16 @@
       "fr": "GROS GAIN",
       "ht": "BÈL LAJAN"
     },
+    "road_rules_document": {
+      "ht": "Ede kabrit la Janbe wout la yon liy alafwa. Chak liy ou janbe ogmante miltiplikatè a.\n\nPeze **CASH OUT** nan nenpòt liy pou pran gany miz ou a dapre miltiplikatè aktyèl la.\n\nGen machin k ap pase sou kèk liy. Si w frape ak youn, pati a fini san ou pa genyen anyen.\n\nChwazi Fasil, Mwayen oswa Difisil. Plis nivo a difisil, se plis risk la ak rekonpans lan ogmante. Endikatè risk la montre posiblite pou w echwe nan pwochen pa a. Nan mòd API a, li parèt sèlman lè sèvè a bay enfòmasyon sa a."
+    },
     "round_history_9b12bb": {
       "en": "Round history",
       "fr": "Historique des manches",
       "ht": "Istorik jwèt la"
+    },
+    "settings_menu_drawer": {
+      "ht": "Paramèt"
     },
     "cashed_out_value_e10f63": {
       "en": "Cashed out, {value}",
@@ -35,6 +47,12 @@
       "en": "Cashed out · {value}×",
       "fr": "Encaissé · {value}×",
       "ht": "Cashout ou yo · {value}×"
+    },
+    "completed_rounds_5d1a91": {
+      "ht": "Pati fini"
+    },
+    "choose_bet_amount_4d97eb": {
+      "ht": "Chwazi kantite vle mize"
     },
     "back_to_previous_page_c6ac7d": {
       "en": "Back to previous page",

@@ -39,16 +39,21 @@ window.fetch=async(input,options={})=>{
 };
 if(!login)document.documentElement.style.visibility='hidden';
 const dom=()=>document.readyState==='loading'?new Promise(r=>document.addEventListener('DOMContentLoaded',r,{once:true})):Promise.resolve();
+// Reads who is signed in and what they may do. The answer is put in place in one step at the end:
+// cleared first, every part of Composer that asked meanwhile (whether a text may be edited, say)
+// saw nobody signed in for the length of three requests. An error that means the access is gone
+// is marked `revoked`; any other one (the network, a request cut short) leaves the state as it was.
+const revoked=message=>Object.assign(Error(message),{revoked:true});
 async function account(){
- state.member=null;state.permissions=[];state.games=[];
- const {data,error}=await client.auth.getSession();if(error)throw error;state.session=data.session;
- if(!state.session)return false;
- const member=await client.from('composer_members').select('role,active').eq('user_id',state.session.user.id).maybeSingle();
+ const {data,error}=await client.auth.getSession();if(error)throw error;
+ const session=data.session;
+ if(!session){Object.assign(state,{session:null,member:null,permissions:[],games:[]});return false}
+ const member=await client.from('composer_members').select('role,active').eq('user_id',session.user.id).maybeSingle();
  if(member.error)throw Error('Composer access is not configured yet. Ask the administrator to finish database setup.');
- if(!member.data?.active)throw Error('This account has no active Composer access.');
- state.member=member.data;
- const access=await client.rpc('composer_my_access');if(access.error)throw access.error;if(!access.data)throw Error('This account has no active Composer access.');
- state.permissions=access.data.permissions;state.games=access.data.games;state.member.role_name=access.data.role_name;if(!state.permissions.includes('workspace.view'))throw Error('Your role does not have workspace access.');return true;
+ if(!member.data?.active)throw revoked('This account has no active Composer access.');
+ const access=await client.rpc('composer_my_access');if(access.error)throw access.error;if(!access.data)throw revoked('This account has no active Composer access.');
+ Object.assign(state,{session,member:{...member.data,role_name:access.data.role_name},permissions:access.data.permissions,games:access.data.games});
+ if(!state.permissions.includes('workspace.view'))throw revoked('Your role does not have workspace access.');return true;
 }
 auth.ready=(async()=>{
  await dom();
@@ -115,7 +120,17 @@ auth.ready=(async()=>{
   finally{busy=false;submit.disabled=false}
  });
 })();
-window.addEventListener('focus',()=>{if(!login&&client)auth.refreshPermissions().catch(()=>location.replace('login.html'))});
+// Coming back to the window reads this person's access again, at most every 30 seconds: a click on
+// Composer after one in the game preview is such a coming back. Only a session that is gone, or
+// access taken away, sends them to sign in; a failed request keeps the page and what is open on it.
+let accessRead=0;
+window.addEventListener('focus',()=>{
+ if(login||!client||Date.now()-accessRead<30000)return;accessRead=Date.now();
+ auth.refreshPermissions().catch(async error=>{
+  const gone=error?.revoked||!(await client.auth.getSession().catch(()=>null))?.data?.session;
+  if(gone)location.replace('login.html');else console.warn('Composer: access not read again',error);
+ });
+});
 document.addEventListener('composer-permissions',()=>{const roles=document.querySelector('#workspace-roles');if(roles)roles.hidden=!auth.has('roles.manage');const people=document.querySelector('#workspace-people');if(people)people.hidden=!(auth.has('users.manage')||auth.has('users.invite'));});
 const AVATAR_FACES=11;
 function setupAccountMenu(){
