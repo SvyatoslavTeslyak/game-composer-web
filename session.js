@@ -179,7 +179,13 @@ function setupAccountMenu(){
  avatar.addEventListener('click',()=>{const expanded=menu.hidden;menu.hidden=!expanded;avatar.setAttribute('aria-expanded',String(expanded));if(expanded)menu.querySelector('button:not([hidden])').focus()});
  document.addEventListener('click',event=>{if(!account.contains(event.target))close()});
  account.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close(true)}});
- account.addEventListener('focusout',event=>{if(!account.contains(event.relatedTarget))close()});
+ // Safari (on a Mac and on iPhone) does not give a button focus when it is pressed: focus simply
+ // leaves the menu item that had it, with nowhere to go, before the click arrives. Closing on that
+ // closed the menu under the press, and Choose avatar, Change password and Sign out did nothing. A
+ // press inside the account keeps it open; focus that really moves elsewhere still closes it.
+ let pressing=false;
+ account.addEventListener('pointerdown',()=>{pressing=true;setTimeout(()=>{pressing=false},600)});
+ account.addEventListener('focusout',event=>{if(!pressing&&!account.contains(event.relatedTarget))close()});
  logout.addEventListener('click',async()=>{logout.disabled=true;errorBox.hidden=true;try{await auth.signOut()}catch(error){errorBox.textContent=error.message||'Unable to sign out. Try again.';errorBox.hidden=false;logout.disabled=false}});
 }
 })();

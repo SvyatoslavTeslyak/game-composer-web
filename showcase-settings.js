@@ -19,7 +19,10 @@ const close=(focus=false)=>{menu.hidden=true;toggle.setAttribute('aria-expanded'
 const sync=()=>{const auth=window.ComposerAuth;button.hidden=auth?.member?.role!=='admin';wrap.hidden=!menu.querySelector('button:not([hidden])');if(wrap.hidden)close()};
 toggle.onclick=()=>{const opening=menu.hidden;$('#workspace-account-menu').hidden=true;$('#workspace-avatar').setAttribute('aria-expanded','false');menu.hidden=!opening;toggle.setAttribute('aria-expanded',String(opening));if(opening)menu.querySelector('button:not([hidden])')?.focus()};
 document.addEventListener('click',e=>{if(!wrap.contains(e.target))close()});
-wrap.addEventListener('focusout',e=>{if(!wrap.contains(e.relatedTarget))close()});
+// A press inside keeps the menu open: Safari gives a pressed button no focus, so focus left the
+// menu with nowhere to go and closed it before the click arrived (as in the account menu, session.js).
+let pressing=false;wrap.addEventListener('pointerdown',()=>{pressing=true;setTimeout(()=>{pressing=false},600)});
+wrap.addEventListener('focusout',e=>{if(!pressing&&!wrap.contains(e.relatedTarget))close()});
 wrap.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close(true)}});
 button.onclick=async()=>{
  close();dialog.showModal();status('Loading…');$('#showcase-settings-save').disabled=true;
