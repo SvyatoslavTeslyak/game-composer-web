@@ -69,15 +69,17 @@ const feedback=document.createElement('span');feedback.id='changes-feedback';fee
 const isReviewer=()=>ComposerAuth.member?.role!=='art_director'&&ComposerAuth.has('drafts.review',game());
 let feedbackTimer;
 let localConfig=null,releases=[],gameTabFlag='',sharedBrands=null,owners=null;
-let authors=new Map(),contributors=[],contributorsError=false;
+let authors=new Map(),faces=new Map(),contributors=[],contributorsError=false;
 // Only an Admin may list people; to anyone else a teammate is "a teammate", and you are you.
-// The face a person wears in Composer's header (session.js): one of the games' player faces,
-// picked by a hash of their account id, so each card shows the same face as their own header.
+// The face a person wears in Composer's header (session.js, ComposerFaces): the one they picked, or
+// the one the hash of their account gives them, so each card shows the same face as their header.
+// A teammate's pick is known to an Admin, from the people list.
 function avatarHTML(id,name){
  const letter=esc(String(name||'?').trim().charAt(0).toUpperCase());
  if(!id||id==='team'||id==='untracked')return '<span class="review-avatar" aria-hidden="true">'+letter+'</span>';
- let h=2166136261;for(const c of String(id))h=Math.imul(h^c.codePointAt(0),16777619);
- return '<span class="review-avatar has-face" aria-hidden="true" style="background-image:url(avatar-'+String(1+(h>>>0)%11).padStart(2,'0')+'.png)"></span>';
+ const own=id===session?.user?.id?window.ComposerAuth?.session?.user?.user_metadata?.avatar??session.user.user_metadata?.avatar:null;
+ const face=window.ComposerFaces?window.ComposerFaces.of(id,own??faces.get(id)):'';
+ return face?'<span class="review-avatar has-face" aria-hidden="true" style="background-image:url('+face+')"></span>':'<span class="review-avatar" aria-hidden="true">'+letter+'</span>';
 }
 function authorName(id,fallback='a teammate'){return authors.get(id)||(id===session?.user?.id?(session.user.user_metadata?.full_name||session.user.email):null)||fallback}
 function authorLine(label,id,time){return '<p class="review-author">'+esc(label)+' <strong>'+esc(authorName(id))+'</strong>'+(time?' <span>· '+esc(new Date(time).toLocaleString())+'</span>':'')+'</p>'}
@@ -365,7 +367,7 @@ async function refresh(){
   let edits=null;{let r;try{r=await client.rpc('composer_draft_edits',{p_game:id})}catch{r={error:true}}if(request!==refreshId||id!==game())return;if(!r.error)edits=r.data||[]}
   if(scope==='game'){const [summary,catalog]=await Promise.all([sharedThere?sharedSummary().catch(()=>null):null,window.ComposerDraftEditors.comparisonCatalog?.().catch(()=>null)]);if(request!==refreshId||id!==game())return;sharedState=summary;sharedBrands=catalog?.brands||null}
   contributors=attribution.data||[];contributorsError=!!attribution.error;owners=edits?attribute(edits):null;
-  authors=new Map((a.error?[]:a.data||[]).map(person=>[person.user_id,person.name?person.name+' ('+person.email+')':person.email]));versions=check(v);notices=check(n);currentDraft=d;published=check(p)[0]||null;basePayload=baseline;loadError='';
+  authors=new Map((a.error?[]:a.data||[]).map(person=>[person.user_id,person.name?person.name+' ('+person.email+')':person.email]));faces=new Map((a.error?[]:a.data||[]).map(person=>[person.user_id,person.avatar]));versions=check(v);notices=check(n);currentDraft=d;published=check(p)[0]||null;basePayload=baseline;loadError='';
  }else{versions=[];notices=[];currentDraft=null;localConfig=null}
  render();
 }
@@ -529,7 +531,7 @@ async function loadInbox(){
  const [v,d,a]=await Promise.all([client.from('composer_versions').select('game_id,revision,status,submitted_by,payload'),client.from('composer_drafts').select('game_id,revision,updated_at,payload'),Promise.resolve(client.rpc('composer_list_members')).catch(()=>({data:[]}))]);
  // Seasons and faces are told apart from the shared brands, as in each game's own Changes.
  if(!sharedBrands)sharedBrands=(await window.ComposerDraftEditors.comparisonCatalog?.().catch(()=>null))?.brands||null;
- if(!a.error&&a.data)authors=new Map(a.data.map(person=>[person.user_id,person.name?person.name+' ('+person.email+')':person.email]));
+ if(!a.error&&a.data){authors=new Map(a.data.map(person=>[person.user_id,person.name?person.name+' ('+person.email+')':person.email]));faces=new Map(a.data.map(person=>[person.user_id,person.avatar]))}
  const versionsAll=check(v)||[],draftsAll=Array.isArray(check(d))?check(d):[];
  const ids=[...new Set([...draftsAll.map(x=>x.game_id),...versionsAll.map(x=>x.game_id)])].filter(id=>id&&id!=='kit');
  const rows=[];

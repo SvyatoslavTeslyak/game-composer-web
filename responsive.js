@@ -32,6 +32,17 @@
  });
  window.addEventListener('composer-workspace',()=>{sheet(false);view='editor';editorScroll=0;paint()});
  media.addEventListener('change',()=>{sheet(false);paint()});
+ // A phone's bottom bar keeps the workspaces and the account face only: the appearance switch and
+ // the Settings entries a person may use move into the account menu, as buttons that press the
+ // real ones, rebuilt each time the menu opens so they follow the role and the appearance.
+ const accountMenu=$('#workspace-account-menu'),extras=document.createElement('div');extras.className='account-mobile-extras';
+ accountMenu?.insertBefore(extras,$('#workspace-face')||$('#workspace-password'));
+ const proxy=(label,target)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>{accountMenu.hidden=true;$('#workspace-avatar')?.setAttribute('aria-expanded','false');target.click()};return b};
+ $('#workspace-avatar')?.addEventListener('click',()=>{
+  if(!media.matches)return;extras.replaceChildren();
+  const look=$('#appearance-toggle');if(look)extras.append(proxy((look.querySelector('[data-appearance-label]')?.textContent||'Appearance')+' appearance',look));
+  if(!$('#workspace-settings-wrap')?.hidden)for(const item of document.querySelectorAll('#workspace-settings-menu>button'))if(!item.hidden)extras.append(proxy(item.textContent.trim(),item));
+ },true);
  const viewport=()=>document.documentElement.style.setProperty('--composer-viewport-height',(window.visualViewport?.height||innerHeight)+'px');
  window.visualViewport?.addEventListener('resize',viewport);viewport();paint();
 })();

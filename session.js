@@ -132,7 +132,15 @@ window.addEventListener('focus',()=>{
  });
 });
 document.addEventListener('composer-permissions',()=>{const roles=document.querySelector('#workspace-roles');if(roles)roles.hidden=!auth.has('roles.manage');const people=document.querySelector('#workspace-people');if(people)people.hidden=!(auth.has('users.manage')||auth.has('users.invite'));});
-const AVATAR_FACES=11;
+// The faces accounts wear (preview/avatar-NN.png): the games' own player set and more drawn in its
+// style. A person picks theirs, kept in their account's metadata (`avatar`) so it follows them to
+// any device; until they do, the hash of their account picks one of the first eleven, the set there
+// was before, so nobody's face changed when more were added.
+const FACES=24,DEFAULT_FACES=11;
+const faceUrl=n=>'avatar-'+String(n).padStart(2,'0')+'.png';
+const identityHash=id=>{let h=2166136261;for(const c of String(id))h=Math.imul(h^c.codePointAt(0),16777619);return h>>>0};
+const faceNumber=value=>{const n=Number(value);return Number.isInteger(n)&&n>=1&&n<=FACES?n:0};
+window.ComposerFaces={count:FACES,url:faceUrl,of:(id,chosen)=>faceUrl(faceNumber(chosen)||1+identityHash(id)%DEFAULT_FACES)};
 function setupAccountMenu(){
  const account=document.querySelector('#workspace-account');if(!account)return;
  const avatar=document.querySelector('#workspace-avatar'),menu=document.querySelector('#workspace-account-menu'),logout=document.querySelector('#workspace-logout'),errorBox=document.querySelector('#workspace-account-error');
@@ -143,8 +151,27 @@ function setupAccountMenu(){
  let colourHash=2166136261;for(const char of identity)colourHash=Math.imul(colourHash^char.codePointAt(0),16777619);
  avatar.style.setProperty('--avatar-hue',String((colourHash>>>0)%360));
  avatar.textContent=Array.from(name)[0].toLocaleUpperCase();avatar.setAttribute('aria-label','Account menu: '+name);avatar.title=name;
- // The same hash picks one of the faces the games use for their players, so a new account gets a face at random and keeps it.
- const face='avatar-'+String(1+(colourHash>>>0)%AVATAR_FACES).padStart(2,'0')+'.png',img=new Image();img.onload=()=>{avatar.style.backgroundImage='url("'+face+'")';avatar.classList.add('has-face')};img.src=face;
+ // The face this person picked, or one the hash gives them (ComposerFaces).
+ const paintFace=()=>{const face=window.ComposerFaces.of(identity,state.session?.user?.user_metadata?.avatar),img=new Image();img.onload=()=>{avatar.style.backgroundImage='url("'+face+'")';avatar.classList.add('has-face')};img.src=face};paintFace();
+ // Choose avatar: every face in a grid, the one worn marked; a pick is saved to the account at once.
+ document.querySelector('#workspace-face')?.addEventListener('click',()=>{
+  close();const current=window.ComposerFaces.of(identity,state.session?.user?.user_metadata?.avatar);
+  const dialog=document.createElement('dialog');dialog.className='share-dialog face-dialog';dialog.setAttribute('aria-labelledby','face-title');
+  dialog.innerHTML='<header><h2 id="face-title">Your avatar</h2><button type="button" class="wb-button" data-close aria-label="Close">✕</button></header><p class="face-note">Shown on your account and beside your changes in Changes.</p><div class="face-grid" role="radiogroup" aria-label="Avatars">'
+   +Array.from({length:FACES},(_,i)=>{const url=faceUrl(i+1);return '<button type="button" role="radio" aria-checked="'+(url===current)+'" data-face="'+(i+1)+'" aria-label="Avatar '+(i+1)+'"><img src="'+url+'" alt="" width="64" height="64"></button>'}).join('')
+   +'</div><p class="face-error" role="alert" hidden></p>';
+  document.body.append(dialog);dialog.addEventListener('close',()=>{dialog.remove();avatar.focus()});dialog.querySelector('[data-close]').onclick=()=>dialog.close();
+  const error=dialog.querySelector('.face-error');
+  dialog.querySelector('.face-grid').onclick=async event=>{
+   const pick=event.target.closest('[data-face]');if(!pick||pick.disabled)return;
+   for(const b of dialog.querySelectorAll('[data-face]'))b.disabled=true;error.hidden=true;
+   const {data,error:failed}=await client.auth.updateUser({data:{avatar:Number(pick.dataset.face)}});
+   if(failed){error.textContent=failed.message||'Could not save the avatar. Try again.';error.hidden=false;for(const b of dialog.querySelectorAll('[data-face]'))b.disabled=false;return}
+   if(state.session&&data?.user)state.session={...state.session,user:data.user};paintFace();
+   document.dispatchEvent(new CustomEvent('composer-face',{detail:{avatar:Number(pick.dataset.face)}}));dialog.close();
+  };
+  dialog.showModal();(dialog.querySelector('[aria-checked=true]')||dialog.querySelector('[data-face]')).focus();
+ });
  document.querySelector('#workspace-account-name').textContent=user?.email||name;
  document.querySelector('#workspace-password')?.addEventListener('click',()=>location.assign('login.html?mode=password'));
  const rolesButton=document.querySelector('#workspace-roles');if(rolesButton)rolesButton.hidden=!auth.has('roles.manage');const peopleButton=document.querySelector('#workspace-people');if(peopleButton)peopleButton.hidden=!(auth.has('users.manage')||auth.has('users.invite'));
