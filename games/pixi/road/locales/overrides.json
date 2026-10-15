@@ -30,6 +30,9 @@
     "road_rules_document": {
       "ht": "Ede kabrit la Janbe wout la yon liy alafwa. Chak liy ou janbe ogmante miltiplikatè a.\n\nPeze **CASH OUT** nan nenpòt liy pou pran gany miz ou a dapre miltiplikatè aktyèl la.\n\nGen machin k ap pase sou kèk liy. Si w frape ak youn, pati a fini san ou pa genyen anyen.\n\nChwazi Fasil, Mwayen oswa Difisil. Plis nivo a difisil, se plis risk la ak rekonpans lan ogmante. Endikatè risk la montre posiblite pou w echwe nan pwochen pa a. Nan mòd API a, li parèt sèlman lè sèvè a bay enfòmasyon sa a."
     },
+    "this_session_48c2a1": {
+      "ht": "Sesyon sa "
+    },
     "round_history_9b12bb": {
       "en": "Round history",
       "fr": "Historique des manches",
@@ -52,12 +55,16 @@
       "ht": "Pati fini"
     },
     "choose_bet_amount_4d97eb": {
+      "fr": "Choisissez le montant de la mise",
       "ht": "Chwazi kantite vle mize"
     },
     "back_to_previous_page_c6ac7d": {
       "en": "Back to previous page",
-      "fr": "Retour à la page précédente",
+      "fr": "Retournez à la page précédente",
       "ht": "Tounen nan paj anvan an"
+    },
+    "best_cashed_out_multiplier_ad36c0": {
+      "ht": "Pi bon miltiplikatè pou pran lajan"
     }
   }
 }
