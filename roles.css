@@ -5,3 +5,6 @@
 .people-summary{display:flex;align-items:center;gap:var(--space-8);min-width:0}.people-summary .access-description{margin:0}.people-toolbar{margin:var(--space-16) 0}.access-page .access-refresh{flex:none;width:44px;height:44px;min-height:44px;padding:0;border-color:transparent;background:transparent;color:var(--inspector-muted)}.access-page .access-refresh:hover{background:var(--inspector-surface-hover);color:var(--inspector-text)}.access-refresh svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 .access-header-actions{display:flex;align-items:center;gap:var(--space-8);flex:none}.access-header-actions .access-mode{margin-top:0}
+/* People: each name beside the face the person wears in Composer. */
+.people-table .person-cell{display:flex;align-items:center;gap:var(--space-12)}
+.people-table .person-face{flex:none;width:var(--space-32);height:var(--space-32);border-radius:50%;object-fit:cover;background:var(--inspector-well)}

@@ -227,7 +227,7 @@ async function savePending(){
  }
  flagDirty();window.dispatchEvent(new Event('composer-sounds-saved'));
  if(dirty.size){await savePending();return}
- if(window.ComposerDraftEditors?.enabled){message('Saved '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · in the shared draft. Send it from Changes.');return}
+ if(window.ComposerDraftEditors?.enabled){message('Saved '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' · in the shared draft. Send it from Changes.');return}
  message('Saved'+(isGame()&&pending.includes(targetId())?'. Rebuild the game to hear it there.':'.'));
 }
 

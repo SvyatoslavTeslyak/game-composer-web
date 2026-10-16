@@ -89,7 +89,7 @@ function avatarHTML(id,name){
  return face?'<span class="review-avatar has-face" aria-hidden="true" style="background-image:url('+face+')"></span>':'<span class="review-avatar" aria-hidden="true">'+letter+'</span>';
 }
 function authorName(id,fallback='a teammate'){return authors.get(id)||(id===session?.user?.id?(session.user.user_metadata?.full_name||session.user.email):null)||fallback}
-function authorLine(label,id,time){return '<p class="review-author">'+esc(label)+' <strong>'+esc(authorName(id))+'</strong>'+(time?' <span>· '+esc(new Date(time).toLocaleString())+'</span>':'')+'</p>'}
+function authorLine(label,id,time){return '<p class="review-author">'+esc(label)+' <strong>'+esc(authorName(id))+'</strong>'+(time?' <span>· '+esc(new Date(time).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}))+'</span>':'')+'</p>'}
 function notify(text){feedback.textContent=text;clearTimeout(feedbackTimer);feedbackTimer=setTimeout(()=>feedback.textContent='',7000)}
 try{const carried=sessionStorage.getItem('composer-toast');if(carried){sessionStorage.removeItem('composer-toast');notify(carried)}}catch{}
 const dirty=()=>!canSwitch();
@@ -166,7 +166,7 @@ function returnedVersion(){return versions.find(v=>v.status==='rejected'&&Number
 function publishedLine(){
  if(!published)return 'not published yet';
  const at=releases.find(r=>r.version_id===published.id)?.published_at;
- return 'published rev '+published.revision+(at?' · '+new Date(at).toLocaleDateString(undefined,{day:'numeric',month:'short'}):'');
+ return 'published rev '+published.revision+(at?' · '+new Date(at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'');
 }
 function standing(){
  const id=game(),review=isReviewer();
@@ -210,7 +210,7 @@ const tabFlag=(label,tone=toneOf(label))=>label?' <span class="changes-flag tone
 // changes wait, so the standing is not repeated here.
 function standingHTML(){
  if(!standing()&&!currentDraft)return '';
- const savedBy=currentDraft?.updated_by&&currentDraft.updated_by===session?.user?.id?'you':authorName(currentDraft?.updated_by,''),saved=currentDraft?.updated_at&&draftChanges().some(g=>g.rows.length)?'last saved'+(savedBy?' by '+esc(savedBy):'')+', '+esc(new Date(currentDraft.updated_at).toLocaleString(undefined,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})):'';
+ const savedBy=currentDraft?.updated_by&&currentDraft.updated_by===session?.user?.id?'you':authorName(currentDraft?.updated_by,''),saved=currentDraft?.updated_at&&draftChanges().some(g=>g.rows.length)?'last saved'+(savedBy?' by '+esc(savedBy):'')+', '+esc(new Date(currentDraft.updated_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})):'';
  const p=publishedLine(),label=esc(p.charAt(0).toUpperCase()+p.slice(1));
  // What was published before opens from the line that says what is published now.
  return '<div class="changes-meta">'+(publishedItems().length?'<details class="changes-history"><summary>'+label+'</summary>'+publicationHistory()+'</details>':'<span>'+label+'</span>')+(saved?'<span>'+saved+'</span>':'')+'</div>';
@@ -527,7 +527,7 @@ function reviewStatus(status,count){const accepted=status==='approved';return '<
 function publishedItems(){const items=versions.filter(v=>v.status==='published');if(published&&!items.some(v=>v.id===published.id))items.unshift(published);return items}
 function publicationHistory(){
  const items=publishedItems();
- return '<div class="changes-history-list">'+items.map(v=>{const r=releases.find(r=>r.version_id===v.id);return '<p>Revision '+esc(v.revision)+(r?.published_at?' · '+esc(new Date(r.published_at).toLocaleString(undefined,{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})):'')+'</p>'}).join('')+(scope===SHARED?'':'<a target="_blank" rel="noopener" href="https://svyatoslavteslyak.github.io/game-showcase/games/'+encodeURIComponent(game())+'/index.html">Open published game '+icon('external')+'</a>')+'</div>';
+ return '<div class="changes-history-list">'+items.map(v=>{const r=releases.find(r=>r.version_id===v.id);return '<p>Revision '+esc(v.revision)+(r?.published_at?' · '+esc(new Date(r.published_at).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})):'')+'</p>'}).join('')+(scope===SHARED?'':'<a target="_blank" rel="noopener" href="https://svyatoslavteslyak.github.io/game-showcase/games/'+encodeURIComponent(game())+'/index.html">Open published game '+icon('external')+'</a>')+'</div>';
 }
 // Each sent version under its sender's name, showing only what it adds to the one sent before it
 // (or to what is published). A version is a snapshot of the whole draft, so the newest one also
@@ -536,7 +536,7 @@ function reviewVersions(){
  const all=sentVersions().slice().sort((a,b)=>Number(a.revision)-Number(b.revision));
  const before=v=>{const prev=all.filter(x=>Number(x.revision)<Number(v.revision)).pop();return prev?layer(basePayload,published?.payload,prev.payload):layer(basePayload,published?.payload)};
  const card=v=>{
-  const earlier=all.filter(x=>Number(x.revision)<Number(v.revision)).length,when=new Date(v.submitted_at).toLocaleString(undefined,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  const earlier=all.filter(x=>Number(x.revision)<Number(v.revision)).length,when=new Date(v.submitted_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
   return '<article class="review-version"><div class="review-version-head">'+avatarHTML(v.submitted_by,authorName(v.submitted_by,'?'))+'<span><strong>'+esc(v.submitted_by===session?.user?.id?'You':authorName(v.submitted_by,'A teammate'))+'</strong><small>sent '+esc(when)+' · revision '+esc(v.revision)+'</small></span></div>'
    +diffHTML(layer(basePayload,published?.payload,v.payload),before(v))
    +(earlier?'<p class="changes-meta">Also carries '+earlier+' earlier '+(earlier===1?'version':'versions')+' above: applying this one applies '+(earlier===1?'it':'them')+' too.</p>':'')
@@ -632,7 +632,7 @@ function render(){
  // What others saved in the same draft: shown, folded, never counted or sent as yours.
  +(otherCount?'<details class="review-others"><summary>Saved by others in this draft <span class="review-count">'+otherCount+'</span></summary><p class="changes-meta">'+othersWho(others)+' Not counted as yours; a version you send carries the whole draft, so Admin reviews them with it.</p>'+diffHTML(layer(basePayload,currentDraft?.payload),editingBaseline(),(section,path)=>!ownerOf(section,path).mine)+'</details>':''))+'</div>'+
 
- (!isReviewer()?'<div class="review-send"><p id="cloud-save-hint"></p><p class="review-message" role="alert"></p><button class="wb-button discard-changes" id="cloud-discard-unsent"'+(newCount||dirty()?'':' hidden')+'>Discard my unsent changes</button><button class="wb-button primary" id="cloud-submit"'+(!newCount?' hidden':'')+'>Send changes</button></div>'+ (sent.length?'<section class="review-sent-list"><h3 class="review-new-title">Sent to Admin <span class="review-count">'+sent.length+'</span></h3>'+sent.slice().sort((a,b)=>Number(a.revision)-Number(b.revision)).map((v,k,all)=>'<article class="review-version"><div class="review-version-head">'+avatarHTML(session?.user?.id,'You')+'<span><strong>Sent '+esc(new Date(v.submitted_at).toLocaleString(undefined,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))+'</strong><small>revision '+esc(v.revision)+'</small></span>'+reviewStatus(v.status)+'</div>'+diffHTML(layer(basePayload,published?.payload,v.payload),k?layer(basePayload,published?.payload,all[k-1].payload):layer(basePayload,published?.payload))+'<div class="share-actions">'+jsonToggle(v.payload)+'</div></article>').join('')+'</section>':''):''))+
+ (!isReviewer()?'<div class="review-send"><p id="cloud-save-hint"></p><p class="review-message" role="alert"></p><button class="wb-button discard-changes" id="cloud-discard-unsent"'+(newCount||dirty()?'':' hidden')+'>Discard my unsent changes</button><button class="wb-button primary" id="cloud-submit"'+(!newCount?' hidden':'')+'>Send changes</button></div>'+ (sent.length?'<section class="review-sent-list"><h3 class="review-new-title">Sent to Admin <span class="review-count">'+sent.length+'</span></h3>'+sent.slice().sort((a,b)=>Number(a.revision)-Number(b.revision)).map((v,k,all)=>'<article class="review-version"><div class="review-version-head">'+avatarHTML(session?.user?.id,'You')+'<span><strong>Sent '+esc(new Date(v.submitted_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))+'</strong><small>revision '+esc(v.revision)+'</small></span>'+reviewStatus(v.status)+'</div>'+diffHTML(layer(basePayload,published?.payload,v.payload),k?layer(basePayload,published?.payload,all[k-1].payload):layer(basePayload,published?.payload))+'<div class="share-actions">'+jsonToggle(v.payload)+'</div></article>').join('')+'</section>':''):''))+
  '<p role="status" aria-live="polite"></p>';
  if(sentExpanded&&dialog.querySelector('.review-sent'))dialog.querySelector('.review-sent').open=true;
  for(const group of dialog.querySelectorAll('[data-review-group]'))if(collapsed.has(group.dataset.reviewGroup))group.open=false;
