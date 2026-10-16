@@ -26,8 +26,13 @@
  // The side panel on a desktop: the button atop the rail or ⌘\ / Ctrl+\ puts it away or brings
  // it back, and the choice is remembered. The stage refits to the room it gains.
  const sideToggle=$('#side-toggle');
- const showSide=on=>{document.body.classList.toggle('side-hidden',!on);sideToggle.setAttribute('aria-expanded',String(on));const label=on?'Hide panel':'Show panel';sideToggle.setAttribute('aria-label',label);sideToggle.title=label+' (⌘\\)';try{localStorage.setItem('composer-side-hidden',on?'':'1')}catch{}window.dispatchEvent(new Event('resize'))};
+ // Assets and Game settings fill the room and have no side panel: there the button rests,
+ // dimmed, and says so, rather than opening nothing.
+ const PANELLESS=['art','settings'];let panelless=false;
+ const label=on=>{const text=panelless?'This tab has no side panel':on?'Hide panel':'Show panel';sideToggle.setAttribute('aria-label',text);sideToggle.title=panelless?text:text+' (⌘\\)';sideToggle.disabled=panelless};
+ const showSide=on=>{document.body.classList.toggle('side-hidden',!on);sideToggle.setAttribute('aria-expanded',String(on));label(on);try{localStorage.setItem('composer-side-hidden',on?'':'1')}catch{}window.dispatchEvent(new Event('resize'))};
  if(sideToggle){
+  window.addEventListener('composer-workspace',e=>{panelless=PANELLESS.includes(e.detail);document.body.classList.toggle('panelless-workspace',panelless);label(!document.body.classList.contains('side-hidden'))});
   let hidden=false;try{hidden=localStorage.getItem('composer-side-hidden')==='1'}catch{}if(hidden)showSide(false);
   sideToggle.onclick=()=>showSide(document.body.classList.contains('side-hidden'));
   // Picking a section in the rail opens its panel: the panel is what the section is about.

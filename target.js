@@ -88,10 +88,15 @@ async function request(path,options){
 }
 // A game's name: the one it is released under (Game settings, in the catalog), over the one written
 // in TARGETS, and a name saved but not yet released over that (setTitle, from Game settings).
-const ownTitles=Object.fromEntries(TARGETS.map(t=>[t.id,t.title])),releasedTitles={},draftTitles={};
+const ownTitles=Object.fromEntries(TARGETS.map(t=>[t.id,t.title])),releasedTitles={},draftTitles={},draftIcons={};
 function applyTitles(){for(const t of TARGETS){t.title=draftTitles[t.id]||releasedTitles[t.id]||ownTitles[t.id]}options()}
+// The game picker holds a placeholder where the dates go until the first catalog answers; a first
+// read that fails ends that wait too (composer-catalog-failed), so nothing shimmers for good.
+let catalogSettled=false;
 async function refresh(){
- catalog=await request('studio/catalog?engine='+encodeURIComponent(engine));
+ try{catalog=await request('studio/catalog?engine='+encodeURIComponent(engine))}
+ catch(error){if(!catalogSettled){catalogSettled=true;window.dispatchEvent(new CustomEvent('composer-catalog-failed'))}throw error}
+ catalogSettled=true;
  for(const s of catalog.sources||[])if(s.title&&TARGETS.some(t=>t.id===s.id))releasedTitles[s.id]=s.title;
  applyTitles();
  engineOptions();
@@ -144,6 +149,8 @@ window.addEventListener('focus',()=>{if(catalog)refresh().catch(()=>{})});
 
 window.ComposerTarget={
  get value(){return value},get catalog(){return catalog},get workspace(){return workspace},
+ // True until the first catalog read has answered, either way.
+ get catalogLoading(){return !catalogSettled},
  // The engine the workspace is pointed at. Layout runs its build, Sound effects edits its
  // manifest and the Math snapshots it, so every tab asks for it rather than assuming.
  get engine(){return engine},get engines(){return availableEngines()},
@@ -151,6 +158,10 @@ window.ComposerTarget={
  setEngine,
  targets:TARGETS,entry,source,set,refresh,guard(fn){guards.push(fn)},category,
  setTitle(id,title){if(title)draftTitles[id]=title;else delete draftTitles[id];applyTitles();window.dispatchEvent(new CustomEvent('composer-catalog',{detail:catalog}))},
+ // A game's picture: its released icon, or the thumbnail saved in its draft but not yet released
+ // (setIcon, from Game settings), so the picker and the rail show what was just uploaded.
+ icon(id){return draftIcons[id]||(id==='kit'?'composer-icon-256.png':'icons/'+id+'.png')},
+ setIcon(id,url){if((draftIcons[id]||'')===(url||''))return;if(url)draftIcons[id]=url;else delete draftIcons[id];window.dispatchEvent(new CustomEvent('composer-catalog',{detail:catalog}))},
  offered,listed,get hidden(){return [...hidden]},
  // A new hidden list from Settings: the lists drop those games, and a hidden game in use is left for the first one still shown.
  setHidden(list){hidden=[...list];leaveHidden();options();window.dispatchEvent(new CustomEvent('composer-games-shown'))}

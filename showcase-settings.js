@@ -25,25 +25,28 @@ let pressing=false;wrap.addEventListener('pointerdown',()=>{pressing=true;setTim
 wrap.addEventListener('focusout',e=>{if(!pressing&&!wrap.contains(e.relatedTarget))close()});
 wrap.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close(true)}});
 button.onclick=async()=>{
- close();dialog.showModal();status('Loading…');$('#showcase-settings-save').disabled=true;
- $('#showcase-games').replaceChildren();
+ close();dialog.showModal();status('');$('#showcase-settings-save').disabled=true;$('#showcase-visible-count').textContent='';
+ // A placeholder row per live game while the list is read, so the switches take their place
+ // instead of appearing under a bare "Loading…".
+ $('#showcase-games').innerHTML=ComposerSkeleton.lines(window.ComposerTarget.targets.filter(g=>g.live).length||4,'Loading Showcase settings…');
  try{
   const client=window.ComposerAuth.client;if(!client)throw Error('Sign in to Composer Cloud to see and change the Showcase list.');
   const {data,error}=await client.from('composer_showcase').select('visible_games,revision').single();if(error||!data)throw Error('Could not load Showcase settings.');revision=Number(data.revision);
+  $('#showcase-games').replaceChildren();
   for(const game of window.ComposerTarget.targets.filter(g=>g.live)){
    const label=document.createElement('label');label.className='switch';label.style.cssText='display:flex;align-items:center;gap:12px;min-height:44px;margin:8px 0';
    const input=document.createElement('input');input.type='checkbox';input.value=game.id;input.checked=data.visible_games.includes(game.id);input.disabled=!admin();input.onchange=count;label.append(input,document.createTextNode(game.title));$('#showcase-games').append(label);
   }
   count();$('#showcase-settings-save').hidden=!admin();$('#showcase-settings-save').disabled=!admin();
   $('#showcase-settings-help').textContent=admin()?'Saved changes appear in Showcase straight away; no deploy is needed.':'Only an Admin can change this list.';status('');
- }catch(error){status(error.message)}
+ }catch(error){$('#showcase-games').replaceChildren();status(error.message)}
 };
 dialog.querySelector('[data-close]').onclick=()=>{if(!busy)dialog.close()};dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault()});
 dialog.querySelector('form').onsubmit=async e=>{
- e.preventDefault();if(busy||!admin())return;busy=true;$('#showcase-settings-save').disabled=true;
+ e.preventDefault();if(busy||!admin())return;busy=true;$('#showcase-settings-save').disabled=true;$('#showcase-settings-save').innerHTML=ComposerSkeleton.spinner('Saving…');
  const visible_games=inputs().filter(n=>n.checked).map(n=>n.value);inputs().forEach(n=>n.disabled=true);
  try{const {data,error}=await window.ComposerAuth.client.rpc('composer_set_showcase',{p_revision:revision,p_games:visible_games});if(error)throw Error(error.message||'Could not save settings.');revision=Number(data.revision);status('Saved. Showcase now lists '+data.visible_games.length+' '+(data.visible_games.length===1?'game':'games')+'.');}
- catch(error){status(error.message)}finally{busy=false;$('#showcase-settings-save').disabled=false;inputs().forEach(n=>n.disabled=false)}
+ catch(error){status(error.message)}finally{busy=false;$('#showcase-settings-save').disabled=false;$('#showcase-settings-save').textContent='Save settings';inputs().forEach(n=>n.disabled=false)}
 };
 window.ComposerAuth.ready.then(sync);document.addEventListener('composer-permissions',sync);
 })();

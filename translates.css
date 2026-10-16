@@ -215,3 +215,9 @@
 .translations-workspace #fit>#translation-preview-note{display:block;width:100%;min-height:36px;margin:0;padding-top:10px;text-align:center}
 /* A text a colleague saved meanwhile, in the same language as an open edit: said on its row. */
 .tx-text .tx-clash-note,.tx-clash-note{display:block;color:var(--inspector-warning);font-size:var(--inspector-type-xs);line-height:1.5}
+/* Loading: the table's frame with shimmering cells until a game's texts arrive (translates.js
+   placeholder), a spinner in a busy button in the button's own colour, and the reload icon turning. */
+.tx-skeleton{margin-top:var(--space-24);padding:var(--space-16);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--inspector-radius-card);background:var(--inspector-card)}
+#translates-report button .sk-spinner,.tx-doc-dialog button .sk-spinner{color:inherit}
+.tx-toolbar .tx-icon[aria-busy=true] svg{animation:sk-spin var(--inspector-loading-duration) linear infinite}
+@media(prefers-reduced-motion:reduce){.tx-toolbar .tx-icon[aria-busy=true] svg{animation:none}}

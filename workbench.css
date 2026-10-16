@@ -106,3 +106,33 @@
 .scope-tag{display:inline-flex;align-items:center;min-height:22px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;line-height:1.2}
 .scope-tag.shared{color:#b79cff;background:color-mix(in srgb,#b79cff 14%,transparent);border:1px solid color-mix(in srgb,#b79cff 45%,transparent)}
 .scope-tag.game{color:#5fd6a6;background:color-mix(in srgb,#5fd6a6 14%,transparent);border:1px solid color-mix(in srgb,#5fd6a6 45%,transparent)}
+/* Loading placeholders (workbench.js ComposerSkeleton): grey shapes where content will be, with a
+   slow shimmer; still for anyone who asks for less motion. */
+.sk{display:grid;gap:var(--space-12);padding:var(--space-4) 0}
+.sk-label{position:absolute;width:var(--stroke-1);height:var(--stroke-1);overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sk-bar,.sk-dot,.sk-picture{display:block;background:linear-gradient(90deg,var(--inspector-well) 0%,var(--inspector-surface-hover) 50%,var(--inspector-well) 100%);background-size:200% 100%;animation:sk-shimmer var(--inspector-skeleton-duration) ease-in-out infinite}
+.sk-bar{height:var(--space-12);border-radius:var(--space-6);max-width:100%}
+.sk-bar.sk-strong{height:var(--space-16)}
+.sk-bar.sk-thin{height:var(--space-8);opacity:.7}
+.sk-row{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:var(--space-12);padding:var(--space-8) 0}
+.sk-dot{width:var(--space-32);height:var(--space-32);border-radius:50%}
+.sk-stack{display:grid;gap:var(--space-8)}
+.sk-cards{grid-template-columns:repeat(auto-fill,minmax(calc(var(--space-48) * 3),1fr))}
+.sk-card{display:grid;gap:var(--space-8);padding:var(--space-8);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--inspector-radius-card)}
+.sk-picture{aspect-ratio:1;border-radius:var(--inspector-radius-card)}
+.sk-table{grid-template-columns:repeat(var(--sk-cols),minmax(0,1fr));gap:var(--space-16) var(--space-12)}
+.sk-spinner{display:inline-flex;align-items:center;gap:var(--space-8);color:var(--inspector-muted)}
+.sk-ring{flex:none;width:var(--type-14);height:var(--type-14);border:var(--stroke-2) solid currentColor;border-right-color:transparent;border-radius:50%;animation:sk-spin var(--inspector-loading-duration) linear infinite}
+@keyframes sk-shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
+@keyframes sk-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.sk-bar,.sk-dot,.sk-picture,.sk-ring{animation:none}}
+/* A bar in a picker's title or date line (target and look pickers) sits in the line like the text
+   it stands for, so the button keeps its height when the words arrive. */
+.game :is(strong,small)>.sk-bar{display:inline-block;vertical-align:middle}
+/* The stage's loader (live.js): a small card in the middle of the empty frame while a game's page
+   is on its way. It fades in after a beat, so a quick load never flashes it. */
+.stage-loading{position:absolute;inset:0;z-index:1;display:grid;place-items:center;pointer-events:none;animation:stage-loading-in var(--motion-fast-ms) ease-out var(--motion-fast-ms) both}
+.stage-loading[hidden]{display:none}
+.stage-loading>.sk-spinner{padding:var(--space-8) var(--space-12);font-size:var(--inspector-type-sm);background:var(--inspector-card);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--inspector-radius-card);box-shadow:var(--elevation-modal)}
+@keyframes stage-loading-in{from{opacity:0}}
+@media(prefers-reduced-motion:reduce){.stage-loading{animation:none}}

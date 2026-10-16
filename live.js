@@ -90,8 +90,15 @@
  window.addEventListener('composer-target',syncDebug);window.addEventListener('composer-engine',syncDebug);
  // A sound saved while the game kept running (a round was on) is heard only after a reload.
  let soundsChanged=false;
+ // Between one game and the next the stage is an empty frame for as long as the build takes to
+ // arrive. A loader sits over it until the game's own page is in the frame; from there the game's
+ // splash shows its progress, and a second ring over it would only cover that.
+ const loader=document.createElement('div');loader.className='stage-loading';loader.hidden=true;document.querySelector('#box').append(loader);
+ let loaderFor=0; // the load() whose page the frame was last pointed at; an older page arriving late does not end a newer wait
+ const booting=label=>{loader.hidden=!label;if(!label){loader.replaceChildren();return}loader.innerHTML=window.ComposerSkeleton.spinner();loader.querySelector('.sk-spinner>span:last-child').textContent=label};
  async function load(){
   soundsChanged=false;clearInterval(timer);const request=++generation;syncDebug();
+  booting('Loading '+window.ComposerTarget.entry().title+'…');
   presetSelect.value=savedPreset();presetSelect.disabled=live();syncInspector();
   document.querySelectorAll('[data-placeholder-only]').forEach(row=>row.hidden=live());
 
@@ -99,7 +106,7 @@
   if(!live()){
    syncInspector();
    document.querySelector('#modal-controls').hidden=false;
-   document.querySelector('#control-variant').disabled=false;status.textContent=playable()?'Simulated data · '+window.ComposerTarget.entry().title:'Simulated data · shared UI kit';frame.src='game.html';return
+   document.querySelector('#control-variant').disabled=false;status.textContent=playable()?'Simulated data · '+window.ComposerTarget.entry().title:'Simulated data · shared UI kit';loaderFor=request;frame.src='game.html';return
   }
   // Blank the frame first: a game left running would keep its audio going under the next one.
   if(frame.src&&!frame.src.endsWith('about:blank')){frame.src='about:blank';await new Promise(r=>setTimeout(r,60));if(request!==generation)return}
@@ -109,8 +116,8 @@
   syncInspector();
   document.querySelector('#modal-controls').hidden=false;
   const url='games/'+engine()+'/'+game()+'/index.html';
-  try{const response=await fetch(url,{method:'HEAD'});if(request!==generation)return;if(!response.ok)throw Error('missing');frame.src=url+'?ui-kit=1&api='+((game()==='road'&&engine()==='pixi'&&window.Lotomobil?.connected&&!applied[game()])?'1':'0')+(DEBUG_GAMES.includes(game())&&engine()==='pixi'&&debugPanel()?'&debug=1':'')+'&revision='+request+'&build='+encodeURIComponent(window.ComposerHosting?.revision||'local')+(applied[game()]?'&difficulty=0#math='+encodeURIComponent(JSON.stringify(applied[game()])):'')}
-  catch{if(request!==generation)return;frame.src='about:blank';status.textContent='No '+window.ComposerTarget.engineTitle()+' build for this game yet. Build it, then rebuild the preview.'}
+  try{const response=await fetch(url,{method:'HEAD'});if(request!==generation)return;if(!response.ok)throw Error('missing');loaderFor=request;frame.src=url+'?ui-kit=1&api='+((game()==='road'&&engine()==='pixi'&&window.Lotomobil?.connected&&!applied[game()])?'1':'0')+(DEBUG_GAMES.includes(game())&&engine()==='pixi'&&debugPanel()?'&debug=1':'')+'&revision='+request+'&build='+encodeURIComponent(window.ComposerHosting?.revision||'local')+(applied[game()]?'&difficulty=0#math='+encodeURIComponent(JSON.stringify(applied[game()])):'')}
+  catch{if(request!==generation)return;booting();frame.src='about:blank';status.textContent='No '+window.ComposerTarget.engineTitle()+' build for this game yet. Build it, then rebuild the preview.'}
  }
  window.ComposerMath={
   apply(key,config){
@@ -151,7 +158,7 @@ window.addEventListener('composer-target',follow);
   // A game behind a hidden frame keeps running, and keeps playing its audio.
   if(!live()||frame.src.endsWith('about:blank'))return;
   if(inRound()){status.textContent='Round in progress · '+window.ComposerTarget.entry().title+' keeps running in the background.';return}
-  clearInterval(timer);frame.src='about:blank';deferred=true;
+  clearInterval(timer);booting();frame.src='about:blank';deferred=true;
   status.textContent='Unloaded while you work elsewhere · reloads when you return to Layout.';
  });
  presetSelect.onchange=()=>{
@@ -170,6 +177,8 @@ window.addEventListener('composer-target',follow);
   modalSelect.value=kind;syncModalTags();
  }
  frame.addEventListener('load',()=>{
+  // The blank page put in between games loads too; only the page this load() asked for ends the wait.
+  if(loaderFor===generation&&frame.contentDocument?.URL!=='about:blank')booting();
   modalStateObserver?.disconnect();
   modalStateObserver=new MutationObserver(syncModalFromGame);
   if(frame.contentDocument?.documentElement)modalStateObserver.observe(frame.contentDocument.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','class']});

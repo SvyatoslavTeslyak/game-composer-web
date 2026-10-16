@@ -127,5 +127,21 @@ const tenantOf=brand=>Object.keys(tenants()).find(t=>tenants()[t]===brand)||'';
 const brandOfTenant=tenant=>tenants()[tenant]||'';
 const lookQuery=({brand,theme})=>(brand&&brand!=='default'?(tenantOf(brand)?'&tenantId='+tenantOf(brand):'&brand='+brand):'')+(theme?'&theme='+theme:'');
 
+// Placeholders for content still on its way (workbench.css .sk): the shape of what will be there,
+// shimmering, so a page never sits blank or jumps. Each returns markup; the outer element says
+// "Loading…" to a screen reader. kind picks the shape: lines, rows (a face and two lines),
+// cards (a square picture and two lines), table, or spinner (a small ring and a label, for a
+// button or a status line).
+const skeletonWidths=[92,76,84,61,88,70,79,66];
+const bar=(i,cls='')=>`<span class="sk-bar${cls}" style="width:${skeletonWidths[i%skeletonWidths.length]}%"></span>`;
+const skeleton={
+ lines(n=3,label='Loading…'){return `<div class="sk sk-lines" role="status" aria-busy="true"><span class="sk-label">${label}</span>${Array.from({length:n},(_,i)=>bar(i)).join('')}</div>`},
+ rows(n=4,label='Loading…'){return `<div class="sk sk-rows" role="status" aria-busy="true"><span class="sk-label">${label}</span>${Array.from({length:n},(_,i)=>`<div class="sk-row"><span class="sk-dot"></span><span class="sk-stack">${bar(i,' sk-strong')}${bar(i+3,' sk-thin')}</span></div>`).join('')}</div>`},
+ cards(n=3,label='Loading…'){return `<div class="sk sk-cards" role="status" aria-busy="true"><span class="sk-label">${label}</span>${Array.from({length:n},(_,i)=>`<div class="sk-card"><span class="sk-picture"></span>${bar(i,' sk-strong')}${bar(i+2,' sk-thin')}</div>`).join('')}</div>`},
+ table(rows=8,cols=4,label='Loading…'){return `<div class="sk sk-table" role="status" aria-busy="true" style="--sk-cols:${cols}"><span class="sk-label">${label}</span>${Array.from({length:rows*cols},(_,i)=>bar(i,i<cols?' sk-strong':'')).join('')}</div>`},
+ spinner(label='Loading…'){return `<span class="sk-spinner" role="status" aria-busy="true"><span class="sk-ring" aria-hidden="true"></span><span>${label}</span></span>`},
+};
+window.ComposerSkeleton=skeleton;
+
 window.Workbench={DEVICES,ZOOMS,gamePicker,deviceBar,lookPicker,tenantOf,brandOfTenant,lookTokens,applyLook,lookQuery,stage};
 })();

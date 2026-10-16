@@ -21,7 +21,8 @@ const game=()=>window.ComposerTarget.value;
 const editors=()=>window.ComposerDraftEditors;
 const look=()=>({brand:window.ComposerLookPicker?.brand||'default',theme:window.ComposerLookPicker?.theme||''});
 const canEdit=()=>!!editors()?.enabled&&!!window.ComposerAuth?.has('design.edit',game());
-let catalog=null,catalogFor=null,art={},busy='',note={text:'',error:false},loaded=false;
+let catalog=null,catalogFor=null,art={},artFor=null,busy='',note={text:'',error:false},loaded=false;
+const S=()=>window.ComposerSkeleton;
 
 const buildUrl=(g,file)=>'games/pixi/'+encodeURIComponent(g)+'/'+file;
 async function readCatalog(g){
@@ -117,11 +118,13 @@ function linked(text){
 function render(){
  if(!controls)return;
  const g=game(),t=lookTitles(),{theme}=look();
+ const where=theme?'the '+t.theme+' theme of '+t.brand:t.brand;
+ // Until the game's catalog and its draft are both here, the cards' shape stands in for them.
+ if(catalogFor!==g||artFor!==g){controls.innerHTML='<div class="art-head"><h2>Pictures for '+esc(where)+'</h2></div><div class="art-loading">'+S().cards(6,'Loading the pictures…')+'</div>';return}
  if(!catalog){
   controls.innerHTML='<div class="art-head"><h2>Assets</h2><p>'+esc(window.ComposerTarget.entry().title)+' names no pictures a tenant can replace. A game offers them in a <code>skins.json</code> beside its art; build the game once it has one.</p></div>';
   return;
  }
- const where=theme?'the '+t.theme+' theme of '+t.brand:t.brand;
  // How it all works sits behind the small button beside the title, in a window of its own.
  const head='<div class="art-head"><div class="art-head-row"><h2>Pictures for '+esc(where)+'</h2>'
   +'<button class="art-button art-help" type="button" data-guide title="How to make the pictures" aria-label="How to make the pictures">?</button></div>'
@@ -153,7 +156,7 @@ function row(slot){
   +'<dl class="art-spec">'+spec(slot)+'</dl>'
   +(own?'<p class="art-file" title="'+esc(own.name)+'">Uploaded: '+esc(own.name)+'</p>':'')
   +'<div class="art-actions">'
-  +(edit?'<label class="art-button art-primary'+(working||busy?' is-disabled':'')+'">'+(working?'Saving…':own?'Replace':'Upload')+'<input type="file" accept="'+ACCEPT+'" data-upload hidden'+locked+'></label>':'')
+  +(edit?'<label class="art-button art-primary'+(working||busy?' is-disabled':'')+'">'+(working?S().spinner('Saving…'):own?'Replace':'Upload')+'<input type="file" accept="'+ACCEPT+'" data-upload hidden'+locked+'></label>':'')
   +'<div class="art-pair">'+(slot.prompt?'<button class="art-button" type="button" data-prompt>Prompt</button>':'')+'<a class="art-button" href="'+esc(url)+'" download="'+esc(slot.file.split('/').pop())+'">Download</a>'
   +(edit&&own?'<button class="art-button" type="button" data-remove'+locked+'>Remove</button>':'')+'</div>'
   +(edit&&own&&group?.oneForAll&&groupSlots(slot.group).length>1?'<button class="art-button art-quiet" type="button" data-every'+locked+'>Use for every '+esc(group.title.toLowerCase())+' picture</button>':'')
@@ -318,7 +321,7 @@ function clipsPanel(group){
  const result=Object.keys(w.sheets).length||w.missing.length?'<div class="art-made"><h4>The sheets these clips make</h4>'
   +'<ul class="art-made-list">'+targets.map(slot=>'<li><canvas class="art-anim" width="120" height="120" data-anim="'+esc(slot.id)+'"></canvas><strong>'+esc(slot.title)+'</strong><small>'+(w.sheets[slot.id]?px(cell(slot),cell(slot))+' frames · '+slot.sheet.frames:'Not made yet')+'</small></li>').join('')+'</ul>'
   +(w.missing.length?'<ul class="art-missing">'+w.missing.map(m=>'<li>'+esc(m)+'</li>').join('')+'</ul>':'')
-  +(canEdit()?'<button class="art-button art-primary art-save" type="button" data-clip-save="'+esc(group.id)+'"'+(ready&&!busy?'':' disabled')+'>Save the '+targets.length+' sheets for '+esc(theme?'the '+t.theme+' theme':t.brand)+'</button>':'')+'</div>':'';
+  +(canEdit()?'<button class="art-button art-primary art-save" type="button" data-clip-save="'+esc(group.id)+'"'+(ready&&!busy?'':' disabled')+'>'+(busy===group.id?S().spinner('Saving…'):'Save the '+targets.length+' sheets for '+esc(theme?'the '+t.theme+' theme':t.brand))+'</button>':'')+'</div>':'';
  return '<section class="art-clips"><details'+(Object.keys(w.clips).length||w.padded?' open':'')+'><summary>Make the '+esc(group.title.toLowerCase())+' in '+esc(spec.tool)+'</summary><p class="art-step-settings">'+linked(spec.about)+'</p><ol class="art-steps">'+steps+'</ol>'+result+'</details></section>';
 }
 /** The made sheets play in their little windows at the game's speed. */
@@ -398,9 +401,11 @@ controls?.addEventListener('click',event=>{
 
 async function load(){
  const g=game();
+ // What is known shows at once, or the shape of it, while the draft is read again.
+ render();
  const [found,draft]=await Promise.all([catalogFor===g&&catalog?catalog:readCatalog(g),readDraft(g)]);
  if(g!==game())return;
- catalog=found;catalogFor=g;art=draft;loaded=true;render();
+ catalog=found;catalogFor=g;art=draft;artFor=g;loaded=true;render();
 }
 const active=()=>window.ComposerTarget?.workspace==='art';
 window.addEventListener('composer-workspace',event=>{
@@ -408,7 +413,7 @@ window.addEventListener('composer-workspace',event=>{
  document.body.classList.toggle('art-workspace',on);$('#room').classList.toggle('art-workspace',on);
  if(on){note={text:'',error:false};load()}
 });
-window.addEventListener('composer-target',()=>{catalog=null;catalogFor=null;art={};for(const timer of timers)clearInterval(timer);timers=[];syncTab();if(active())load()});
+window.addEventListener('composer-target',()=>{catalog=null;catalogFor=null;art={};artFor=null;for(const timer of timers)clearInterval(timer);timers=[];syncTab();if(active())load()});
 // Assets is offered only for a game whose build names pictures to replace (its skins.json); for
 // any other game the tab is hidden, and leaving it open there goes back to Game.
 const tab=$('#art-tab');
@@ -438,7 +443,7 @@ window.ComposerArtCheck={prepare};
 window.ComposerArtPreview={
  async manifest(built){
   const g=game(),draft=await readDraft(g);
-  if(g===game()){art=draft;if(!catalog){catalog=built;catalogFor=g}}
+  if(g===game()){art=draft;artFor=g;if(!catalog){catalog=built;catalogFor=g}}
   // The build's own pictures for each tenant and theme, the draft's laid over them.
   const brands=structuredClone(built.brands||{});
   const urls=slots=>Object.fromEntries(Object.entries(slots||{}).map(([id,p])=>[id,editors().artUrl(p.media)]));

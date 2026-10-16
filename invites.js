@@ -26,12 +26,14 @@ if(document.querySelector('#access-root[data-page=people]')){
  dialog.querySelector('[data-close]').onclick=()=>dialog.close();dialog.addEventListener('close',reset);
  async function openInvite(prefill=null){
   if(!auth.has('users.invite'))return;reset();form.elements.namedItem('name').value=prefill?.name||'';form.elements.email.value=prefill?.email||'';const menu=document.querySelector('#workspace-account-menu');if(menu)menu.hidden=true;document.querySelector('#workspace-avatar')?.setAttribute('aria-expanded','false');dialog.showModal();
-  const container=dialog.querySelector('#invite-games');container.replaceChildren();submit.disabled=true;
-  const {data:roles,error:roleError}=await auth.client.from('composer_roles').select('id,name,permissions').order('name');if(roleError){status.textContent=roleError.message;return}
+  // While roles and games are read, the role list says so and the games list shows placeholders
+  // (ComposerSkeleton, loaded with the page by roles.js); a failed read clears them for the error.
+  const container=dialog.querySelector('#invite-games'),sk=window.ComposerSkeleton;container.innerHTML=sk?sk.lines(4,'Loading games…'):'';form.elements.role.replaceChildren(new Option('Loading…',''));submit.disabled=true;
+  const {data:roles,error:roleError}=await auth.client.from('composer_roles').select('id,name,permissions').order('name');if(roleError){container.replaceChildren();form.elements.role.replaceChildren();status.textContent=roleError.message;return}
   form.elements.role.replaceChildren(...roles.filter(role=>role.id!=='admin'&&(auth.member.role==='admin'||role.permissions.every(p=>auth.has(p)))).map(role=>new Option(role.name,role.id)));
   if(roles.some(role=>role.id===(prefill?.role||'art_director')))form.elements.role.value=prefill?.role||'art_director';
   const {data,error}=await auth.client.from('composer_games').select('id,title').order('title');
-  if(error){status.textContent=error.message;return}
+  container.replaceChildren();if(error){status.textContent=error.message;return}
   for(const game of data){const label=document.createElement('label'),checkbox=document.createElement('input');label.className='visibility-option';checkbox.type='checkbox';checkbox.name='games';checkbox.value=game.id;checkbox.checked=prefill?prefill.games.includes(game.id):game.id===window.ComposerTarget?.value;label.append(checkbox,document.createTextNode(game.title));container.append(label)}
   submit.disabled=busy;
  }
@@ -41,7 +43,7 @@ if(document.querySelector('#access-root[data-page=people]')){
   event.preventDefault();if(busy)return;reset();
   const fields=new FormData(form),games=fields.getAll('games');if(!games.length){status.textContent='Select at least one game.';return}
   let destination;try{destination=new URL(fields.get('workspace'));if(destination.username||destination.password||!['https:','http:'].includes(destination.protocol)||(destination.protocol==='http:'&&!['localhost','127.0.0.1','[::1]'].includes(destination.hostname)))throw Error();destination=new URL('login.html',destination.href.endsWith('/')||destination.pathname.endsWith('.html')?destination.href:destination.href+'/');destination.search='';destination.hash=''}catch{status.textContent='Use an HTTPS Composer address, or localhost for testing.';return}
-  busy=true;submit.disabled=true;submit.textContent='Creating invitation…';
+  busy=true;submit.disabled=true;if(window.ComposerSkeleton)submit.innerHTML=window.ComposerSkeleton.spinner('Creating invitation…');else submit.textContent='Creating invitation…';
   try{
    const {data,error}=await auth.client.functions.invoke('composer-invite',{body:{name:String(fields.get('name')||'').trim(),email:fields.get('email'),role:fields.get('role'),games}});
    if(error){let detail;try{detail=await error.context?.json()}catch{}throw Error(detail?.error||error.message||'Invitation service is unavailable.')}

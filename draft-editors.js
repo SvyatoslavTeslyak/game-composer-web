@@ -28,7 +28,19 @@
   snapshots.set(key(g,s),clone(saved));window.dispatchEvent(new CustomEvent('composer-draft-saved',{detail:{game:g,section:s,revision:saved.revision}}));return saved;
  }
  const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
- async function original(path){const r=await nativeFetch(path,{cache:'no-store'});if(!r.ok)throw Error('Editor catalog unavailable');return r.json()}
+ // The catalogs a draft is compared with (texts, sounds, brands) are files that change only with a
+ // build or an Apply locally. Changes reads them for every game at once, so one answer serves every
+ // ask within a few seconds, and each caller gets its own copy.
+ const originals=new Map(),ORIGINAL_SECONDS=10;
+ async function original(path,fresh=false){
+  const known=originals.get(path);
+  // A save, or a list that shows work in progress (Sounds), reads the file as it is now.
+  if(fresh||!known||Date.now()-known.at>ORIGINAL_SECONDS*1000){
+   const data=nativeFetch(path,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Editor catalog unavailable');return r.json()});
+   originals.set(path,{at:Date.now(),data});data.catch(()=>originals.delete(path));
+  }
+  return clone(await originals.get(path).data);
+ }
  // Whether the shared scope is there to use: asked once, then remembered for the session.
  async function shared(){
   if(sharedScope===null){try{await read(SHARED,'design');sharedScope=true}catch{sharedScope=false}}
@@ -108,7 +120,7 @@
   // The same file added before is already there under its own name; that is not an error.
   if(error&&!/exists|duplicate/i.test(error.message))throw Error(/bucket|not found/i.test(error.message)?'Sound storage is not set up yet: apply migration 202610020001_sound_media.sql.':error.message||'Upload failed.');
   const old=snapshots.get(key(g,'audio'))||await read(g,'audio');
-  const catalog=await original('studio/catalog?engine=pixi'),base=catalog.sources.find(s=>s.id===source)?.manifest;
+  const catalog=await original('studio/catalog?engine=pixi',true),base=catalog.sources.find(s=>s.id===source)?.manifest;
   if(!base)throw Error('Sound source unavailable');
   const manifest=applyAudio(clone(base),old.payload.audio?.[source]),event=manifest.events.find(e=>e.id===eventId);
   if(!event)throw Error('Sound catalog changed. Reload before saving.');
@@ -127,6 +139,8 @@
  // Game settings (game-settings.js): the game's name, by language. Read fresh, saved at once.
  async function readGame(g){return clone((await read(g,'game')).payload.game||{})}
  async function saveGame(g,value){await read(g,'game');return save(g,'game',value)}
+ // The whole draft in one read, for a page that shows several sections (Game settings).
+ async function readDraft(g){return clone((await read(g,'game')).payload||{})}
  // Read fresh, changed, saved: the draft's other sections may have moved on since this tab looked.
  async function changeArt(g,change){
   if(!ComposerAuth.has('design.edit',g))throw Error('You do not have permission to change this game’s pictures.');
@@ -170,7 +184,7 @@
  // After a Discard the cloud draft has gone back: the copies kept here would hand the editors the
  // discarded values, so they are dropped and the next read fetches the draft as it is now.
  function forget(g){for(const k of [...snapshots.keys()])if(k.startsWith(g+':')||k.startsWith(SHARED+':'))snapshots.delete(k)}
- window.ComposerDraftEditors={get enabled(){return enabled()},baseline,applyAudio,mediaUrl,artUrl,readArt,changeArt,uploadArt,readGame,saveGame,shared,sharedCatalog,comparisonCatalog,ownDesign,forget,SHARED};
+ window.ComposerDraftEditors={get enabled(){return enabled()},baseline,applyAudio,mediaUrl,artUrl,readArt,changeArt,uploadArt,readGame,saveGame,readDraft,shared,sharedCatalog,comparisonCatalog,ownDesign,forget,SHARED};
  window.fetch=async(input,options={})=>{
   const url=new URL(input instanceof Request?input.url:input,location.href),path=url.pathname.slice(base.pathname.length),method=(options.method||'GET').toUpperCase();
   if(url.origin!==base.origin||!url.pathname.startsWith(base.pathname)||!(/^(brands\/|studio\/(catalog|save|restore|upload))/.test(path)))return nativeFetch(input,options);
@@ -191,7 +205,7 @@
     return json(catalog);
    }
    if(path==='studio/catalog'&&method==='GET'){
-    const catalog=await original('studio/catalog'+url.search),d=await read(g,'audio');
+    const catalog=await original('studio/catalog'+url.search,true),d=await read(g,'audio');
     for(const source of catalog.sources)if(source.manifest)applyAudio(source.manifest,d.payload.audio?.[source.id]);
     return json(catalog);
    }
@@ -239,7 +253,7 @@
    if(path==='studio/save'&&method==='POST'){
     const body=JSON.parse(options.body),old=snapshots.get(key(g,'audio'));if(!old)throw Error('Reload Sounds before saving.');
     if(!['kit',g].includes(body.source))throw Error('Sound belongs to another game.');
-    const catalog=await original('studio/catalog?engine=pixi'),manifest=catalog.sources.find(s=>s.id===body.source)?.manifest;
+    const catalog=await original('studio/catalog?engine=pixi',true),manifest=catalog.sources.find(s=>s.id===body.source)?.manifest;
     if(!manifest)throw Error('Sound source unavailable');applyAudio(clone(manifest),body);
     const audio=clone(old.payload.audio||{});audio[body.source]={events:body.events};await save(g,'audio',audio);return json({saved:true,cloud:true});
    }

@@ -3,7 +3,7 @@
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // The note about the picked text sits right under the device, not over it.
 $('#fit').append($('#translation-preview-note'));
-const language=$('#language'),controls=$('#translates-controls'),report=$('#translates-report'),frame=$('#frame'),drafts=new Map();let target='kit',query='',missing=false,loadId=0,area='ui',category='all',textType='all';
+const language=$('#language'),controls=$('#translates-controls'),report=$('#translates-report'),frame=$('#frame'),drafts=new Map();let target='kit',query='',missing=false,loadId=0,shown='',area='ui',category='all',textType='all';
 const languages=['en','fr','ht'],labels={en:'English',fr:'Français',ht:'Kreyòl ayisyen'};
 const texts=value=>Object.fromEntries(languages.map(lang=>[lang,value[lang]??'']));
 // An open edit remembers what it was started from, so a save can tell a colleague's change,
@@ -196,11 +196,14 @@ function canEdit(){return !!window.ComposerAuth?.canEdit(target)}
 async function importTable(file){
  if(!canEdit())return;
  if(!file)return;if(saving||Object.keys(current()?.edits||{}).length){notify('Save or cancel open edits before importing.');return}
+ // A large sheet takes a moment to read, so the button says it is busy until the review shows.
+ const button=$('#translate-import');if(button){button.disabled=true;button.innerHTML=ComposerSkeleton.spinner('Reading…')}
  const id=target,d=current();try{if(file.size>2_000_000)throw Error('Maximum file size is 2 MB.');// The Excel file Composer hands out; a CSV from before still comes back the old way.
  const changes=/\.csv$/i.test(file.name)||file.type==='text/csv'?TranslationTable.review(await file.text(),d,id,currentPreset()):TranslationTable.reviewSheet(await ComposerXlsx.read(await file.arrayBuffer()),d,id,currentPreset());if(id!==target)return;
  if(!changes.length){notify('Nothing to import: the file matches the saved texts.');return}
  importReview={game:id,preset:currentPreset(),revision:d.revision,changes};rows();report.scrollTop=0;notify(changes.length+(changes.length===1?' text changes':' texts change')+' · review before saving.');
  }catch(error){notify(error.message)}
+ finally{if(button?.isConnected){button.textContent='Import';button.disabled=!canEdit()}}
 }
 // The file's texts are saved as edits started from what the file was compared with, so they go
 // through the same save as typed ones: a colleague's texts saved meanwhile stay, and a text both
@@ -208,7 +211,9 @@ async function importTable(file){
 async function saveImport(){
  if(saving||!importReview)return;const review=importReview,id=review.game,d=current();if(id!==target||currentPreset()!==review.preset){notify('Translations changed. Import the file again.');return}
  d.edits={};for(const change of review.changes)d.edits[change.key]={...texts(change.after),custom:id!=='kit',base:texts(change.before)};
- importReview=null;await saveKeys(review.changes.map(change=>change.key),'Imported');
+ // The review stays on screen until the save is done; its button shows the save under way.
+ const button=$('#translate-import-save'),label=button?.textContent;if(button){button.disabled=true;button.innerHTML=ComposerSkeleton.spinner('Saving…')}
+ importReview=null;try{await saveKeys(review.changes.map(change=>change.key),'Imported')}finally{if(button?.isConnected){button.textContent=label;button.disabled=false}}
 }
 function importMarkup(){
  if(!importReview||importReview.game!==target)return '';const changes=importReview.changes;
@@ -228,7 +233,7 @@ const compareWindows=(a,b)=>windowOrder.indexOf(a)-windowOrder.indexOf(b);
 // and everything under it counts only that type. The table edits them, every language
 // side by side, and saves them where they are edited: each changed row has its own Save and Cancel
 // (⌘/Ctrl+Enter saves it), and the bar above the table says what is open and saves it all at once.
-function render(){const d=current();if(!d)return;
+function render(){const d=current();if(!d)return;shown=target;
  controls.innerHTML='<div id="translation-areas" class="panel-seg tx-areas" role="group" aria-label="Where the text is"></div><section class="panel-sec tx-type-sec" id="translation-type-sec"><h3>Text type</h3><div id="translation-types" class="panel-seg" role="group" aria-label="Text type"></div><button type="button" class="tx-toggle" id="translate-missing" aria-pressed="'+missing+'">Only missing</button></section><nav id="translation-sections" aria-label="Translation windows"></nav>';
  report.innerHTML='<div id="tx-import"></div><div class="translations-heading" id="tx-heading"></div>'
   +'<div class="tx-toolbar"><div><input id="translate-search" type="search" placeholder="Find a text or key" value="'+esc(query)+'" aria-label="Find a text">'
@@ -238,7 +243,9 @@ function render(){const d=current();if(!d)return;
   +'<div class="tx-savebar" id="tx-savebar"><small role="status" id="translate-message"></small><span class="translation-row-actions"><button type="button" id="translate-cancel-all">Discard all</button><button type="button" class="translation-save" id="translate-save-all">Save all</button></span></div><div id="tx-table"></div>';
  $('#translate-search').oninput=e=>{query=e.target.value;rows()};
  $('#translate-missing').onclick=e=>{missing=!missing;e.currentTarget.setAttribute('aria-pressed',String(missing));rows()};
- $('#translate-reload').onclick=()=>{if(saving)return;if(importReview?.changes.length){notify('Save or cancel the import before reloading.');return}refreshBase(true)};
+ $('#translate-reload').onclick=e=>{if(saving)return;if(importReview?.changes.length){notify('Save or cancel the import before reloading.');return}
+  // The icon turns while the texts are read again, so a slow answer does not look like a dead button.
+  const b=e.currentTarget;b.setAttribute('aria-busy','true');refreshBase(true).finally(()=>b.removeAttribute('aria-busy'))};
  $('#translate-import').disabled=!canEdit();$('#translate-export').onclick=exportTable;$('#translate-import').onclick=()=>$('#translate-file').click();$('#translate-file').onchange=e=>{importTable(e.target.files[0]);e.target.value=''};
  $('#translate-save-all').onclick=saveAll;$('#translate-cancel-all').onclick=cancelAll;
  navigation();syncPreviewWindows();rows();mark();
@@ -249,7 +256,7 @@ function mark(){
  bar.classList.toggle('dirty',!!n);
  // One open row saves from its own buttons; the bar offers everything at once only when there is more than one.
  for(const id of ['translate-save-all','translate-cancel-all']){const b=$('#'+id);b.hidden=n<2;b.disabled=saving}
- $('#translate-save-all').textContent=saving?'Saving…':'Save all '+n;
+ if(saving)$('#translate-save-all').innerHTML=ComposerSkeleton.spinner('Saving…');else $('#translate-save-all').textContent='Save all '+n;
  if(!bar.dataset.note)$('#translate-message').textContent=!canEdit()?'Read-only access · preview and export only':saving?'Saving…':n?n+(n===1?' text has':' texts have')+' unsaved changes':'';
  bar.hidden=!$('#translate-message').textContent&&n<2;
 }
@@ -535,7 +542,7 @@ function openDocument(key,lang){
   // A picture's description (read aloud by screen readers) is edited by double-clicking it.
   editor.ondblclick=async ev=>{const img=ev.target.closest('img');if(!img||!editable)return;const alt=await ask('Describe the picture',{title:'Picture description',input:img.alt||'',placeholder:'Read aloud to players who cannot see it'});if(alt!==null){img.alt=alt.replace(/[\[\]<>]/g,'');sync(editor)}};
  }
- const addPicture=async file=>{status.textContent='Uploading the picture…';try{const url=await uploadPicture(file);const alt=file.name.replace(/\.[^.]+$/,'').replace(/[-_]+/g,' ').replace(/[\[\]<>]/g,'');everywhere('<figure contenteditable="false"><img src="'+esc(url)+'" alt="'+esc(alt)+'"></figure>');status.textContent='Picture added to every language · double-click it to describe it'}catch(error){status.textContent=error.message}};
+ const addPicture=async file=>{status.innerHTML=ComposerSkeleton.spinner('Uploading the picture…');try{const url=await uploadPicture(file);const alt=file.name.replace(/\.[^.]+$/,'').replace(/[-_]+/g,' ').replace(/[\[\]<>]/g,'');everywhere('<figure contenteditable="false"><img src="'+esc(url)+'" alt="'+esc(alt)+'"></figure>');status.textContent='Picture added to every language · double-click it to describe it'}catch(error){status.textContent=error.message}};
  // Commands on the editor being typed in. Each ends by reading the editor back into the document.
  const block=()=>{const sel=getSelection();let n=sel.rangeCount?sel.getRangeAt(0).startContainer:null;while(n&&n.parentNode!==last)n=n.parentNode;return n?.nodeType===1?n:null};
  const run=(cmd,value)=>{last.focus();document.execCommand('styleWithCSS',false,false);document.execCommand(cmd,false,value);sync(last);refresh()};
@@ -583,7 +590,7 @@ function openDocument(key,lang){
  const discard=()=>{if(before)d.edits[key]=before;else if(d.edits)delete d.edits[key];docDialog.close();rows();apply()};
  docDialog.querySelector('[data-close]').onclick=discard;docDialog.querySelector('[data-doc-cancel]').onclick=discard;docDialog.oncancel=ev=>{ev.preventDefault();discard()};
  const save=docDialog.querySelector('[data-doc-save]');
- if(save)save.onclick=async()=>{if(!d.edits?.[key]){docDialog.close();return}save.disabled=true;status.textContent='Saving…';await saveKeys([key]);if(!current()?.edits?.[key])docDialog.close();else{save.disabled=false;status.textContent=$('#translate-message')?.textContent||'Could not save.'}};
+ if(save)save.onclick=async()=>{if(!d.edits?.[key]){docDialog.close();return}save.disabled=true;save.innerHTML=ComposerSkeleton.spinner('Saving…');status.textContent='';await saveKeys([key]);if(!current()?.edits?.[key])docDialog.close();else{save.disabled=false;save.textContent='Save';status.textContent=$('#translate-message')?.textContent||'Could not save.'}};
  docDialog.showModal();last.focus();
 }
 // Save and Cancel for one changed text, on a strip right under its row across the whole table;
@@ -616,6 +623,8 @@ const saveAll=()=>saveKeys(Object.keys(current()?.edits||{}));
 async function saveKeys(keys,verb='Saved'){
  const id=target,d=current();keys=keys.filter(key=>d?.edits?.[key]);if(saving||!keys.length)return;
  saving=true;mark();for(const b of report.querySelectorAll('[data-row-save],[data-row-cancel]'))b.disabled=true;
+ // The rows being saved say so on their own Save; the others only wait.
+ for(const b of report.querySelectorAll('[data-row-save]'))if(keys.includes(b.dataset.rowSave))b.innerHTML=ComposerSkeleton.spinner('Saving…');
  const rest=Object.fromEntries(Object.entries(d.edits).filter(([key])=>!keys.includes(key)));
  // In the cloud a text for every game goes to the shared scope's draft, not into the catalog.
  const cloud=!!window.ComposerCloud?.enabled,sharedKeys=cloud?keys.filter(key=>!d.edits[key].custom):[];
@@ -640,7 +649,7 @@ async function saveKeys(keys,verb='Saved'){
   }
  }
  catch(error){if(target===id)notify(error.message)}
- finally{saving=false;if(target===id){mark();for(const b of report.querySelectorAll('[data-row-save],[data-row-cancel]'))b.disabled=false}$('#translates-tab').classList.toggle('workspace-dirty',[...drafts.values()].some(x=>Object.keys(x.edits||{}).length))}
+ finally{saving=false;if(target===id){mark();for(const b of report.querySelectorAll('[data-row-save],[data-row-cancel]')){b.disabled=false;if(b.dataset.rowSave&&b.querySelector('.sk-spinner'))b.textContent='Save'}}$('#translates-tab').classList.toggle('workspace-dirty',[...drafts.values()].some(x=>Object.keys(x.edits||{}).length))}
 }
 // Who last saved the draft, as this person may know them. A clash is always someone else's
 // text, so when the last save was this person's own, the colleague is just "a teammate".
@@ -675,7 +684,10 @@ window.addEventListener('composer-draft-saved',e=>{if(!saving&&e.detail?.section
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkRevisions()});window.addEventListener('focus',checkRevisions);
 function cancelAll(){const d=current();if(!d||saving)return;d.edits={};activeKey='';stopStateInspection();rows();apply();mark()}
 
-async function load(){stopStateInspection();stopHistoryPreview();activeKey='';importReview=null;$('#translation-preview-view').value='';const id=++loadId;target=window.ComposerTarget?.value||$('#target').value||'kit';try{if(!drafts.has(target)||!Object.keys(drafts.get(target).edits||{}).length){const data=await request();if(id!==loadId)return;data.edits={};drafts.set(target,data)}render();apply()}catch(e){controls.innerHTML='<p>'+esc(e.message)+'</p>'}}
+// While another game's texts (or nothing) are on screen, the panel and the table show their shape
+// until this game's arrive; a re-read of the game already shown keeps its table in place.
+function placeholder(){controls.innerHTML=ComposerSkeleton.lines(7,'Loading windows…');report.innerHTML='<div class="tx-skeleton">'+ComposerSkeleton.table(12,3,'Loading texts…')+'</div>'}
+async function load(){stopStateInspection();stopHistoryPreview();activeKey='';importReview=null;$('#translation-preview-view').value='';const id=++loadId;target=window.ComposerTarget?.value||$('#target').value||'kit';try{if(!drafts.has(target)||!Object.keys(drafts.get(target).edits||{}).length){if(shown!==target){shown='';placeholder()}const data=await request();if(id!==loadId)return;data.edits={};drafts.set(target,data)}render();apply()}catch(e){controls.innerHTML='<p>'+esc(e.message)+'</p>';if(id===loadId&&!shown)report.innerHTML=''}}
 language.onchange=()=>{rows();try{localStorage.setItem('crash-language',language.value)}catch{}apply();if(typeof showcaseLink==='function')showcaseLink()};
 frame.addEventListener('load',()=>{stopStateInspection();stopHistoryPreview();apply();try{frame.contentWindow.addEventListener('crash-i18n-ready',apply,{once:true})}catch{}});
 window.addEventListener('composer-storage',()=>{drafts.clear();load()});

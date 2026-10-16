@@ -14,6 +14,16 @@ const cssName=k=>'--'+k.toLowerCase().replace(/_/g,'-');
 const WEIGHT_TITLES={100:'Thin',200:'Extra light',300:'Light',400:'Regular',500:'Medium',600:'Semibold',700:'Bold',800:'Extra bold',900:'Black'};
 const SPECIMEN='Balance $1,234.56 · 2.15× · CASH OUT';
 let catalog=null,section='typography',query='',brand='default',theme='';
+const S=()=>window.ComposerSkeleton;
+// The shape each section takes while the library is still on its way: font rows, a grid of
+// tokens, effect lines, icon tiles, sound rows.
+const SKELETONS={typography:()=>S().rows(5,'Loading the fonts…'),colour:()=>S().table(8,4,'Loading the colour tokens…'),scales:()=>S().table(8,4,'Loading the scales…'),effects:()=>S().lines(6,'Loading the effects…'),icons:()=>S().cards(8,'Loading the icons…'),sounds:()=>S().rows(6,'Loading the sounds…')};
+// A button at work shows a spinner and cannot be pressed again; the returned call puts it back.
+function working(button,label){
+ if(!button)return ()=>{};
+ const html=button.innerHTML;button.disabled=true;button.innerHTML=S().spinner(esc(label));
+ return ()=>{if(button.isConnected){button.disabled=false;button.innerHTML=html}};
+}
 
 // --- contrast, the same rules the brand editor audits with -------------------------------
 const rgb=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);
@@ -159,7 +169,7 @@ let libraryPlayer=null;
 function soundsSection(){
  const cat=window.ComposerTarget?.catalog,engine=window.ComposerTarget?.engine;
  const about='Every take the games can be set to: the interface sounds every game shares, and each game’s own scene sounds. Which take an event plays is chosen in Sounds.';
- if(!cat)return head('Sounds',about)+card('','<p class="lib-note">The sound catalogue is still loading.</p>');
+ if(!cat)return head('Sounds',about)+card('',S().rows(6,'Loading the sound catalogue…'));
  const url=(sid,file)=>window.ComposerHosting?.audioUrl(sid,file)||'studio/audio?source='+encodeURIComponent(sid)+'&engine='+encodeURIComponent(engine)+'&file='+encodeURIComponent(file);
  const cards=cat.sources.filter(s=>s.manifest).map(s=>{
   const rows=s.manifest.events.flatMap(e=>e.takes.map((take,i)=>({e,take,i}))).filter(({e,take})=>take.exists!==false&&(!query||(e.label||e.id).toLowerCase().includes(query)||bare(take.file).toLowerCase().includes(query)))
@@ -180,13 +190,15 @@ function iconsSection(){
  <div class="add-row"><button id="icon-add" type="button" class="wb-button">Choose a file…</button><input id="icon-file" type="file" accept=".svg,.png,.webp" hidden></div></div>`);
 }
 let iconSeq=0;
-async function putIcon(name,file){
- note('Uploading '+name+'…');
- const response=await fetch('brands/icons/'+encodeURIComponent(name),{method:'POST',body:await file.arrayBuffer()});
- const data=await response.json().catch(()=>({}));
- if(!response.ok)return note(data.message||('HTTP '+response.status),true);
- iconSeq++;catalog=await (await fetch('brands/')).json();draw();
- note(data.icon.replaced?name+' replaced. Every game draws the new one.':name+' added.');
+async function putIcon(name,file,button){
+ note('Uploading '+name+'…');const done=working(button,'Uploading…');
+ try{
+  const response=await fetch('brands/icons/'+encodeURIComponent(name),{method:'POST',body:await file.arrayBuffer()});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)return note(data.message||('HTTP '+response.status),true);
+  iconSeq++;catalog=await (await fetch('brands/')).json();draw();
+  note(data.icon.replaced?name+' replaced. Every game draws the new one.':name+' added.');
+ }finally{done()}
 }
 async function dropIcon(name){
  if(!await ask('Remove '+name+' from the kit?'))return;
@@ -211,10 +223,10 @@ function draw(){
  report.querySelectorAll('[data-use]').forEach(b=>b.onclick=()=>{const menu=b.nextElementSibling,open=menu.hidden;report.querySelectorAll('.lib-use-menu').forEach(m=>{m.hidden=true;m.previousElementSibling.setAttribute('aria-expanded','false')});menu.hidden=!open;b.setAttribute('aria-expanded',String(open))});
  report.querySelectorAll('[data-use-role]').forEach(b=>b.onclick=()=>{const menu=b.closest('.lib-use-menu');menu.hidden=true;menu.previousElementSibling.setAttribute('aria-expanded','false');useFamily(catalog.families.find(f=>f.id===b.dataset.useFamily),b.dataset.useRole)});
  report.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>removeFamily(catalog.families.find(f=>f.id===b.dataset.remove)));
- report.querySelectorAll('[data-replace]').forEach(b=>b.onclick=()=>pickFile(f=>putIcon(b.dataset.replace,f),'.svg,.png,.webp'));
+ report.querySelectorAll('[data-replace]').forEach(b=>b.onclick=()=>pickFile(f=>putIcon(b.dataset.replace,f,b),'.svg,.png,.webp'));
  report.querySelectorAll('[data-drop]').forEach(b=>b.onclick=()=>dropIcon(b.dataset.drop));
  const iconAdd=$('#icon-add');
- if(iconAdd){iconAdd.onclick=()=>$('#icon-file').click();$('#icon-file').onchange=e=>{const f=e.target.files[0];if(f)putIcon(f.name,f);e.target.value=''}}
+ if(iconAdd){iconAdd.onclick=()=>$('#icon-file').click();$('#icon-file').onchange=e=>{const f=e.target.files[0];if(f)putIcon(f.name,f,iconAdd);e.target.value=''}}
  const upload=$('#library-upload');
  if(upload){upload.onclick=()=>$('#library-file').click();$('#library-file').onchange=addFonts}
  const google=$('#library-google-add');
@@ -226,25 +238,30 @@ function draw(){
 async function addGoogle(){
  const field=$('#library-google'),title=field.value.trim();
  if(!title)return note('Paste the link to the family on fonts.google.com, or type its name',true);
- note('Fetching '+title+' from Google Fonts…');
- const response=await fetch('brands/google/'+encodeURIComponent(title),{method:'POST'});
- const data=await response.json().catch(()=>({}));
- if(!response.ok)return note(data.message||('HTTP '+response.status),true);
- field.value='';catalog=await (await fetch('brands/')).json();draw();
- const w=data.added.weights;
- note(data.added.title+' added'+(w.length===2?' with weights '+w[0]+' to '+w[1]:' at weight '+w[0])+'.');
+ note('Fetching '+title+' from Google Fonts…');const done=working($('#library-google-add'),'Adding…');
+ try{
+  const response=await fetch('brands/google/'+encodeURIComponent(title),{method:'POST'});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)return note(data.message||('HTTP '+response.status),true);
+  field.value='';catalog=await (await fetch('brands/')).json();draw();
+  const w=data.added.weights;
+  note(data.added.title+' added'+(w.length===2?' with weights '+w[0]+' to '+w[1]:' at weight '+w[0])+'.');
+ }finally{done()}
 }
 async function addFonts(){
  const input=$('#library-file');const added=[];
- for(const file of input.files){
-  note('Uploading '+file.name+'…');
-  const response=await fetch('brands/fonts/'+encodeURIComponent(file.name),{method:'POST',body:await file.arrayBuffer()});
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok){input.value='';return note(data.message||('HTTP '+response.status),true)}
-  added.push(...[].concat(data.font));
- }
- input.value='';catalog=await (await fetch('brands/')).json();draw();
- note(added.length+' file'+(added.length===1?'':'s')+' added to the library.');
+ const done=working($('#library-upload'),'Uploading…');
+ try{
+  for(const file of input.files){
+   note('Uploading '+file.name+'…');
+   const response=await fetch('brands/fonts/'+encodeURIComponent(file.name),{method:'POST',body:await file.arrayBuffer()});
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok){input.value='';return note(data.message||('HTTP '+response.status),true)}
+   added.push(...[].concat(data.font));
+  }
+  input.value='';catalog=await (await fetch('brands/')).json();draw();
+  note(added.length+' file'+(added.length===1?'':'s')+' added to the library.');
+ }finally{done()}
 }
 // Sets the picked brand's body or numbers to a family, keeping the weight it has where the family carries it.
 async function useFamily(fam,role){
@@ -255,11 +272,14 @@ async function useFamily(fam,role){
  const fonts=Object.fromEntries(Object.entries(b.fonts).map(([r,f])=>[r,{file:bare(f.file),weight:f.weight,style:f.style||'normal'}]));
  fonts[role]={file:bare(file),weight,style};
  note('Saving…');window.ComposerUX?.status('saving');
- const response=await fetch('brands/'+encodeURIComponent(brand),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:b.title,roles:b.roles,overrides:b.overrides||{},fonts})});
- const data=await response.json().catch(()=>({}));
- if(!response.ok){window.ComposerUX?.status('error',data.message||('HTTP '+response.status));return note(data.message||('HTTP '+response.status),true)}
- window.ComposerUX?.status('saved');catalog=await (await fetch('brands/')).json();draw();
- note(b.title+'’s '+role+' is now '+fam.title+'. Weight and italic are set in Brands.'+(window.ComposerDraftEditors?.enabled?' Saved to the tenants draft · see Changes.':''));
+ const done=working(report.querySelector('[data-use="'+CSS.escape(fam.id)+'"]'),'Saving…');
+ try{
+  const response=await fetch('brands/'+encodeURIComponent(brand),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:b.title,roles:b.roles,overrides:b.overrides||{},fonts})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok){window.ComposerUX?.status('error',data.message||('HTTP '+response.status));return note(data.message||('HTTP '+response.status),true)}
+  window.ComposerUX?.status('saved');catalog=await (await fetch('brands/')).json();draw();
+  note(b.title+'’s '+role+' is now '+fam.title+'. Weight and italic are set in Brands.'+(window.ComposerDraftEditors?.enabled?' Saved to the tenants draft · see Changes.':''));
+ }finally{done()}
  window.dispatchEvent(new CustomEvent('composer-brand-fonts',{detail:{brand,fonts}}));
 }
 async function removeFamily(fam){
@@ -307,9 +327,13 @@ function buildLook(){
 async function open(){
  // With a game's draft open the brands can change between visits (another tab edits them, or
  // another game is picked), so they are read again, as the Brand tab does.
- if(window.ComposerDraftEditors?.enabled)catalog=null;
- const first=!catalog;
- if(first)catalog=await (await fetch('brands/')).json();
+ // The one on show stays until the new one is here, so a click meanwhile still finds it.
+ const first=!catalog||!!window.ComposerDraftEditors?.enabled;
+ // The first visit has nothing to show yet: the section's shape, and the side panel's, stand in
+ // until the catalogue is here. A later visit keeps what it showed while it is read again.
+ if(first&&!report.childElementCount)report.innerHTML=card('',SKELETONS[section]());
+ if(first&&!panel.childElementCount)panel.innerHTML='<section class="wb-section">'+S().rows(6,'Loading the library…')+'</section>';
+ if(first){const fresh=await (await fetch('brands/')).json();catalog=fresh}
  const picker=window.ComposerLookPicker;brand=picker?.brand||brand;theme=picker?.theme||'';
  // The chosen brand or season may be gone from this game's draft.
  if(!catalog.brands[brand])brand='default';
@@ -319,5 +343,5 @@ async function open(){
 }
 window.addEventListener('composer-look',()=>{if(window.ComposerTarget?.workspace==='library'&&catalog)draw()});
 window.addEventListener('composer-catalog',()=>{if(window.ComposerTarget?.workspace==='library'&&catalog&&section==='sounds')draw()});
-window.addEventListener('composer-workspace',e=>{if(e.detail==='library')open().catch(err=>{report.innerHTML='<p class="sound-error">'+esc(err.message)+'</p>'})});
+window.addEventListener('composer-workspace',e=>{if(e.detail==='library')open().catch(err=>{report.innerHTML='<p class="sound-error">'+esc(err.message)+'</p>';if(panel.querySelector('.sk'))panel.innerHTML=''})});
 })();

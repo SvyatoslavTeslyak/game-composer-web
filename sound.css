@@ -82,3 +82,9 @@
 .sound-compress-gap{flex:1}
 .sound-compress .ask-actions .wb-button:disabled{opacity:.5;cursor:not-allowed}
 .sound-compress .ask-actions .wb-button{padding:0 var(--space-12);white-space:nowrap}
+/* Loading: cards shaped like the sound cards until the manifests arrive, a short bar where a
+   take's length is still being read, and a busy button or upload keeps its own colour. */
+.sound-skeleton-head{width:var(--inspector-card-min-width);max-width:100%;margin-bottom:var(--space-16)}
+.sound-meta .sk-bar{display:inline-block;width:var(--space-32);vertical-align:middle}
+#sound-controls button .sk-spinner,.sound-replace .sk-spinner{color:inherit}
+.sound-replace[aria-busy=true],.sound-replace[aria-busy=true] input{cursor:wait}

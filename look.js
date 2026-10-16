@@ -522,10 +522,26 @@ async function remove(){
 // One at a time: the games, the tabs and the first load can all ask for the look at once.
 let opening=Promise.resolve();
 function open(){return opening=opening.catch(()=>{}).then(load)}
+// Until the brands first arrive the panel, the top bar's menu and its button have nothing true to
+// show: the cards' shape stands in for them, not an empty panel or a tenant that may not be the pick.
+const barText=bar.button?[bar.button.querySelector('strong').textContent,bar.button.querySelector('small').textContent]:null;
+function waiting(){
+ const S=window.ComposerSkeleton;
+ panel.innerHTML=`<div class="look-scroll"><section class="wb-section look-card"><h2>Tenant</h2>${S.lines(4,'Loading tenants…')}</section><section class="wb-section look-card"><h2>Theme</h2>${S.lines(2,'Loading themes…')}</section></div>`;
+ const pick=$('#look-pick');if(pick&&!pick.childElementCount)pick.innerHTML=S.lines(3,'Loading tenants…');
+ if(bar.button){bar.button.querySelector('strong').innerHTML='<span class="sk-bar" style="width:70%" aria-hidden="true"></span>';bar.button.querySelector('small').innerHTML='<span class="sk-bar sk-thin" style="width:45%" aria-hidden="true"></span>'}
+}
+// A failed first read says so where the placeholders were, rather than shimmering on for good.
+function failed(error){
+ panel.innerHTML='<small class="sound-error">'+esc(error.message)+'</small>';
+ const pick=$('#look-pick');if(pick?.querySelector('.sk'))pick.innerHTML='<small class="sound-error">'+esc(error.message)+'</small>';
+ if(bar.button&&bar.button.querySelector('.sk-bar')){bar.button.querySelector('strong').textContent=barText[0];bar.button.querySelector('small').textContent=barText[1]}
+}
 async function load(){
  if(window.ComposerDraftEditors?.enabled&&!editing)catalog=null;
  if(!catalog){
-  catalog=await (await fetch('brands/')).json();render();
+  const first=!panel.querySelector('#look-brand-card');if(first)waiting();
+  try{catalog=await (await fetch('brands/')).json();render()}catch(error){if(first)failed(error);throw error}
   let wanted='',wantedTheme=null;try{wanted=sessionStorage.getItem('crash-composer-look')||'';wantedTheme=sessionStorage.getItem('crash-composer-look-theme');sessionStorage.removeItem('crash-composer-look');sessionStorage.removeItem('crash-composer-look-theme')}catch{}
   const hash=new URLSearchParams(location.hash.slice(1));
   if(!wanted)wanted=hash.get('brand')||window.ComposerLookPicker?.brand||'default';

@@ -1,5 +1,5 @@
 await window.ComposerAuth.ready;
-const auth=window.ComposerAuth,root=document.querySelector('#access-root');
+const auth=window.ComposerAuth,root=document.querySelector('#access-root'),sk=window.ComposerSkeleton;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const check=result=>{if(result.error)throw Error(result.error.message);return result.data};
 if(!root){
@@ -11,7 +11,7 @@ if(!root){
   };
  }
 }else{
- let roles=[],permissions=[],members=[],games=[],busy=false,editing=false,tab=root.dataset.page==='people'?'people':'roles';
+ let roles=[],permissions=[],members=[],games=[],loaded=false,busy=false,editing=false,tab=root.dataset.page==='people'?'people':'roles';
  const canView=()=>tab==='roles'?auth.has('roles.manage'):auth.has('users.manage')||auth.has('users.invite');
  const canEdit=()=>auth.has(tab==='roles'?'roles.manage':'users.manage');
  const memberDialog=document.createElement('dialog');memberDialog.className='share-dialog member-dialog';memberDialog.setAttribute('aria-labelledby','member-title');document.body.append(memberDialog);
@@ -28,20 +28,24 @@ if(!root){
  });
  const discard=async()=>!roleDirty()||ask('Discard unsaved role changes?',{ok:'Discard'});
  const message=text=>{const box=root.querySelector('#roles-status');if(box)box.textContent=text};
- async function run(fn){if(busy)return;busy=true;root.setAttribute('aria-busy','true');memberDialog.setAttribute('aria-busy','true');try{await fn()}catch(error){const box=memberDialog.open?memberDialog.querySelector('[role=status]'):null;if(box)box.textContent=error.message;else message(error.message)}finally{busy=false;root.removeAttribute('aria-busy');memberDialog.removeAttribute('aria-busy')}}
+ // The button that asked for it, if any, shows a spinner with its label until the action ends.
+ async function run(fn,b=null,label=''){if(busy)return;busy=true;const before=b?.innerHTML;if(b&&sk)b.innerHTML=sk.spinner(label);root.setAttribute('aria-busy','true');memberDialog.setAttribute('aria-busy','true');try{await fn()}catch(error){const box=memberDialog.open?memberDialog.querySelector('[role=status]'):null;if(box)box.textContent=error.message;else message(error.message)}finally{busy=false;if(b?.isConnected)b.innerHTML=before;root.removeAttribute('aria-busy');memberDialog.removeAttribute('aria-busy')}}
+ // Until the first read is back the page shows placeholders, not an empty matrix or "No people yet";
+ // a failed first read ends them too, so the error stands beside an empty page.
  async function load(){
-  const results=await Promise.all([auth.client.from('composer_roles').select('*').order('created_at'),auth.client.from('composer_permissions').select('*').order('position'),auth.has('users.manage')?auth.client.rpc('composer_list_members'):Promise.resolve({data:[],error:null}),auth.client.from('composer_games').select('id,title').order('title')]);
-  [roles,permissions,members,games]=results.map(check);render();
+  try{const results=await Promise.all([auth.client.from('composer_roles').select('*').order('created_at'),auth.client.from('composer_permissions').select('*').order('position'),auth.has('users.manage')?auth.client.rpc('composer_list_members'):Promise.resolve({data:[],error:null}),auth.client.from('composer_games').select('id,title').order('title')]);
+  [roles,permissions,members,games]=results.map(check)}catch(error){if(!loaded){loaded=true;render()}throw error}
+  loaded=true;render();
  }
  function save(id,name,values,revision){return auth.client.rpc('composer_save_role',{p_id:id,p_name:name,p_permissions:values,p_revision:revision}).then(check)}
- function matrix(){return `
+ function matrix(){if(!loaded)return sk?sk.table(8,4,'Loading roles…'):'';return `
 
   ${canEdit()?'<form id="role-create" class="role-create"><label>New role<input name="name" maxlength="60" placeholder="Role name" required></label><button type="submit" class="wb-button">Create role</button></form>':''}
   <div class="permission-table-wrap"><table class="permission-table"><caption class="visually-hidden">Permission matrix</caption><thead><tr><th scope="col">Permission</th>${roles.map(role=>`<th scope="col">${editing===role.id?`<input aria-label="Role name: ${esc(role.name)}" data-role-name="${esc(role.id)}" value="${esc(role.name)}" maxlength="60" ${role.id==='admin'?'disabled':''}>`:`<strong>${esc(role.name)}</strong>`}<small>${members.filter(m=>m.role===role.id).length} users${role.id==='admin'?' · Protected':''}</small></th>`).join('')}</tr></thead>
   <tbody>${permissions.map(permission=>`<tr><th scope="row">${esc(permission.id==='drafts.review'?'Review submitted changes':permission.label)}<small>${esc(permission.section)}${permission.admin_only?' · Admin only':''}</small></th>${roles.map(role=>`<td>${editing===role.id?`<input type="checkbox" aria-label="${esc(role.name)}: ${esc(permission.id==='drafts.review'?'Review submitted changes':permission.label)}" data-role="${esc(role.id)}" data-permission="${esc(permission.id)}" ${role.permissions.includes(permission.id)?'checked':''} ${role.id==='admin'||permission.admin_only?'disabled':''}>`:`<span class="permission-mark ${role.permissions.includes(permission.id)?'allowed':''}" aria-label="${role.permissions.includes(permission.id)?'Allowed':'Not allowed'}">${role.permissions.includes(permission.id)?'✓':'—'}</span>`}</td>`).join('')}</tr>`).join('')}</tbody>
   <tfoot><tr><th>Role actions</th>${roles.map(role=>`<td>${role.id==='admin'?'<span class="access-muted">Protected</span>':editing===role.id?`<button class="wb-button primary" data-save-role="${esc(role.id)}">Save changes</button><button class="wb-button" data-cancel-role>Cancel</button>`:`<button class="wb-button" data-edit-role="${esc(role.id)}">Edit role</button><button class="wb-button danger" data-delete-role="${esc(role.id)}" ${members.some(m=>m.role===role.id)?'disabled title="Assign another role to these users first"':''}>Delete</button>`}</td>`).join('')}</tr></tfoot></table></div>
   <p class="access-note">Admin has full access. Only Admin can manage roles and people. Design and sound changes are reviewed and published per game.</p>`}
- function people(){if(!auth.has('users.manage'))return `<p class="access-description">Invite people to the games you can access. Only Admin can view and manage the full member list.</p><button class="wb-button primary" type="button" data-new-invite>Invite person</button>`;return `
+ function people(){if(!auth.has('users.manage'))return `<p class="access-description">Invite people to the games you can access. Only Admin can view and manage the full member list.</p><button class="wb-button primary" type="button" data-new-invite>Invite person</button>`;if(!loaded)return sk?sk.table(6,6,'Loading people…'):'';return `
   <div class="people-toolbar"><div class="people-summary"><p class="access-description">${members.filter(m=>status(m)!=='removed').length} people · ${members.filter(m=>status(m)==='pending').length} pending invitations</p><button class="wb-button access-refresh" type="button" data-refresh aria-label="Refresh people" title="Refresh people">${icon('reload')}</button></div>${auth.has('users.invite')?'<button class="wb-button primary" type="button" data-new-invite>Invite person</button>':''}</div>
   <div class="permission-table-wrap"><table class="people-table"><caption class="visually-hidden">People and invitations</caption><thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">Invited by</th><th scope="col">Invited on</th>${canEdit()?'<th scope="col">Actions</th>':''}</tr></thead>
   <tbody>${members.map(member=>`<tr data-person="${esc(member.user_id)}"><th scope="row">${esc(member.name||'—')}${member.user_id===auth.session?.user.id?'<small>You</small>':''}</th><td>${esc(member.email)}</td><td>${esc(roles.find(r=>r.id===member.role)?.name||'—')}</td><td><span class="member-status status-${esc(status(member))}">${esc(statusNames[status(member)]||'Active')}</span></td><td>${esc(member.invited_by_email||(member.invited_at?'Deleted account':'—'))}</td><td><time title="${esc(member.invited_at?new Date(member.invited_at).toLocaleString():'Existing account')}">${esc(date(member.invited_at))}</time></td>${canEdit()?`<td><button class="wb-button" data-edit-member="${esc(member.user_id)}">${status(member)==='removed'?'Restore':'Edit access'}</button>${status(member)==='pending'&&auth.has('users.invite')?` <button class="wb-button" data-invite-person="${esc(member.user_id)}">New invite link</button>`:''}${status(member)!=='removed'?` <button class="wb-button danger" data-remove-person="${esc(member.user_id)}" ${member.user_id===auth.session?.user.id?'disabled':''}>${status(member)==='pending'?'Revoke invite':'Remove access'}</button>`:''}</td>`:''}</tr>`).join('')||`<tr><td colspan="${canEdit()?7:6}">No people yet.</td></tr>`}</tbody></table></div>
@@ -55,19 +59,19 @@ if(!root){
   back.onclick=async event=>{if(!roleDirty()&&!busy)return;event.preventDefault();if(!busy&&await discard())location.href=back.href};
   for(const b of root.querySelectorAll('[data-edit-role]'))b.onclick=async()=>{if(busy||!await discard())return;editing=b.dataset.editRole;render();root.querySelector('[data-role-name]')?.focus()};
   root.querySelector('[data-cancel-role]')?.addEventListener('click',async()=>{if(busy||!await discard())return;editing=false;render()});
-  root.querySelector('[data-refresh]')?.addEventListener('click',async()=>{if(await discard())run(load)});
-  const create=root.querySelector('#role-create');if(create)create.onsubmit=event=>{event.preventDefault();if(roleDirty()){message('Save changed roles before creating another role.');return}const name=new FormData(create).get('name');run(async()=>{const created=await save(null,name,['workspace.view'],null);editing=created.id;await load();message('Role created. Choose its permissions and save.')})};
+  root.querySelector('[data-refresh]')?.addEventListener('click',async e=>{const b=e.currentTarget;if(await discard())run(load,b)});
+  const create=root.querySelector('#role-create');if(create)create.onsubmit=event=>{event.preventDefault();if(roleDirty()){message('Save changed roles before creating another role.');return}const name=new FormData(create).get('name');run(async()=>{const created=await save(null,name,['workspace.view'],null);editing=created.id;await load();message('Role created. Choose its permissions and save.')},create.querySelector('[type=submit]'),'Creating…')};
   for(const button of root.querySelectorAll('[data-save-role]'))button.onclick=()=>run(async()=>{
    const role=roles.find(r=>r.id===button.dataset.saveRole),name=[...root.querySelectorAll('[data-role-name]')].find(i=>i.dataset.roleName===role.id).value,selected=[...root.querySelectorAll('[data-role]')].filter(i=>i.dataset.role===role.id&&i.checked).map(i=>i.dataset.permission);
    const saved=await save(role.id,name,selected,role.revision);roles=roles.map(r=>r.id===saved.id?saved:r);editing=false;await auth.refreshPermissions();render();message(saved.name+' saved. Permissions are active.');
-  });
+  },button,'Saving…');
   for(const button of root.querySelectorAll('[data-delete-role]'))button.onclick=async()=>{
    if(roleDirty()){message('Save changed roles before deleting a role.');return}const role=roles.find(r=>r.id===button.dataset.deleteRole);if(!await ask('Delete role “'+role.name+'”?'))return;
-   run(async()=>{check(await auth.client.rpc('composer_delete_role',{p_id:role.id,p_revision:role.revision}));await load();message('Role deleted.')});
+   run(async()=>{check(await auth.client.rpc('composer_delete_role',{p_id:role.id,p_revision:role.revision}));await load();message('Role deleted.')},button,'Deleting…');
   };
   root.querySelector('[data-new-invite]')?.addEventListener('click',()=>document.dispatchEvent(new CustomEvent('composer-open-invite')));
   for(const b of root.querySelectorAll('[data-invite-person]'))b.onclick=()=>document.dispatchEvent(new CustomEvent('composer-open-invite',{detail:members.find(m=>m.user_id===b.dataset.invitePerson)}));
-  for(const b of root.querySelectorAll('[data-remove-person]'))b.onclick=async()=>{const m=members.find(m=>m.user_id===b.dataset.removePerson);if(busy||!await ask('Remove Composer access for '+m.email+'? Saved work will be kept.'))return;run(async()=>{check(await auth.client.rpc('composer_remove_member',{p_user:m.user_id}));await load();message('Access removed.')})};
+  for(const b of root.querySelectorAll('[data-remove-person]'))b.onclick=async()=>{const m=members.find(m=>m.user_id===b.dataset.removePerson);if(busy||!await ask('Remove Composer access for '+m.email+'? Saved work will be kept.'))return;run(async()=>{check(await auth.client.rpc('composer_remove_member',{p_user:m.user_id}));await load();message('Access removed.')},b,'Removing…')};
   for(const button of root.querySelectorAll('[data-edit-member]'))button.onclick=()=>openMember(members.find(m=>m.user_id===button.dataset.editMember));
  }
  function openMember(member){
@@ -84,12 +88,12 @@ if(!root){
    <footer>${status(member)==='pending'?'<button class="wb-button" type="button" data-reinvite>New invite link</button>':''}${!removed?`<button class="wb-button danger" type="button" data-remove-member ${member.user_id===auth.session?.user.id?'disabled title="You cannot remove your own access"':''}>${status(member)==='pending'?'Revoke invite':'Remove access'}</button>`:''}</footer>`;
   const close=async()=>{if(!busy&&(!memberDirty()||await ask('Discard unsaved access changes?',{ok:'Discard'})))memberDialog.close()};
   memberDialog.querySelector('[data-close]').onclick=close;memberDialog.querySelector('[data-cancel]').onclick=close;
-  memberDialog.querySelector('form').onsubmit=event=>{event.preventDefault();const fields=new FormData(event.target);run(async()=>{
+  memberDialog.querySelector('form').onsubmit=event=>{event.preventDefault();const fields=new FormData(event.target),submit=event.target.querySelector('[type=submit]');run(async()=>{
    check(await auth.client.rpc(removed?'composer_restore_member':'composer_set_member',{p_user:member.user_id,p_role:fields.get('role'),...(!removed?{p_active:fields.has('active')}:{}),p_games:fields.getAll('games')}));
    memberDialog.close();await auth.refreshPermissions();if(!auth.has('users.manage'))return;await load();message(removed?'Access restored.':'Access saved.');
-  })};
+  },submit,removed?'Restoring…':'Saving…')};
   memberDialog.querySelector('[data-reinvite]')?.addEventListener('click',async()=>{if(busy)return;if(memberDirty()&&!await ask('Discard unsaved access changes?',{ok:'Discard'}))return;memberDialog.close();document.dispatchEvent(new CustomEvent('composer-open-invite',{detail:member}))});
-  memberDialog.querySelector('[data-remove-member]')?.addEventListener('click',async()=>{if(busy||!await ask('Remove Composer access for '+member.email+'? Saved work will be kept.'))return;run(async()=>{check(await auth.client.rpc('composer_remove_member',{p_user:member.user_id}));memberDialog.close();await load();message('Composer access removed.')})});
+  memberDialog.querySelector('[data-remove-member]')?.addEventListener('click',async()=>{if(busy||!await ask('Remove Composer access for '+member.email+'? Saved work will be kept.'))return;const b=memberDialog.querySelector('[data-remove-member]');run(async()=>{check(await auth.client.rpc('composer_remove_member',{p_user:member.user_id}));memberDialog.close();await load();message('Composer access removed.')},b,'Removing…')});
   memberSnapshot=memberValues();memberDialog.showModal();
  }
  memberDialog.addEventListener('cancel',event=>{if(event.target!==memberDialog||!busy&&!memberDirty())return;event.preventDefault();if(!busy)ask('Discard unsaved access changes?',{ok:'Discard'}).then(ok=>{if(ok)memberDialog.close()})});

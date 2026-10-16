@@ -12,7 +12,7 @@ const KIT='kit',AUDIO_ACCEPT='.wav,.ogg,.mp3,audio/*';
 // into the composer-audio bucket for whoever may edit this game's sounds (draft-editors.js).
 const LOCAL_EDITOR=/^(127\.0\.0\.1|localhost|\[::1\])$/.test(location.hostname);
 const canAddTake=()=>window.ComposerDraftEditors?.enabled?!!window.ComposerAuth?.has('audio.edit',window.ComposerTarget?.value):LOCAL_EDITOR;
-let drafts={},dirty=new Set(),player=null,stamp=Date.now(),loaded=false,group='interface';
+let drafts={},dirty=new Set(),player=null,stamp=Date.now(),loaded=false,shown=false,group='interface';
 
 // The target is the global Composer game; target.js owns the catalog and the game rebuild.
 const targetId=()=>window.ComposerTarget.value;
@@ -26,6 +26,17 @@ const gain=db=>Math.min(1,Math.pow(10,db/20));
 const levelText=db=>'<b>'+Math.round(100*Math.pow(10,db/20))+'%</b><small>'+(db<0?'−':db>0?'+':'')+Math.abs(db).toFixed(1)+' dB</small>';
 const baseName=file=>file.split('/').pop();
 function message(text,error=false){if(error)window.ComposerUX?.status('error',text);const node=$('#sound-message');if(node){node.textContent=text;node.classList.toggle('sound-error',error)}}
+// Work under way (a save, an upload) turns the status line into a spinner until its outcome is said.
+function busy(text){const node=$('#sound-message');if(node){node.innerHTML=ComposerSkeleton.spinner(esc(text));node.classList.remove('sound-error')}}
+// A button doing its work shows a spinner; done() puts its label back unless it was drawn anew meanwhile.
+function busyButton(button,text){if(!button)return ()=>{};const label=button.textContent,was=button.disabled;button.disabled=true;button.innerHTML=ComposerSkeleton.spinner(esc(text));return ()=>{if(button.isConnected){button.textContent=label;button.disabled=was}}}
+// Before the first manifests arrive the tab shows their shape: the groups, a title and cards with a
+// title, its trigger, a level and two takes, so nothing jumps when they come.
+function placeholder(){
+ const bar=(w,cls='')=>'<span class="sk-bar'+cls+'" style="width:'+w+'%"></span>';
+ controls.innerHTML='<section class="panel-sec"><h3>Moments</h3>'+ComposerSkeleton.lines(3,'Loading sound groups…')+'</section>';
+ report.innerHTML='<div class="sk" role="status" aria-busy="true"><span class="sk-label">Loading sounds…</span><span class="sk-bar sk-strong sound-skeleton-head"></span><div class="sound-grid">'+[0,1,2,3,4,5].map(i=>'<div class="sound-card">'+bar(55+i%3*12,' sk-strong')+bar(88-i%2*20,' sk-thin')+bar(100)+bar(100)+bar(100)+'</div>').join('')+'</div></div>';
+}
 
 async function request(path,options={}){
  const response=await fetch(path,{cache:'no-store',...options});
@@ -52,17 +63,20 @@ const eventAt=(sid,index)=>events(sid)[index];
 async function load(keepMessage=false){
  if(dirty.size&&!await ask('Discard unsaved sound edits and reload the shared draft?'))return;
  dirty.clear();flagDirty();
+ // Nothing shown yet: the cards' shape. A re-read keeps the cards and turns Reload into a spinner.
+ if(!shown)placeholder();else busyButton($('#sound-refresh'),'Reloading…');
  try{
   await window.ComposerTarget.refresh();
   adopt();render();if(!keepMessage)message('');
  }catch(error){
+  shown=false;
   controls.innerHTML='<div class="toolbar"><strong>Sound effects</strong><small class="sound-error">'+esc(error.message)+'</small><small>Start Composer with tools/preview.py so studio/ routes are available.</small></div>';
   report.innerHTML='';
  }
 }
 
 function render(){
- const game=isGame(),own=drafts[targetId()],kit=drafts[KIT];
+ shown=true;const game=isGame(),own=drafts[targetId()],kit=drafts[KIT];
  if(!game||!own||(group==='music'&&!sceneEvents(own).some(isMusic)))group='interface';
  const music=sceneEvents(own).filter(isMusic).length;
  const item=(id,label,count,disabled)=>'<button type="button" data-group="'+id+'" aria-pressed="'+(group===id)+'"'+(disabled?' disabled title="Pick a game to see its scene sounds"':'')+'><span>'+label+'</span>'+(count===null?'':'<small><b>'+count+'</b></small>')+'</button>';
@@ -143,7 +157,7 @@ function takeRow(event,{take,pick,from},sid,chosen){
  const name=borrowed?esc(from.label||from.id)+' <em>shared</em>':esc(uploaded||'Sound '+(pick+1));
  return '<li class="'+(missing?'sound-missing':'')+(borrowed?' sound-borrowed':'')+'">'
   +'<label class="sound-toggle"><input type="radio" name="take-'+esc(event.id)+'" data-take-choice="'+pick+'"'+((borrowed?chosen<0:chosen===pick)?' checked':'')+(missing?' disabled':'')+'><span class="sound-file">'+name+'</span></label>'
-  +'<span class="sound-meta"'+(missing?'':' data-duration="'+esc(take.file)+'"')+'>'+(missing?'missing file':'…')+'</span>'
+  +'<span class="sound-meta"'+(missing?'':' data-duration="'+esc(take.file)+'"')+'>'+(missing?'missing file':'<span class="sk-bar sk-thin" title="Reading its length…"></span>')+'</span>'
   +'<button data-take-play="'+pick+'" data-play-label="Play '+(borrowed?'the shared sound':'sound '+(pick+1))+'" aria-label="Play '+(borrowed?'the shared sound':'sound '+(pick+1))+'"'+(missing?' disabled':'')+'>'+icon('play')+'</button>'
   +'</li>';
 }
@@ -197,7 +211,7 @@ function play(event,take,sid,button,trigger=event){
 
 let saveTimer=null;
 function markDirty(sid){
- dirty.add(sid);flagDirty();window.ComposerUX?.status('saving');message('Saving…');
+ dirty.add(sid);flagDirty();window.ComposerUX?.status('saving');busy('Saving…');
  clearTimeout(saveTimer);saveTimer=setTimeout(()=>{saveTimer=null;save().catch(error=>message(error.message,true))},500);
 }
 
@@ -225,18 +239,26 @@ async function restore(){
  if(!await ask('Put '+what+' back to the published sounds? Every choice, level and pitch in this manifest goes back to what the game ships with.'))return;
  // Only now: a pending autosave must still happen if the reset was called off.
  clearTimeout(saveTimer);saveTimer=null;dirty.clear();flagDirty();
- await request('studio/restore?source='+encodeURIComponent(sid)+'&engine='+encodeURIComponent(engineId()),{method:'POST'});
- await load(true);
+ const done=busyButton($('#sound-reset'),'Restoring…');
+ try{
+  await request('studio/restore?source='+encodeURIComponent(sid)+'&engine='+encodeURIComponent(engineId()),{method:'POST'});
+  await load(true);
+ }finally{done()}
  message('Back to the published sounds'+(sid===KIT?'.':'. Rebuild the game to hear it there.'));
 }
 
 async function addTake(sid,eventIndex,file){
+ // The card's Add a sound turns into a spinner until the take is in (or the upload fails).
+ const label=report.querySelector('[data-source="'+CSS.escape(sid)+'"][data-event="'+eventIndex+'"] .sound-replace'),input=label?.querySelector('input'),was=input?.disabled;
+ if(label&&input){label.setAttribute('aria-busy','true');input.disabled=true;label.firstChild?.nodeType===3&&label.firstChild.remove();label.insertAdjacentHTML('afterbegin',ComposerSkeleton.spinner('Uploading…'))}
+ try{
  clearTimeout(saveTimer);saveTimer=null;await save();
  const event=eventAt(sid,eventIndex);
- message('Uploading '+file.name+'…');
+ busy('Uploading '+file.name+'…');
  await request('studio/upload?source='+encodeURIComponent(sid)+'&engine='+encodeURIComponent(engineId())+'&event='+encodeURIComponent(event.id)+'&take='+event.takes.length,{method:'POST',headers:{'X-File-Name':encodeURIComponent(file.name),'Content-Type':'application/octet-stream'},body:file});
  await load(true);window.dispatchEvent(new Event('composer-sounds-saved'));
  message(window.ComposerDraftEditors?.enabled?'Added '+file.name+' to '+(event.label||event.id)+' · in the draft; it reaches players once released from Changes.':'Added a sound for '+event.id+(sid!==KIT?'. Rebuild the game so its build carries it.':'.'));
+ }finally{if(label?.isConnected){label.removeAttribute('aria-busy');label.querySelector('.sk-spinner')?.replaceWith('Add a sound');input.disabled=was}}
 }
 
 controls.addEventListener('click',event=>{

@@ -279,7 +279,10 @@
 /* Game settings (game-settings.js), the game's own tab: its name by language, and a thumbnail card
    per tenant. The page fills the room; the side panel is put away while it is open. */
 @media(min-width:1001px){body.settings-workspace{grid-template-columns:var(--inspector-size-76) 0 minmax(0,1fr)}body.settings-workspace aside#side{display:none}}
-body[data-mobile-mode=settings] #mobile-workspace{display:none}
+/* A tab with no side panel (Assets, Game settings; ux.js) has nothing for the panel button or the
+   phone's controls bar to open: the button rests dimmed, the bar is not shown. */
+body.panelless-workspace #mobile-workspace{display:none}
+.workspace-rail #side-toggle:disabled{opacity:.35;cursor:default;background:none;border-color:transparent}
 #settings-report{min-width:0;min-height:0;height:100%;overflow:auto;box-sizing:border-box;padding:var(--space-24);color:var(--inspector-text)}
 #settings-report>*{max-width:calc(var(--space-48) * 16);margin-inline:auto}
 #settings-report h2{margin:0 0 var(--space-4);font-size:var(--type-24);font-weight:650;letter-spacing:-.02em}
@@ -303,5 +306,11 @@ body[data-mobile-mode=settings] #mobile-workspace{display:none}
 .game-settings-thumb-actions label{margin:0}
 #game-settings-status{min-height:1.5em;color:var(--inspector-accent);margin-top:0}
 #game-settings-status.sound-error{color:var(--inspector-danger)}
+/* The thumbnails still loading: their placeholder cards fall into the same columns as the cards. */
+.game-settings-thumbs>.sk{grid-column:1/-1;grid-template-columns:inherit;gap:inherit;padding:0}
 @media(max-width:1000px){#settings-report{height:auto;padding:0}}
 @media(max-width:600px){.game-settings-card{padding:var(--space-16)}.game-settings-names,.game-settings-thumbs{grid-template-columns:1fr 1fr}.game-settings-names label:first-child{grid-column:1/-1}}
+/* A button busy with its action (Changes, settings, people and roles) shows a spinner in its own
+   colour; an icon-only button shows the ring alone, centred. */
+.share-dialog .wb-button .sk-spinner,#access-root .wb-button .sk-spinner{color:inherit}
+.share-dialog .sk-spinner>span:empty,#access-root .sk-spinner>span:empty{display:none}
