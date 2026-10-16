@@ -6,7 +6,7 @@
  const backdrop=document.createElement('button');backdrop.id='mobile-backdrop';backdrop.type='button';backdrop.setAttribute('aria-label','Close controls');backdrop.hidden=true;document.body.append(backdrop);
  const close=document.createElement('button');close.id='mobile-controls-close';close.type='button';close.className='wb-button';close.textContent='Done';side.prepend(close);
  let mode='layout',view='editor',returnFocus=null,editorScroll=0;
- const currentMode=()=>['layout','look','library','sound','translates','math','art'].find(id=>$('#'+id+'-tab')?.getAttribute('aria-pressed')==='true')||'layout';
+ const currentMode=()=>['layout','look','library','sound','translates','math','art','settings'].find(id=>$('#'+id+'-tab')?.getAttribute('aria-pressed')==='true')||'layout';
  function sheet(open){
   open=open&&media.matches;document.body.classList.toggle('mobile-controls-open',open);backdrop.hidden=!open;$('#mobile-controls').setAttribute('aria-expanded',String(open));side.inert=media.matches&&!open;
   for(const node of [room,bar,$('.appbar'),$('.workspace-rail')])node.inert=open;

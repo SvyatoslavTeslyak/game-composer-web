@@ -49,6 +49,10 @@
   ],
   "groups": [
     {
+      "id": "game",
+      "title": "Game"
+    },
+    {
       "id": "hero",
       "title": "Hero",
       "together": true,
@@ -128,6 +132,17 @@
     }
   ],
   "slots": [
+    {
+      "id": "thumbnail",
+      "group": "game",
+      "title": "Thumbnail",
+      "file": "art/thumbnail.png",
+      "size": [
+        512,
+        512
+      ],
+      "prompt": "A square game thumbnail for Goat Road, 512 × 512 px, shown as the game's tile in an app's lobby, on the showcase and in link previews: [the game's hero and its world in one bold, readable picture, with the game's name Goat Road in big playful letters]. Bright, saturated cartoon mobile-game art, thick dark outlines, soft cel shading, light from the top left. Fills the square edge to edge, no rounded corners, no border, no transparent margins."
+    },
     {
       "id": "hero-idle",
       "group": "hero",
@@ -476,6 +491,11 @@
         "hero-jump": "art/skins/numba-nigeria/hero-jump-cdb3959c47695bdf.png",
         "hero-landing": "art/skins/numba-nigeria/hero-landing-14facc5ff227d651.png",
         "win-rain-1": "art/skins/numba-nigeria/win-rain-1-2a441e16ab24f549.png"
+      }
+    },
+    "default": {
+      "slots": {
+        "thumbnail": "art/skins/default/thumbnail-54e32d1ad1de3ce7.png"
       }
     }
   }

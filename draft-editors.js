@@ -18,7 +18,7 @@
   snapshots.set(key(g,s),clone(value));return value;
  }
  async function save(g,s,value){
-  if(!ComposerAuth.has(s==='design'||s==='art'?'design.edit':'audio.edit',g))throw Error('You do not have permission to edit this section.');
+  if(!ComposerAuth.has(s==='design'||s==='art'||s==='game'?'design.edit':'audio.edit',g))throw Error('You do not have permission to edit this section.');
   const old=snapshots.get(key(g,s));if(!old)throw Error('Reload this section before saving.');
   window.ComposerUX?.status('saving');
   let saved;try{saved=result(await ComposerAuth.client.rpc('composer_save_section',{p_game:g,p_revision:old.revision,p_section:s,p_value:value}));}catch(error){window.ComposerUX?.status('error',error.message);throw error}
@@ -124,6 +124,9 @@
  const ART_BUCKET='composer-art',ART_LIMIT=8*1024*1024;
  const artUrl=path=>ComposerAuth.client.storage.from(ART_BUCKET).getPublicUrl(path).data.publicUrl;
  async function readArt(g){return clone((await read(g,'art')).payload.art||{})}
+ // Game settings (game-settings.js): the game's name, by language. Read fresh, saved at once.
+ async function readGame(g){return clone((await read(g,'game')).payload.game||{})}
+ async function saveGame(g,value){await read(g,'game');return save(g,'game',value)}
  // Read fresh, changed, saved: the draft's other sections may have moved on since this tab looked.
  async function changeArt(g,change){
   if(!ComposerAuth.has('design.edit',g))throw Error('You do not have permission to change this game’s pictures.');
@@ -167,7 +170,7 @@
  // After a Discard the cloud draft has gone back: the copies kept here would hand the editors the
  // discarded values, so they are dropped and the next read fetches the draft as it is now.
  function forget(g){for(const k of [...snapshots.keys()])if(k.startsWith(g+':')||k.startsWith(SHARED+':'))snapshots.delete(k)}
- window.ComposerDraftEditors={get enabled(){return enabled()},baseline,applyAudio,mediaUrl,artUrl,readArt,changeArt,uploadArt,shared,sharedCatalog,comparisonCatalog,ownDesign,forget,SHARED};
+ window.ComposerDraftEditors={get enabled(){return enabled()},baseline,applyAudio,mediaUrl,artUrl,readArt,changeArt,uploadArt,readGame,saveGame,shared,sharedCatalog,comparisonCatalog,ownDesign,forget,SHARED};
  window.fetch=async(input,options={})=>{
   const url=new URL(input instanceof Request?input.url:input,location.href),path=url.pathname.slice(base.pathname.length),method=(options.method||'GET').toUpperCase();
   if(url.origin!==base.origin||!url.pathname.startsWith(base.pathname)||!(/^(brands\/|studio\/(catalog|save|restore|upload))/.test(path)))return nativeFetch(input,options);

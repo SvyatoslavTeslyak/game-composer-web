@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "Loulou",
+    "fr": "Loulou",
+    "ht": "Loulou"
+  },
+  "default": "thumbnail.png",
+  "tenants": {
+    "LotomobilPlayers": "thumbnails/LotomobilPlayers.png",
+    "NumbaGhanaPlayers": "thumbnails/NumbaGhanaPlayers.png",
+    "NumbaNigeriaPlayers": "thumbnails/NumbaNigeriaPlayers.png"
+  }
+}

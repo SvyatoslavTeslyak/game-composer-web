@@ -128,7 +128,8 @@ function render(){
   +(!editors()?.enabled?'<small class="sound-warn">Sign in to the shared workspace to add pictures.</small>':!canEdit()?'<small class="sound-warn">Your role can look at these pictures but not change them.</small>':'')
   +(note.text?'<small id="art-message" role="status" class="'+(note.error?'sound-error':'sound-busy')+'">'+esc(note.text)+'</small>':'<small id="art-message" role="status"></small>')
   +'</div>';
- const groups=(catalog.groups||[]).map(group=>{
+ // The game's own settings (its thumbnail) are in Game settings, not among the tenant's art.
+ const groups=(catalog.groups||[]).filter(group=>group.id!=='game').map(group=>{
   const slots=groupSlots(group.id);if(!slots.length)return '';
   const own=merged(look().brand,theme),count=slots.filter(s=>own[s.id]).length;
   const names=esc(slots.map(s=>s.title).join(', '));
@@ -432,6 +433,8 @@ window.addEventListener('composer-look',()=>{
 
 // The game preview asks here which pictures to draw (frame-art.js): the build's catalog with the
 // draft's pictures for every tenant and theme, and the tenant and theme on the stage.
+// Game settings checks its thumbnail as Assets checks any picture.
+window.ComposerArtCheck={prepare};
 window.ComposerArtPreview={
  async manifest(built){
   const g=game(),draft=await readDraft(g);

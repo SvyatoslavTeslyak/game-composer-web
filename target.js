@@ -86,8 +86,14 @@ async function request(path,options){
  if(!response.ok)throw Error(data.message||('Request failed ('+response.status+')'));
  return data;
 }
+// A game's name: the one it is released under (Game settings, in the catalog), over the one written
+// in TARGETS, and a name saved but not yet released over that (setTitle, from Game settings).
+const ownTitles=Object.fromEntries(TARGETS.map(t=>[t.id,t.title])),releasedTitles={},draftTitles={};
+function applyTitles(){for(const t of TARGETS){t.title=draftTitles[t.id]||releasedTitles[t.id]||ownTitles[t.id]}options()}
 async function refresh(){
  catalog=await request('studio/catalog?engine='+encodeURIComponent(engine));
+ for(const s of catalog.sources||[])if(s.title&&TARGETS.some(t=>t.id===s.id))releasedTitles[s.id]=s.title;
+ applyTitles();
  engineOptions();
  window.dispatchEvent(new CustomEvent('composer-catalog',{detail:catalog}));
  return catalog;
@@ -124,13 +130,13 @@ if(ENGINES.some(e=>e.id===wantedEngine))engine=wantedEngine;
 options();engineOptions();
 select.onchange=()=>{const wanted=select.value;if(!set(wanted))select.value=value};
 if(engineSelect)engineSelect.onchange=()=>{const wanted=engineSelect.value;if(!setEngine(wanted))engineSelect.value=engine};
-window.addEventListener('composer-workspace',event=>{workspace=event.detail;$('#workspace-title').textContent=({layout:'Game',look:'Tenants',library:'Library',math:'Math',sound:'Sounds',translates:'Texts',art:'Assets'})[workspace]||'Game';options();writeHash()});
+window.addEventListener('composer-workspace',event=>{workspace=event.detail;$('#workspace-title').textContent=({layout:'Game',look:'Tenants',library:'Library',math:'Math',sound:'Sounds',translates:'Texts',art:'Assets',settings:'Game settings'})[workspace]||'Game';options();writeHash()});
 window.addEventListener('hashchange',()=>{
  const opened=hash();
  if(opened.tab==='math')opened.tab='layout';
  if(opened.game)set(opened.game);
  if(opened.engine)setEngine(opened.engine);
- if(['layout','look','library','math','sound','art'].includes(opened.tab)&&opened.tab!==workspace)$('#'+opened.tab+'-tab').click();
+ if(['layout','look','library','math','sound','art','settings'].includes(opened.tab)&&opened.tab!==workspace)$('#'+opened.tab+'-tab').click();
  writeHash();
 });
 // Manifests edited outside Composer, and finished builds, appear when the window regains focus.
@@ -144,6 +150,7 @@ window.ComposerTarget={
  engineTitle(id){return (ENGINES.find(e=>e.id===(id||engine))||{}).title||id||engine},
  setEngine,
  targets:TARGETS,entry,source,set,refresh,guard(fn){guards.push(fn)},category,
+ setTitle(id,title){if(title)draftTitles[id]=title;else delete draftTitles[id];applyTitles();window.dispatchEvent(new CustomEvent('composer-catalog',{detail:catalog}))},
  offered,listed,get hidden(){return [...hidden]},
  // A new hidden list from Settings: the lists drop those games, and a hidden game in use is left for the first one still shown.
  setHidden(list){hidden=[...list];leaveHidden();options();window.dispatchEvent(new CustomEvent('composer-games-shown'))}
@@ -153,7 +160,7 @@ function leaveHidden(){if(offered(value))return;const next=TARGETS.find(t=>t.liv
 // Restore the workspace only once every tab module has subscribed.
 window.addEventListener('DOMContentLoaded',async()=>{
  await window.ComposerAuth.ready;
- if(['look','library','sound','translates','art'].includes(opening.tab))$('#'+opening.tab+'-tab').click();else writeHash();
+ if(['look','library','sound','translates','art','settings'].includes(opening.tab))$('#'+opening.tab+'-tab').click();else writeHash();
  refresh().catch(error=>say(error.message+' — start Composer with tools/preview.py so studio/ routes are available.',true));
 });
 window.ComposerAuth.ready.then(()=>{

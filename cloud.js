@@ -64,7 +64,7 @@ window.ComposerCloud={
 async function sharedTextsOffered(){return !!(await window.ComposerDraftEditors?.shared?.().catch(()=>false))&&ComposerAuth.has('workspace.view',SHARED)}
 function canSwitch(){return !document.querySelector('.workspace-dirty')&&!window.ComposerLook?.dirty}
 
-const sectionNames={translations:'Translations',design:'Design',audio:'Sounds',art:'Assets'};
+const sectionNames={translations:'Translations',design:'Design',audio:'Sounds',art:'Assets',game:'Game settings'};
 const feedback=document.createElement('span');feedback.id='changes-feedback';feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');button.after(feedback);
 const isReviewer=()=>ComposerAuth.member?.role!=='art_director'&&ComposerAuth.has('drafts.review',game());
 let feedbackTimer;
@@ -284,6 +284,8 @@ function reviewGroup(section,row,payload,baseline){
  const pretty=v=>String(v||'Setting').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[_-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
  if(section==='translations')return {key:p[0],title:labels?.translations?.[p[0]]||p[0],category:'Languages',label:({en:'English',fr:'French',ht:'Creole'}[p[1]]||p[1])};
  if(section==='audio')return {key:p.slice(0,3).join('/'),title:(p[0]==='kit'?'Interface sounds':'Scene sounds')+' · '+(labels?.events?.[p[0]]?.[p[2]]||pretty(p[2])),category:'Sound settings',label:p.slice(3).map(v=>({volume_db:'Volume (dB)',pitch_jitter:'Pitch variation',takes:'Take',enabled:'Enabled',media:'Added sound',name:'File name'})[v]||pretty(v)).join(' · ')};
+ // The game's name (Game settings): title/<language>.
+ if(section==='game')return {key:p[0],title:p[0]==='title'?'Game name':pretty(p[0]),category:'Game',label:({en:'English',fr:'French',ht:'Creole'}[p[1]]||pretty(p[1]))};
  // A picture: <tenant>/slots/<slot>/… or <tenant>/themes/<theme>/<slot>/….
  if(section==='art'){
   const theme=p[1]==='themes',slot=theme?p[3]:p[2],tenant=window.ComposerLook?.catalog?.brands?.[p[0]],themeTitle=theme?(tenant?.themes?.[p[2]]?.title||pretty(p[2])):'';

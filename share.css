@@ -276,3 +276,32 @@
 .face-grid button:focus-visible{outline:2px solid var(--inspector-accent);outline-offset:2px}
 .face-grid button:disabled{cursor:wait;opacity:.6}
 .face-error{margin:12px 0 0;color:var(--inspector-warning);font-size:var(--inspector-type-sm)}
+/* Game settings (game-settings.js), the game's own tab: its name by language, and a thumbnail card
+   per tenant. The page fills the room; the side panel is put away while it is open. */
+@media(min-width:1001px){body.settings-workspace{grid-template-columns:var(--inspector-size-76) 0 minmax(0,1fr)}body.settings-workspace aside#side{display:none}}
+body[data-mobile-mode=settings] #mobile-workspace{display:none}
+#settings-report{min-width:0;min-height:0;height:100%;overflow:auto;box-sizing:border-box;padding:var(--space-24);color:var(--inspector-text)}
+#settings-report>*{max-width:calc(var(--space-48) * 16);margin-inline:auto}
+#settings-report h2{margin:0 0 var(--space-4);font-size:var(--type-24);font-weight:650;letter-spacing:-.02em}
+#settings-report h3{margin:0 0 var(--space-4);font-size:var(--inspector-type-lg)}
+#settings-report .share-note{margin:0;color:var(--inspector-muted);line-height:var(--leading-relaxed)}
+.game-settings-head{margin-bottom:var(--space-24)}
+.game-settings-card{margin-bottom:var(--space-16);padding:var(--space-24);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--inspector-radius-panel);background:var(--inspector-card)}
+.game-settings-card[hidden]{display:none}
+.game-settings-names{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-12);margin-top:var(--space-16)}
+.game-settings-names label{display:grid;gap:var(--space-8);font-size:var(--inspector-type-sm)}
+.game-settings-names input{box-sizing:border-box;width:100%;min-width:0;min-height:var(--inspector-control);padding:0 var(--space-12);border:var(--stroke-1) solid var(--inspector-border-strong);border-radius:var(--inspector-radius-card);background:var(--inspector-well);color:var(--inspector-text);font:inherit}
+.game-settings-names input:disabled{opacity:.7}
+.game-settings-card footer{display:flex;margin-top:var(--space-16)}
+.game-settings-card .wb-button{display:inline-flex;align-items:center;justify-content:center;min-height:var(--inspector-control);padding:0 var(--space-12);font-size:var(--inspector-type-sm);cursor:pointer}
+.game-settings-thumbs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-12);margin-top:var(--space-16)}
+.game-settings-thumb{display:grid;gap:var(--space-8);margin:0;padding:var(--space-8);border:var(--stroke-1) solid var(--inspector-border);border-radius:var(--inspector-radius-card);background:var(--inspector-well)}
+.game-settings-thumb img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:var(--inspector-radius-card)}
+.game-settings-thumb figcaption{display:grid;gap:var(--space-4);font-size:var(--inspector-type-sm)}
+.game-settings-thumb figcaption small{color:var(--inspector-muted)}
+.game-settings-thumb-actions{display:flex;flex-wrap:wrap;gap:var(--space-6)}
+.game-settings-thumb-actions label{margin:0}
+#game-settings-status{min-height:1.5em;color:var(--inspector-accent);margin-top:0}
+#game-settings-status.sound-error{color:var(--inspector-danger)}
+@media(max-width:1000px){#settings-report{height:auto;padding:0}}
+@media(max-width:600px){.game-settings-card{padding:var(--space-16)}.game-settings-names,.game-settings-thumbs{grid-template-columns:1fr 1fr}.game-settings-names label:first-child{grid-column:1/-1}}
