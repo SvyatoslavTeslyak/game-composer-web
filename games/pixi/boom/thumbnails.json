@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "Fruit Boom",
+    "fr": "Fruit Boom",
+    "ht": "Fruit Boom"
+  },
+  "default": "thumbnail.png",
+  "tenants": {
+    "LotomobilPlayers": "thumbnails/LotomobilPlayers.png",
+    "NumbaGhanaPlayers": "thumbnails/NumbaGhanaPlayers.png",
+    "NumbaNigeriaPlayers": "thumbnails/NumbaNigeriaPlayers.png"
+  }
+}

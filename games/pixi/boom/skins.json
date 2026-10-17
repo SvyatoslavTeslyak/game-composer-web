@@ -1,0 +1,575 @@
+{
+  "version": 1,
+  "about": "The pictures a tenant or one of its themes may replace. Composer's Assets tab reads this file from the build, offers each slot for upload and, on release, writes the chosen files into `brands`. The game looks a picture up here by its default file: a theme's picture first, then the tenant's, then the default. Only pictures change: the fruits' sizes and paths, the cut, the juice colours and the maths stay the same for everyone. Each slot's prompt describes the current picture for an image generator; the part in square brackets is what a tenant or theme changes.",
+  "links": {
+    "SpriteCook": "https://spritecook.ai"
+  },
+  "guide": [
+    {
+      "title": "How a set of pictures works",
+      "lines": [
+        "Pick the tenant (and the theme, if the pictures are for one) in the top bar. Everything you upload belongs to that choice.",
+        "A theme only needs the pictures it changes: anything it leaves out comes from its tenant, and anything the tenant leaves out comes from the game.",
+        "Start every picture from the current one: Download gives you the file the game draws now, at its size. Keep the canvas size and the transparent background.",
+        "Every picture comes with a prompt for an image generator. Change the part in [square brackets] to the tenant's or theme's subject and keep the rest: it holds the view, the size and the framing the game needs.",
+        "Upload PNG, WebP or JPG. Composer stores it as PNG. Keep each file under 8 MB.",
+        "A picture must keep the proportions of the one it replaces. A different size with the same proportions is fine: the game scales it."
+      ]
+    },
+    {
+      "title": "Fruits: whole, then two halves",
+      "lines": [
+        "Nine fruits fly up; a cut splits one into its two halves and shows what is inside. Each fruit is three pictures, replaced together: Whole, Left half and Right half.",
+        "The sections are numbered, not named: a tenant's Fruit 1 need not be a watermelon. The fruit in each prompt is only the game's own one; change it to whatever the tenant's fruit is.",
+        "All three share one 1024 × 1024 canvas. The whole fruit is centred at (512, 512) and fills about 72% of the canvas; each half sits exactly where it was in the whole fruit, with its flat cut edge straight down the middle (x = 512) and the other half of the canvas empty.",
+        "Make them in SpriteCook: generate the whole fruit first (detailed art, model gemini-3.1-flash-image, transparent background, smart crop off), then make each half by editing that whole fruit (Edit with the whole as the source) with the half's prompt, so size, light and outline match.",
+        "The juice and the trail are drawn by the game in the fruit's colours. A replacement fruit should keep a similar flesh colour, or the juice will not match it.",
+        "Before the cut, every fruit looks ordinary: no glow, cracks or sparks that hint at what is inside."
+      ]
+    },
+    {
+      "title": "Inside the fruit",
+      "lines": [
+        "What a cut reveals: Gold is a win, the Bomb ends the round, Rotten is a near miss. They are drawn over the opened fruit, so keep them clearly different in colour and shape, centred, with a transparent margin."
+      ]
+    },
+    {
+      "title": "The street",
+      "lines": [
+        "Each atmosphere is three layers: the sky fills the screen behind everything, and the two house layers stand pinned to the left and right edges, so wide screens spread them apart. Replace all three of an atmosphere together.",
+        "Keep the middle of the sky empty: fruit flies there and the multiplier is shown there.",
+        "The player picks Day or Sunset for the next session. Sunset is the day street relit: make it in SpriteCook by editing each day layer (model gemini-3-pro-image) with a sunset prompt, keeping shapes and framing, then keep each layer at the day layer's size."
+      ]
+    },
+    {
+      "title": "Wins and hints",
+      "lines": [
+        "The coin spills out of a gold core on a win; the win-rain coin falls with the fruit on a big win; the BOOM sticker shows when the bomb goes off; the hand shows a new player how to swipe.",
+        "The BOOM sticker carries its word in the picture, so spell it exactly as the tenant wants it read."
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "game",
+      "title": "Game"
+    },
+    {
+      "id": "fruit-watermelon",
+      "title": "Fruit 1",
+      "together": true
+    },
+    {
+      "id": "fruit-mango",
+      "title": "Fruit 2",
+      "together": true
+    },
+    {
+      "id": "fruit-coconut",
+      "title": "Fruit 3",
+      "together": true
+    },
+    {
+      "id": "fruit-orange",
+      "title": "Fruit 4",
+      "together": true
+    },
+    {
+      "id": "fruit-pineapple",
+      "title": "Fruit 5",
+      "together": true
+    },
+    {
+      "id": "fruit-papaya",
+      "title": "Fruit 6",
+      "together": true
+    },
+    {
+      "id": "fruit-dragonfruit",
+      "title": "Fruit 7",
+      "together": true
+    },
+    {
+      "id": "fruit-avocado",
+      "title": "Fruit 8",
+      "together": true
+    },
+    {
+      "id": "fruit-sugarcane",
+      "title": "Fruit 9",
+      "together": true
+    },
+    {
+      "id": "insides",
+      "title": "Inside the fruit"
+    },
+    {
+      "id": "street-day",
+      "title": "Street, day",
+      "together": true
+    },
+    {
+      "id": "street-sunset",
+      "title": "Street, sunset",
+      "together": true
+    },
+    {
+      "id": "extras",
+      "title": "Wins and hints"
+    }
+  ],
+  "slots": [
+    {
+      "id": "thumbnail",
+      "group": "game",
+      "title": "Thumbnail",
+      "file": "art/thumbnail.png",
+      "size": [
+        512,
+        512
+      ],
+      "prompt": "A square game thumbnail for Fruit Boom, 512 × 512 px, shown as the game's tile in an app's lobby, on the showcase and in link previews: [the game's hero and its world in one bold, readable picture, with the game's name Fruit Boom in big playful letters]. Bright, saturated cartoon mobile-game art, thick dark outlines, soft cel shading, light from the top left. Fills the square edge to edge, no rounded corners, no border, no transparent margins."
+    },
+    {
+      "id": "watermelon-whole",
+      "group": "fruit-watermelon",
+      "title": "Whole",
+      "file": "art/fruits/runtime/fruit_watermelon.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single whole, intact, uncut fruit: [a round watermelon, glossy dark green skin with lighter wavy stripes]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Front view, upright, centred exactly at (512, 512) on a 1024 × 1024 px transparent canvas, the fruit filling about 72% of the canvas width or height with a transparent margin. An ordinary fruit only: no bomb, no gold, no exposed flesh, no face, no hands, no ground, no cast shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "watermelon-half-left",
+      "group": "fruit-watermelon",
+      "title": "Left half",
+      "file": "art/fruits/runtime/fruit_watermelon_half_left.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE LEFT HALF only, from a straight vertical slice through the centre of the upright fruit: [a round watermelon, glossy dark green skin with lighter wavy stripes], showing [bright red juicy flesh with black seeds and a pale green rind] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the left, and the whole right half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "watermelon-half-right",
+      "group": "fruit-watermelon",
+      "title": "Right half",
+      "file": "art/fruits/runtime/fruit_watermelon_half_right.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE RIGHT HALF only, from a straight vertical slice through the centre of the upright fruit: [a round watermelon, glossy dark green skin with lighter wavy stripes], showing [bright red juicy flesh with black seeds and a pale green rind] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the right, and the whole left half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "mango-whole",
+      "group": "fruit-mango",
+      "title": "Whole",
+      "file": "art/fruits/runtime/fruit_mango.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single whole, intact, uncut fruit: [a ripe mango, yellow-orange skin with a red blush and a small green leaf]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Front view, upright, centred exactly at (512, 512) on a 1024 × 1024 px transparent canvas, the fruit filling about 72% of the canvas width or height with a transparent margin. An ordinary fruit only: no bomb, no gold, no exposed flesh, no face, no hands, no ground, no cast shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "mango-half-left",
+      "group": "fruit-mango",
+      "title": "Left half",
+      "file": "art/fruits/runtime/fruit_mango_half_left.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE LEFT HALF only, from a straight vertical slice through the centre of the upright fruit: [a ripe mango, yellow-orange skin with a red blush and a small green leaf], showing [golden yellow flesh with a pale flat seed] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the left, and the whole right half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "mango-half-right",
+      "group": "fruit-mango",
+      "title": "Right half",
+      "file": "art/fruits/runtime/fruit_mango_half_right.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE RIGHT HALF only, from a straight vertical slice through the centre of the upright fruit: [a ripe mango, yellow-orange skin with a red blush and a small green leaf], showing [golden yellow flesh with a pale flat seed] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the right, and the whole left half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "coconut-whole",
+      "group": "fruit-coconut",
+      "title": "Whole",
+      "file": "art/fruits/runtime/fruit_coconut.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single whole, intact, uncut fruit: [a brown hairy coconut shell with three dark eyes]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Front view, upright, centred exactly at (512, 512) on a 1024 × 1024 px transparent canvas, the fruit filling about 72% of the canvas width or height with a transparent margin. An ordinary fruit only: no bomb, no gold, no exposed flesh, no face, no hands, no ground, no cast shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "coconut-half-left",
+      "group": "fruit-coconut",
+      "title": "Left half",
+      "file": "art/fruits/runtime/fruit_coconut_half_left.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE LEFT HALF only, from a straight vertical slice through the centre of the upright fruit: [a brown hairy coconut shell with three dark eyes], showing [thick white coconut meat inside a brown shell rim, no liquid] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the left, and the whole right half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "coconut-half-right",
+      "group": "fruit-coconut",
+      "title": "Right half",
+      "file": "art/fruits/runtime/fruit_coconut_half_right.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE RIGHT HALF only, from a straight vertical slice through the centre of the upright fruit: [a brown hairy coconut shell with three dark eyes], showing [thick white coconut meat inside a brown shell rim, no liquid] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the right, and the whole left half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "orange-whole",
+      "group": "fruit-orange",
+      "title": "Whole",
+      "file": "art/fruits/runtime/fruit_orange.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single whole, intact, uncut fruit: [a bright orange citrus with dimpled peel and a tiny leaf]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Front view, upright, centred exactly at (512, 512) on a 1024 × 1024 px transparent canvas, the fruit filling about 72% of the canvas width or height with a transparent margin. An ordinary fruit only: no bomb, no gold, no exposed flesh, no face, no hands, no ground, no cast shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "orange-half-left",
+      "group": "fruit-orange",
+      "title": "Left half",
+      "file": "art/fruits/runtime/fruit_orange_half_left.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE LEFT HALF only, from a straight vertical slice through the centre of the upright fruit: [a bright orange citrus with dimpled peel and a tiny leaf], showing [radial juicy orange segments] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the left, and the whole right half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "orange-half-right",
+      "group": "fruit-orange",
+      "title": "Right half",
+      "file": "art/fruits/runtime/fruit_orange_half_right.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE RIGHT HALF only, from a straight vertical slice through the centre of the upright fruit: [a bright orange citrus with dimpled peel and a tiny leaf], showing [radial juicy orange segments] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the right, and the whole left half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "pineapple-whole",
+      "group": "fruit-pineapple",
+      "title": "Whole",
+      "file": "art/fruits/runtime/fruit_pineapple.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single whole, intact, uncut fruit: [a golden pineapple with a diamond-pattern skin and a green crown]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Front view, upright, centred exactly at (512, 512) on a 1024 × 1024 px transparent canvas, the fruit filling about 72% of the canvas width or height with a transparent margin. An ordinary fruit only: no bomb, no gold, no exposed flesh, no face, no hands, no ground, no cast shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "pineapple-half-left",
+      "group": "fruit-pineapple",
+      "title": "Left half",
+      "file": "art/fruits/runtime/fruit_pineapple_half_left.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE LEFT HALF only, from a straight vertical slice through the centre of the upright fruit: [a golden pineapple with a diamond-pattern skin and a green crown], showing [yellow flesh with a fibrous core] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the left, and the whole right half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "pineapple-half-right",
+      "group": "fruit-pineapple",
+      "title": "Right half",
+      "file": "art/fruits/runtime/fruit_pineapple_half_right.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE RIGHT HALF only, from a straight vertical slice through the centre of the upright fruit: [a golden pineapple with a diamond-pattern skin and a green crown], showing [yellow flesh with a fibrous core] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the right, and the whole left half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "papaya-whole",
+      "group": "fruit-papaya",
+      "title": "Whole",
+      "file": "art/fruits/runtime/fruit_papaya.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single whole, intact, uncut fruit: [a plump oval golden orange papaya with a hint of green at the neck, no leaves]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Front view, upright, centred exactly at (512, 512) on a 1024 × 1024 px transparent canvas, the fruit filling about 72% of the canvas width or height with a transparent margin. An ordinary fruit only: no bomb, no gold, no exposed flesh, no face, no hands, no ground, no cast shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "papaya-half-left",
+      "group": "fruit-papaya",
+      "title": "Left half",
+      "file": "art/fruits/runtime/fruit_papaya_half_left.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE LEFT HALF only, from a straight vertical slice through the centre of the upright fruit: [a plump oval golden orange papaya with a hint of green at the neck, no leaves], showing [coral orange flesh and a small cluster of black seeds] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the left, and the whole right half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "papaya-half-right",
+      "group": "fruit-papaya",
+      "title": "Right half",
+      "file": "art/fruits/runtime/fruit_papaya_half_right.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE RIGHT HALF only, from a straight vertical slice through the centre of the upright fruit: [a plump oval golden orange papaya with a hint of green at the neck, no leaves], showing [coral orange flesh and a small cluster of black seeds] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the right, and the whole left half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "dragonfruit-whole",
+      "group": "fruit-dragonfruit",
+      "title": "Whole",
+      "file": "art/fruits/runtime/fruit_dragonfruit.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single whole, intact, uncut fruit: [a round vivid magenta pink dragon fruit with a few thick curved green-tipped scales]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Front view, upright, centred exactly at (512, 512) on a 1024 × 1024 px transparent canvas, the fruit filling about 72% of the canvas width or height with a transparent margin. An ordinary fruit only: no bomb, no gold, no exposed flesh, no face, no hands, no ground, no cast shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "dragonfruit-half-left",
+      "group": "fruit-dragonfruit",
+      "title": "Left half",
+      "file": "art/fruits/runtime/fruit_dragonfruit_half_left.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE LEFT HALF only, from a straight vertical slice through the centre of the upright fruit: [a round vivid magenta pink dragon fruit with a few thick curved green-tipped scales], showing [white flesh dotted with tiny black seeds] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the left, and the whole right half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "dragonfruit-half-right",
+      "group": "fruit-dragonfruit",
+      "title": "Right half",
+      "file": "art/fruits/runtime/fruit_dragonfruit_half_right.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE RIGHT HALF only, from a straight vertical slice through the centre of the upright fruit: [a round vivid magenta pink dragon fruit with a few thick curved green-tipped scales], showing [white flesh dotted with tiny black seeds] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the right, and the whole left half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "avocado-whole",
+      "group": "fruit-avocado",
+      "title": "Whole",
+      "file": "art/fruits/runtime/fruit_avocado.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single whole, intact, uncut fruit: [a plump pear-shaped dark emerald green avocado with bumpy peel and a short brown stem]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Front view, upright, centred exactly at (512, 512) on a 1024 × 1024 px transparent canvas, the fruit filling about 72% of the canvas width or height with a transparent margin. An ordinary fruit only: no bomb, no gold, no exposed flesh, no face, no hands, no ground, no cast shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "avocado-half-left",
+      "group": "fruit-avocado",
+      "title": "Left half",
+      "file": "art/fruits/runtime/fruit_avocado_half_left.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE LEFT HALF only, from a straight vertical slice through the centre of the upright fruit: [a plump pear-shaped dark emerald green avocado with bumpy peel and a short brown stem], showing [pale yellow-green creamy flesh around a round brown pit] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the left, and the whole right half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "avocado-half-right",
+      "group": "fruit-avocado",
+      "title": "Right half",
+      "file": "art/fruits/runtime/fruit_avocado_half_right.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE RIGHT HALF only, from a straight vertical slice through the centre of the upright fruit: [a plump pear-shaped dark emerald green avocado with bumpy peel and a short brown stem], showing [pale yellow-green creamy flesh around a round brown pit] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the right, and the whole left half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "sugarcane-whole",
+      "group": "fruit-sugarcane",
+      "title": "Whole",
+      "file": "art/fruits/runtime/fruit_sugarcane.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single whole, intact, uncut fruit: [a short upright stalk of yellow-green sugarcane with ringed joints and a leaf at the top]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Front view, upright, centred exactly at (512, 512) on a 1024 × 1024 px transparent canvas, the fruit filling about 72% of the canvas width or height with a transparent margin. An ordinary fruit only: no bomb, no gold, no exposed flesh, no face, no hands, no ground, no cast shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "sugarcane-half-left",
+      "group": "fruit-sugarcane",
+      "title": "Left half",
+      "file": "art/fruits/runtime/fruit_sugarcane_half_left.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE LEFT HALF only, from a straight vertical slice through the centre of the upright fruit: [a short upright stalk of yellow-green sugarcane with ringed joints and a leaf at the top], showing [pale cream fibrous juicy flesh] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the left, and the whole right half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "sugarcane-half-right",
+      "group": "fruit-sugarcane",
+      "title": "Right half",
+      "file": "art/fruits/runtime/fruit_sugarcane_half_right.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "The matching cut piece of the whole fruit from the Whole picture: ONE RIGHT HALF only, from a straight vertical slice through the centre of the upright fruit: [a short upright stalk of yellow-green sugarcane with ringed joints and a leaf at the top], showing [pale cream fibrous juicy flesh] on the cut face, juicy, facing the camera. Keep the whole fruit's size, lighting, outline and position on the same 1024 × 1024 px transparent canvas: the flat cut edge runs straight down at x = 512, the outer peel stays on the right, and the whole left half of the canvas stays empty and transparent. Do not centre or enlarge the piece. No second piece, no loose seeds, no knife, no bomb, no text, no scene, no ground shadow. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette."
+    },
+    {
+      "id": "core-golden",
+      "group": "insides",
+      "title": "Gold (a win)",
+      "file": "art/fruits/runtime/core_golden.png",
+      "size": [
+        512,
+        512
+      ],
+      "prompt": "One single game object: [a round heap of shiny gold coins, warm and inviting, clearly a reward]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Centred on a 512 × 512 px transparent canvas, filling about 70% of it, the same near-frontal camera as the fruits. No ground shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "core-explosive",
+      "group": "insides",
+      "title": "Bomb (a loss)",
+      "file": "art/fruits/runtime/core_explosive.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single game object: [a classic round black cartoon bomb with a short burning fuse and a bright spark, about to explode]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Centred on a 1024 × 1024 px transparent canvas, filling about 70% of it, the same near-frontal camera as the fruits. No ground shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "core-rotten",
+      "group": "insides",
+      "title": "Rotten (a near miss)",
+      "file": "art/fruits/runtime/core_rotten.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "prompt": "One single game object: [a sad rotten olive-brown fruit core with mouldy spots and a drip of slime]. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. Centred on a 1024 × 1024 px transparent canvas, filling about 70% of it, the same near-frontal camera as the fruits. No ground shadow, no scenery, no text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "street-day-sky",
+      "group": "street-day",
+      "title": "Sky",
+      "file": "art/fruits/runtime/bg_street_sky.jpg",
+      "size": [
+        2752,
+        1536
+      ],
+      "prompt": "Full-bleed landscape background for a 2D fruit-slicing mobile game, 2752 × 1536 px, opaque: [a sunny tropical fruit street: a wide open bright blue sky with a few soft white clouds, low distant green hills and a glimpse of turquoise sea along the bottom]. Painterly polished casual-game illustration, soft light. The whole middle of the picture, from the top to about three quarters down, is open sky with nothing in it, so flying fruit reads clearly. No houses at the sides (they are separate layers), no fruit, no people, no birds, no text, no signs, no frame."
+    },
+    {
+      "id": "street-day-left",
+      "group": "street-day",
+      "title": "Houses, left",
+      "file": "art/fruits/runtime/bg_street_left.png",
+      "size": [
+        512,
+        2064
+      ],
+      "prompt": "A tall narrow background layer for a 2D fruit-slicing mobile game, 512 × 2064 px, transparent background: [tall colourful colonial houses with wooden balconies, shutters, striped awnings and baskets of fruit], standing along the left edge of the screen as one tall stack from the bottom to the top, its outer edge flush with the left side of the picture and its inner edge open towards the sky. Painterly polished casual-game illustration, soft light, matching the sky picture. No sky behind it (transparent), no fruit, no people, no text, no signs. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "street-day-right",
+      "group": "street-day",
+      "title": "Houses, right",
+      "file": "art/fruits/runtime/bg_street_right.png",
+      "size": [
+        482,
+        2064
+      ],
+      "prompt": "A tall narrow background layer for a 2D fruit-slicing mobile game, 482 × 2064 px, transparent background: [tall colourful colonial houses with wooden balconies, shutters, striped awnings and baskets of fruit], standing along the right edge of the screen as one tall stack from the bottom to the top, its outer edge flush with the right side of the picture and its inner edge open towards the sky. Painterly polished casual-game illustration, soft light, matching the sky picture. No sky behind it (transparent), no fruit, no people, no text, no signs. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "street-sunset-sky",
+      "group": "street-sunset",
+      "title": "Sky",
+      "file": "art/fruits/runtime/bg_sunset_sky.jpg",
+      "size": [
+        2752,
+        1536
+      ],
+      "prompt": "Full-bleed landscape background for a 2D fruit-slicing mobile game, 2752 × 1536 px, opaque: [the same tropical fruit street at sunset: a warm purple-orange sky with glowing clouds, low distant hills and the sea along the bottom]. Painterly polished casual-game illustration, soft light. The whole middle of the picture, from the top to about three quarters down, is open sky with nothing in it, so flying fruit reads clearly. No houses at the sides (they are separate layers), no fruit, no people, no birds, no text, no signs, no frame."
+    },
+    {
+      "id": "street-sunset-left",
+      "group": "street-sunset",
+      "title": "Houses, left",
+      "file": "art/fruits/runtime/bg_sunset_left.png",
+      "size": [
+        512,
+        2064
+      ],
+      "prompt": "A tall narrow background layer for a 2D fruit-slicing mobile game, 512 × 2064 px, transparent background: [the same tall colonial houses at sunset, lamps glowing in the windows and under the awnings], standing along the left edge of the screen as one tall stack from the bottom to the top, its outer edge flush with the left side of the picture and its inner edge open towards the sky. Painterly polished casual-game illustration, soft light, matching the sky picture. No sky behind it (transparent), no fruit, no people, no text, no signs. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "street-sunset-right",
+      "group": "street-sunset",
+      "title": "Houses, right",
+      "file": "art/fruits/runtime/bg_sunset_right.png",
+      "size": [
+        482,
+        2064
+      ],
+      "prompt": "A tall narrow background layer for a 2D fruit-slicing mobile game, 482 × 2064 px, transparent background: [the same tall colonial houses at sunset, lamps glowing in the windows and under the awnings], standing along the right edge of the screen as one tall stack from the bottom to the top, its outer edge flush with the right side of the picture and its inner edge open towards the sky. Painterly polished casual-game illustration, soft light, matching the sky picture. No sky behind it (transparent), no fruit, no people, no text, no signs. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "coin",
+      "group": "extras",
+      "title": "Coin",
+      "file": "art/fruits/runtime/coin.png",
+      "size": [
+        192,
+        192
+      ],
+      "prompt": "A single small game icon, 192 × 192 px, transparent background: [a shiny warm gold coin seen slightly from the side], centred, filling the frame. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. No text or symbol on it. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "rain-coin",
+      "group": "extras",
+      "title": "Win rain coin",
+      "file": "art/fruits/runtime/rain_coin.png",
+      "size": [
+        192,
+        192
+      ],
+      "prompt": "A single small game icon, 192 × 192 px, transparent background: [a small shiny orange-gold coin, tilted], centred in the middle 45% of the frame. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. No text. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "boom-sticker",
+      "group": "extras",
+      "title": "BOOM sticker",
+      "file": "art/fruits/runtime/boom_sticker.png",
+      "size": [
+        1400,
+        895
+      ],
+      "prompt": "A single cartoon sticker graphic, 1400 × 895 px, transparent background: [the word BOOM! in huge chunky playful 3D lettering, cream-yellow tops to hot orange-red bottoms, a thick dark outline and a white sticker border, on a jagged golden comic explosion star with a few sparks]. Centred, filling the canvas. Premium polished juicy mobile-game art. Spell the word exactly. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "hand-pointer",
+      "group": "extras",
+      "title": "Swipe hint hand",
+      "file": "art/fruits/runtime/hand_pointer.png",
+      "size": [
+        550,
+        600
+      ],
+      "prompt": "A single game hint graphic, 550 × 600 px, transparent background: [a friendly cartoon brown hand pointing with its index finger towards the upper left], filling the canvas, the fingertip near the top-left corner. Premium juicy polished 2D mobile-game art: softly modelled volume, saturated juicy colours, a light gloss, warm light from the upper left, a bold readable silhouette. No text. One single picture, not a sprite sheet."
+    }
+  ],
+  "brands": {}
+}

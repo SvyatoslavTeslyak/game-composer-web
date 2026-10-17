@@ -1,0 +1,250 @@
+{
+  "version": 1,
+  "about": "The pictures a tenant or one of its themes may replace. Composer's Assets tab reads this file from the build, offers each slot for upload and, on release, writes the chosen files into `brands`. The game looks a picture up here by its default file: a theme's picture first, then the tenant's, then the default. Only pictures change: the board, the pays and the maths stay the same for everyone. Every candy shares one square frame; a slot with `css` is drawn by the stylesheet through that custom property.",
+  "links": {
+    "SpriteCook": "https://spritecook.ai"
+  },
+  "guide": [
+    {
+      "title": "How a set of pictures works",
+      "lines": [
+        "Pick the tenant (and the theme, if the pictures are for one) in the top bar. Everything you upload belongs to that choice; a theme only needs the pictures it changes.",
+        "Start every picture from the current one: Download gives you the file the game uses now. Keep the transparent background where it has one.",
+        "Every picture comes with a prompt for an image generator. Change the part in [square brackets] to the tenant's or theme's subject and keep the rest.",
+        "Upload PNG, WebP or JPG; Composer stores it as PNG, under 8 MB. A picture keeps the proportions of the one it replaces."
+      ]
+    },
+    {
+      "title": "Candies",
+      "lines": [
+        "Seven candies make up the board, numbered from the lowest pay (Candy 1) to the top pay (Candy 7). Every candy has the same square frame, 320 × 320 px: the candy is centred, its longest side touching the frame's edges, so they all read at one size on the board.",
+        "Make them in SpriteCook as one set so they share a style: generate the first candy (detailed art, model gemini-3.1-flash-image, transparent background), then each next one with the first as its style reference. Keep them clearly different in colour and shape: a player reads the board by them.",
+        "When candies burst, the game throws crumbs in each candy's own colour, so a replacement should keep a similar main colour.",
+        "Candy 7, the wrapped candy, lies across its frame's diagonal, from the lower left to the upper right."
+      ]
+    },
+    {
+      "title": "Background",
+      "lines": [
+        "Three layers, replaced together: the scene fills the screen behind everything, and the two decor layers stand pinned to the left and right edges. Each side shows at most 28% of the screen and the rest slides past the edge, so phones show the two stalls close in and wide screens move them apart.",
+        "Keep the scene's middle calm and its left and right edges free of anything tall: the board covers the middle and the stalls stand at the sides.",
+        "Make the decor in SpriteCook as one wide transparent picture with a stall at each edge and an empty middle (detailed art, transparent background, the current scene as the style reference), then cut it down the middle into the left and right layers so both share one light. Each layer runs the full height, its outer side flush with the edge."
+      ]
+    },
+    {
+      "title": "Sign, plaques and the wheel",
+      "lines": [
+        "The multiplier sign over the board, its wood, the plaques the multipliers sit on, the stage-win frame and the free-games wheel's base. The game writes every number and word on them, so leave their centres empty and put no text in the pictures."
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "game",
+      "title": "Game"
+    },
+    {
+      "id": "candies",
+      "title": "Candies"
+    },
+    {
+      "id": "backdrop",
+      "title": "Background",
+      "together": true
+    },
+    {
+      "id": "sign",
+      "title": "Sign and plaques"
+    },
+    {
+      "id": "bonus",
+      "title": "Free games"
+    }
+  ],
+  "slots": [
+    {
+      "id": "thumbnail",
+      "group": "game",
+      "title": "Thumbnail",
+      "file": "art/thumbnail.png",
+      "size": [
+        512,
+        512
+      ],
+      "prompt": "A square game thumbnail for Candy Cascade, 512 × 512 px, shown as the game's tile in an app's lobby, on the showcase and in link previews: [the game's hero and its world in one bold, readable picture, with the game's name Candy Cascade in big playful letters]. Bright, saturated cartoon mobile-game art, thick dark outlines, soft cel shading, light from the top left. Fills the square edge to edge, no rounded corners, no border, no transparent margins."
+    },
+    {
+      "id": "candy-a",
+      "group": "candies",
+      "title": "Candy 1 (lowest pay)",
+      "file": "symbols/v6/A.webp",
+      "size": [
+        320,
+        320
+      ],
+      "prompt": "One single artisan candy for a Caribbean sweet-market slot game: [an ivory coconut bonbon with fine coconut shreds and softly glazed patches, in a turquoise paper cup]. Softly sculpted stylized 3D, satin finish, restrained broad soft highlights, natural edible textures, warm soft studio light, saturated but tasteful colours: midway between handmade sweets and polished casual-game icons. Not wet, not mirror-glossy, not plastic, no white glare streaks. Square 320 × 320 px frame with a transparent background: the candy centred, its longest side touching the frame's edges, seen from the front and slightly above. No shadow, no plate, no text. One single picture of one candy, not a sprite sheet."
+    },
+    {
+      "id": "candy-b",
+      "group": "candies",
+      "title": "Candy 2",
+      "file": "symbols/v6/B.webp",
+      "size": [
+        320,
+        320
+      ],
+      "prompt": "One single artisan candy for a Caribbean sweet-market slot game: [a Haitian peanut brittle cluster, clearly visible golden roasted peanuts bound with amber caramel, in a green paper cup]. Softly sculpted stylized 3D, satin finish, restrained broad soft highlights, natural edible textures, warm soft studio light, saturated but tasteful colours: midway between handmade sweets and polished casual-game icons. Not wet, not mirror-glossy, not plastic, no white glare streaks. Square 320 × 320 px frame with a transparent background: the candy centred, its longest side touching the frame's edges, seen from the front and slightly above. No shadow, no plate, no text. One single picture of one candy, not a sprite sheet."
+    },
+    {
+      "id": "candy-c",
+      "group": "candies",
+      "title": "Candy 3",
+      "file": "symbols/v6/C.webp",
+      "size": [
+        320,
+        320
+      ],
+      "prompt": "One single artisan candy for a Caribbean sweet-market slot game: [a warm dark cacao chocolate pyramid with softly rounded edges and a velvety satin surface, in a royal blue paper cup]. Softly sculpted stylized 3D, satin finish, restrained broad soft highlights, natural edible textures, warm soft studio light, saturated but tasteful colours: midway between handmade sweets and polished casual-game icons. Not wet, not mirror-glossy, not plastic, no white glare streaks. Square 320 × 320 px frame with a transparent background: the candy centred, its longest side touching the frame's edges, seen from the front and slightly above. No shadow, no plate, no text. One single picture of one candy, not a sprite sheet."
+    },
+    {
+      "id": "candy-d",
+      "group": "candies",
+      "title": "Candy 4",
+      "file": "symbols/v6/D.webp",
+      "size": [
+        320,
+        320
+      ],
+      "prompt": "One single artisan candy for a Caribbean sweet-market slot game: [a pink guava jelly cube with rounded corners, translucent only at the edges, with a faint dust of fine sugar]. Softly sculpted stylized 3D, satin finish, restrained broad soft highlights, natural edible textures, warm soft studio light, saturated but tasteful colours: midway between handmade sweets and polished casual-game icons. Not wet, not mirror-glossy, not plastic, no white glare streaks. Square 320 × 320 px frame with a transparent background: the candy centred, its longest side touching the frame's edges, seen from the front and slightly above. No shadow, no plate, no text. One single picture of one candy, not a sprite sheet."
+    },
+    {
+      "id": "candy-e",
+      "group": "candies",
+      "title": "Candy 5",
+      "file": "symbols/v6/E.webp",
+      "size": [
+        320,
+        320
+      ],
+      "prompt": "One single artisan candy for a Caribbean sweet-market slot game: [a mango-orange hexagonal fruit sweet, soft opaque fruit paste with tiny passionfruit flecks]. Softly sculpted stylized 3D, satin finish, restrained broad soft highlights, natural edible textures, warm soft studio light, saturated but tasteful colours: midway between handmade sweets and polished casual-game icons. Not wet, not mirror-glossy, not plastic, no white glare streaks. Square 320 × 320 px frame with a transparent background: the candy centred, its longest side touching the frame's edges, seen from the front and slightly above. No shadow, no plate, no text. One single picture of one candy, not a sprite sheet."
+    },
+    {
+      "id": "candy-f",
+      "group": "candies",
+      "title": "Candy 6",
+      "file": "symbols/v6/F.webp",
+      "size": [
+        320,
+        320
+      ],
+      "prompt": "One single artisan candy for a Caribbean sweet-market slot game: [a grape-purple five-point fruit gummy star with plump rounded arms and a softly sugared surface]. Softly sculpted stylized 3D, satin finish, restrained broad soft highlights, natural edible textures, warm soft studio light, saturated but tasteful colours: midway between handmade sweets and polished casual-game icons. Not wet, not mirror-glossy, not plastic, no white glare streaks. Square 320 × 320 px frame with a transparent background: the candy centred, its longest side touching the frame's edges, seen from the front and slightly above. No shadow, no plate, no text. One single picture of one candy, not a sprite sheet."
+    },
+    {
+      "id": "candy-g",
+      "group": "candies",
+      "title": "Candy 7 (top pay)",
+      "file": "symbols/v6/G.webp",
+      "size": [
+        320,
+        320
+      ],
+      "prompt": "One single artisan candy for a Caribbean sweet-market slot game: [a golden yellow wrapped tropical candy with short chunky twisted wrapper ends and a bold teal and red pattern on matte paper]. Lying diagonally across the frame, from the lower left to the upper right, the wrapper ends at the two corners. Softly sculpted stylized 3D, satin finish, restrained broad soft highlights, natural edible textures, warm soft studio light, saturated but tasteful colours: midway between handmade sweets and polished casual-game icons. Not wet, not mirror-glossy, not plastic, no white glare streaks. Square 320 × 320 px frame with a transparent background: the candy centred, its longest side touching the frame's edges, seen from the front and slightly above. No shadow, no plate, no text. One single picture of one candy, not a sprite sheet."
+    },
+    {
+      "id": "backdrop",
+      "group": "backdrop",
+      "title": "Scene",
+      "file": "art/candy-backdrop-v7.webp",
+      "size": [
+        2752,
+        1536
+      ],
+      "css": "--skin-backdrop",
+      "prompt": "Full-screen background layer for a tropical Caribbean candy slot game, 2752 × 1536 px landscape, opaque: [a sunny turquoise coastal bay with clear shallow water and a few rocks, distant lush mountains softened by haze, a few tiny colourful seaside market houses and a clear blue sky with soft clouds]. Painterly polished 3D casual-game illustration, warm golden sunlight, bright inviting colours with restrained contrast. The left and right edges show only sky, sea and distant hills: the stalls stand there on their own layers. Nothing tall in the foreground, a calm middle for the game board. No candies, no stalls, no sign, no UI, no text, no people."
+    },
+    {
+      "id": "decor-left",
+      "group": "backdrop",
+      "title": "Decor, left",
+      "file": "art/candy-decor-left-v1.webp",
+      "size": [
+        902,
+        1536
+      ],
+      "css": "--skin-decor-left",
+      "prompt": "A tall narrow decor layer for the left edge of a candy slot game screen, 902 × 1536 px, transparent background: [a tropical candy-market stall: a leaning palm tree with fronds reaching inward at the top, a striped stall awning on wooden posts, shelves of glass jars full of colourful sweets and wrapped candies, hanging fruit and candy garlands, hibiscus flowers and lush leaves at the bottom]. It stands from the very bottom to the very top of the picture with its outer side flush with the left edge; the side facing the middle opens onto nothing. Painterly polished 3D casual-game illustration, warm golden sunlight, bright inviting colours with restrained contrast. Nothing behind it: no sky, sea or ground. No text, no people. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "decor-right",
+      "group": "backdrop",
+      "title": "Decor, right",
+      "file": "art/candy-decor-right-v1.webp",
+      "size": [
+        892,
+        1536
+      ],
+      "css": "--skin-decor-right",
+      "prompt": "A tall narrow decor layer for the right edge of a candy slot game screen, 892 × 1536 px, transparent background: [a tropical candy-market stall: a leaning palm tree with fronds reaching inward at the top, a striped stall awning on wooden posts, shelves of glass jars full of colourful sweets and wrapped candies, hanging fruit and candy garlands, hibiscus flowers and lush leaves at the bottom]. It stands from the very bottom to the very top of the picture with its outer side flush with the right edge; the side facing the middle opens onto nothing. Painterly polished 3D casual-game illustration, warm golden sunlight, bright inviting colours with restrained contrast. Nothing behind it: no sky, sea or ground. No text, no people. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "sign-board",
+      "group": "sign",
+      "title": "Multiplier sign",
+      "file": "art/scoreboard-split-wood-v1.webp",
+      "size": [
+        1024,
+        576
+      ],
+      "css": "--skin-sign-board",
+      "prompt": "One wide wooden sign board, 1024 × 576 px, straight-on view, filling the whole picture edge to edge: [two wide horizontal planks of warm honey-brown wood with fine grain, joined by one horizontal seam across the middle, no frame or rim]. A calm centre where the game writes its multipliers. Premium hand-painted 3D casual-game art for a rustic, golden, sunlit Caribbean candy stall. No text, numbers, symbols or background. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "sign-wood",
+      "group": "sign",
+      "title": "Wood texture",
+      "file": "art/tropical-wood-v5.webp",
+      "size": [
+        768,
+        768
+      ],
+      "css": "--skin-sign-wood",
+      "prompt": "One square seamless wood texture, 768 × 768 px, straight-on: [horizontal reddish-brown wooden planks with dark seams between them, fine grain and a few small knots]. It repeats in every direction, so its edges must join without seams. Premium hand-painted 3D casual-game art for a rustic, golden, sunlit Caribbean candy stall. No text, no objects, no frame. One single tile, not a grid of tiles."
+    },
+    {
+      "id": "sign-plaque",
+      "group": "sign",
+      "title": "Multiplier plaque",
+      "file": "art/multiplier-plaque-v1.webp",
+      "size": [
+        256,
+        256
+      ],
+      "css": "--skin-sign-plaque",
+      "prompt": "One isolated square wooden plaque, 256 × 256 px, front orthographic view, transparent background: [a warm dark walnut carved square plate with softly rounded corners, a raised bevelled rim, a slightly recessed centre and four tiny brass rivets at the corners]. The shape fills 94% of the canvas, with a calm centre for the multiplier the game writes on it. Premium hand-painted 3D casual-game art for a rustic, golden, sunlit Caribbean candy stall. No text, numbers or background. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "sign-win-frame",
+      "group": "sign",
+      "title": "Stage win frame",
+      "file": "art/stage-win-frame-v1.webp",
+      "size": [
+        512,
+        288
+      ],
+      "css": "--skin-sign-win-frame",
+      "prompt": "One isolated wide rectangular wooden frame, 512 × 288 px (16:9), straight-on view, transparent outside the frame: [a rounded hand-carved walnut frame with a double bevel, warm amber highlights and a deep dark brown recessed centre]. The frame fills 94% of the picture, the centre empty for the win the game writes in it. Premium hand-painted 3D casual-game art for a rustic, golden, sunlit Caribbean candy stall. No text or background. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "wheel-base",
+      "group": "bonus",
+      "title": "Wheel base",
+      "file": "art/fortune-wheel-base-v2.webp",
+      "size": [
+        640,
+        640
+      ],
+      "prompt": "One round wooden wheel base, 640 × 640 px, seen straight from the front, the circle filling the square edge to edge with a transparent background outside it: [a smooth, softly lit cream disc framed by a polished orange-brown wooden rim with a thin gold inner ring]. The game draws the wheel's segments and numbers over its middle and cuts it to that circle, so keep the middle calm and nothing important near the rim. Premium hand-painted 3D casual-game art for a rustic, golden, sunlit Caribbean candy stall. No text or numbers. One single picture, not a sprite sheet."
+    }
+  ],
+  "brands": {}
+}

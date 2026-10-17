@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "Candy Cascade",
+    "fr": "Candy Cascade",
+    "ht": "Candy Cascade"
+  },
+  "default": "thumbnail.png",
+  "tenants": {
+    "LotomobilPlayers": "thumbnails/LotomobilPlayers.png",
+    "NumbaGhanaPlayers": "thumbnails/NumbaGhanaPlayers.png",
+    "NumbaNigeriaPlayers": "thumbnails/NumbaNigeriaPlayers.png"
+  }
+}

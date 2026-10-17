@@ -603,7 +603,7 @@
       ],
       "ht": "Anbyans",
       "usage": [
-        "text"
+        "unused"
       ],
       "previewWindow": "limit:theme",
       "presets": [
@@ -652,8 +652,7 @@
       "fr": "Coucher de soleil",
       "group": "Settings",
       "games": [
-        "haul",
-        "boom"
+        "haul"
       ],
       "ht": "Kouche solèy",
       "usage": [
@@ -674,7 +673,7 @@
       ],
       "ht": "Twopikal",
       "usage": [
-        "text"
+        "unused"
       ],
       "previewWindow": "limit:theme",
       "presets": [
@@ -1170,7 +1169,7 @@
       ],
       "ht": "Remete balans lan a $1,000",
       "usage": [
-        "text"
+        "unused"
       ],
       "previewWindow": "menu",
       "presetsByGame": {
@@ -1854,7 +1853,7 @@
       ],
       "ht": "Fini tou sa a anvan ou ranpli balans lan",
       "usage": [
-        "text"
+        "unused"
       ],
       "previewState": "notification"
     },
@@ -3904,7 +3903,7 @@
         "mopyon_cascades"
       ],
       "usage": [
-        "text"
+        "unused"
       ],
       "presets": [
         "tabbed-shell-v1"
@@ -7396,10 +7395,10 @@
       "previewWindow": "rules"
     },
     "sky_tap_tap_rules_document": {
-      "source": "## Sky Tap-Tap\n\nChoose your stake and press **PLAY**. The plane takes off as the multiplier grows. Press **CASH OUT** before the crash to collect your stake multiplied by the current multiplier. A crash loses the stake, including crashes before takeoff.\n\nAuto Cashout collects at your chosen multiplier if the plane reaches it before crashing. Start each round manually with **PLAY**.\n\nThis is a demo with virtual credits. Live Wins are simulated. Refill restores 1,000 credits.",
-      "en": "## Sky Tap-Tap\n\nChoose your stake and press **PLAY**. The plane takes off as the multiplier grows. Press **CASH OUT** before the crash to collect your stake multiplied by the current multiplier. A crash loses the stake, including crashes before takeoff.\n\nAuto Cashout collects at your chosen multiplier if the plane reaches it before crashing. Start each round manually with **PLAY**.\n\nThis is a demo with virtual credits. Live Wins are simulated. Refill restores 1,000 credits.",
-      "fr": "## Sky Tap-Tap\n\nChoisissez votre mise et appuyez sur **JOUER**. L’avion décolle pendant que le multiplicateur grimpe. Appuyez sur **ENCAISSER** avant le crash pour récupérer votre mise multipliée par le multiplicateur actuel. Un crash fait perdre la mise, même s’il arrive avant le décollage.\n\nL’encaissement automatique encaisse au multiplicateur choisi si l’avion l’atteint avant de s’écraser. Lancez chaque manche vous-même avec **JOUER**.\n\nCeci est une démo avec des crédits virtuels. Les gains en direct sont simulés. La recharge rétablit 1 000 crédits.",
-      "ht": "## Sky Tap-Tap\n\nChwazi miz ou epi peze **JWE**. Avyon an dekole pandan miltiplikatè a ap monte. Peze **PRAN LAJAN** anvan li fè aksidan pou ou touche miz ou miltipliye pa miltiplikatè aktyèl la. Si avyon an fè aksidan, ou pèdi miz la, menm si li fèt anvan li dekole.\n\nPran lajan otomatik la pran gany ou nan miltiplikatè ou chwazi a si avyon an rive la anvan li fè aksidan. Kòmanse chak tou ou menm ak **JWE**.\n\nSa a se yon demo ak kredi vityèl. Gany an dirèk yo se simulasyon. Ranpli a remèt 1 000 kredi.",
+      "source": "## Sky Tap-Tap\n\nChoose your stake and press **PLAY**. The plane takes off as the multiplier grows. Press **CASH OUT** before the crash to collect your stake multiplied by the current multiplier. A crash loses the stake, including crashes before takeoff.\n\nAuto Cashout collects at your chosen multiplier if the plane reaches it before crashing. Start each round manually with **PLAY**.\n\nThis is a demo with virtual credits. Live Wins are simulated.",
+      "en": "## Sky Tap-Tap\n\nChoose your stake and press **PLAY**. The plane takes off as the multiplier grows. Press **CASH OUT** before the crash to collect your stake multiplied by the current multiplier. A crash loses the stake, including crashes before takeoff.\n\nAuto Cashout collects at your chosen multiplier if the plane reaches it before crashing. Start each round manually with **PLAY**.\n\nThis is a demo with virtual credits. Live Wins are simulated.",
+      "fr": "## Sky Tap-Tap\n\nChoisissez votre mise et appuyez sur **JOUER**. L’avion décolle pendant que le multiplicateur grimpe. Appuyez sur **ENCAISSER** avant le crash pour récupérer votre mise multipliée par le multiplicateur actuel. Un crash fait perdre la mise, même s’il arrive avant le décollage.\n\nL’encaissement automatique encaisse au multiplicateur choisi si l’avion l’atteint avant de s’écraser. Lancez chaque manche vous-même avec **JOUER**.\n\nCeci est une démo avec des crédits virtuels. Les gains en direct sont simulés.",
+      "ht": "## Sky Tap-Tap\n\nChwazi miz ou epi peze **JWE**. Avyon an dekole pandan miltiplikatè a ap monte. Peze **PRAN LAJAN** anvan li fè aksidan pou ou touche miz ou miltipliye pa miltiplikatè aktyèl la. Si avyon an fè aksidan, ou pèdi miz la, menm si li fèt anvan li dekole.\n\nPran lajan otomatik la pran gany ou nan miltiplikatè ou chwazi a si avyon an rive la anvan li fè aksidan. Kòmanse chak tou ou menm ak **JWE**.\n\nSa a se yon demo ak kredi vityèl. Gany an dirèk yo se simulasyon.",
       "label": "How to play · Content",
       "format": "markdown",
       "group": "Rules",

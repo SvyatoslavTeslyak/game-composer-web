@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "about": "The pictures a tenant or one of its themes may replace. Composer's Assets tab reads this file from the build, offers each slot for upload and, on release, writes the chosen files into `brands`. The game looks a picture up here by its default file: a theme's picture first, then the tenant's, then the default. Only pictures change: the board, the multipliers and the maths stay the same for everyone. A slot with `css` is drawn by the stylesheet through that custom property.",
+  "links": {
+    "SpriteCook": "https://spritecook.ai"
+  },
+  "guide": [
+    {
+      "title": "How a set of pictures works",
+      "lines": [
+        "Pick the tenant (and the theme, if the pictures are for one) in the top bar. Everything you upload belongs to that choice; a theme only needs the pictures it changes.",
+        "Start every picture from the current one: Download gives you the file the game uses now. Keep the transparent background where it has one.",
+        "Every picture comes with a prompt for an image generator. Change the part in [square brackets] to the tenant's or theme's subject and keep the rest.",
+        "Upload PNG, WebP or JPG; Composer stores it as PNG, under 8 MB. A picture keeps the proportions of the one it replaces."
+      ]
+    },
+    {
+      "title": "Bay",
+      "lines": [
+        "Three layers, replaced together: the bay fills the scene behind everything, and the two jungle layers stand pinned to the left and right edges. Each side shows at most 28% of the screen and the rest slides past the edge, so phones show the two sides close in and wide screens move them apart.",
+        "Keep the bay's middle dark and quiet: the glowing pegs and balls sit over it, and the panel covers the bottom. One bay serves every screen, cropped to fit.",
+        "Make the jungle in SpriteCook as one wide transparent picture with plants at each edge and an empty middle (detailed art, transparent background, the bay as the style reference), then cut it down the middle into the left and right layers so both share one light."
+      ]
+    },
+    {
+      "title": "Board",
+      "lines": [
+        "The funnel hangs over the first row of pegs, and every ball starts at its spout: keep the spout at the bottom centre of the picture. The pegs, the balls, the buckets and their multipliers are drawn by the game."
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "game",
+      "title": "Game"
+    },
+    {
+      "id": "bay",
+      "title": "Bay",
+      "together": true
+    },
+    {
+      "id": "board",
+      "title": "Board"
+    }
+  ],
+  "slots": [
+    {
+      "id": "thumbnail",
+      "group": "game",
+      "title": "Thumbnail",
+      "file": "art/thumbnail.png",
+      "size": [
+        512,
+        512
+      ],
+      "prompt": "A square game thumbnail for Plinko, 512 × 512 px, shown as the game's tile in an app's lobby, on the showcase and in link previews: [the game's hero and its world in one bold, readable picture, with the game's name Plinko in big playful letters]. Bright, saturated cartoon mobile-game art, thick dark outlines, soft cel shading, light from the top left. Fills the square edge to edge, no rounded corners, no border, no transparent margins."
+    },
+    {
+      "id": "bay",
+      "group": "bay",
+      "title": "Bay",
+      "file": "art/bay-night-v2.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "css": "--skin-bay",
+      "prompt": "Production game background, landscape 1536 × 1024 px, opaque, edge to edge: [a beautifully painted Caribbean coastal bay at midnight: a deep navy starry sky over the top half with soft blue-violet clouds at the horizon, tiny warm amber windows in coastal villages on the hills at the far left and far right, a small old stone citadel on the left hill, calm dark cobalt water in the bottom half with fine golden reflections near the shores and two tiny sailboats near the edges]. The middle 45% of the picture stays spacious and dark with very little detail: the glowing pegs sit over it. One picture serves every screen, cropped to fit, and the jungle layers cover its left and right edges. Sophisticated illustrated mobile-game art, atmospheric and lush, painterly and detailed, with a subtle royal blue and purple glow; not flat neon line drawing. Background only: no palm leaves or foreground plants, no frame, no interface, no pegs, no funnel, no lettering."
+    },
+    {
+      "id": "decor-left",
+      "group": "bay",
+      "title": "Decor, left",
+      "file": "art/decor-left-v1.webp",
+      "size": [
+        962,
+        1536
+      ],
+      "css": "--skin-decor-left",
+      "prompt": "A tall narrow decor layer for the left edge of a night Plinko game screen, 962 × 1536 px, transparent background: [night jungle: a tall coconut palm leaning inward with feathered fronds over the top, banana and monstera leaves, a few warm glowing paper lanterns hanging from the fronds, red hibiscus flowers and dark ferns at the bottom, in near-black navy with cobalt blue rim light and a few magenta accents]. It stands from the very bottom to the very top of the picture with its outer side flush with the left edge; the side facing the middle opens onto nothing. Detailed painterly illustration with sharp, delicate silhouettes and clear gaps between the leaves. Nothing behind it: no sky, water or ground. No text, no people. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "decor-right",
+      "group": "bay",
+      "title": "Decor, right",
+      "file": "art/decor-right-v1.webp",
+      "size": [
+        905,
+        1536
+      ],
+      "css": "--skin-decor-right",
+      "prompt": "A tall narrow decor layer for the right edge of a night Plinko game screen, 905 × 1536 px, transparent background: [night jungle: a tall coconut palm leaning inward with feathered fronds over the top, banana and monstera leaves, a few warm glowing paper lanterns hanging from the fronds, red hibiscus flowers and dark ferns at the bottom, in near-black navy with cobalt blue rim light and a few magenta accents]. It stands from the very bottom to the very top of the picture with its outer side flush with the right edge; the side facing the middle opens onto nothing. Detailed painterly illustration with sharp, delicate silhouettes and clear gaps between the leaves. Nothing behind it: no sky, water or ground. No text, no people. One single picture, not a sprite sheet."
+    },
+    {
+      "id": "funnel",
+      "group": "board",
+      "title": "Funnel",
+      "file": "art/dropper.png",
+      "size": [
+        292,
+        300
+      ],
+      "prompt": "One single game object, 292 × 300 px, transparent background: [a polished chrome funnel crowned with red and blue Haitian folk-art scrolls around a small white fleur-de-lis, a glowing blue ring around its spout]. Seen from the front and slightly above, upright, the narrow spout at the very bottom centre of the picture: the balls drop out of it. Sophisticated illustrated mobile-game art, atmospheric and lush, painterly and detailed, with a subtle royal blue and purple glow; not flat neon line drawing. No text, no balls. One single picture, not a sprite sheet."
+    }
+  ],
+  "brands": {}
+}
