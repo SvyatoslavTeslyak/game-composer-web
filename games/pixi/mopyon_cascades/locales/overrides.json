@@ -3,6 +3,30 @@
   "entries": {
     "bet_panels_21dcde": {
       "ht": "Tablo miz yo"
+    },
+    "candy_0c68cbc0d9eb": {
+      "ht": "GWO KOU"
+    },
+    "candy_1b0a718468da": {
+      "ht": "GWO LO"
+    },
+    "candy_643d72091452": {
+      "ht": "RAPID"
+    },
+    "candy_ca5f86adf218": {
+      "ht": "GWO VIKTWA"
+    },
+    "value_in_a_row_3c9aef": {
+      "ht": "{value} aliyen"
+    },
+    "choose_bet_amount_4d97eb": {
+      "fr": "Choisissez le montant de la mise"
+    },
+    "mopyon_cascades_rules_document": {
+      "ht": "## KIJAN POU GENYEN\n\nAliyen 5 senbòl ki sanble oswa plis sou menm liy dwat la, san okenn espas.\n\n[[directions]]\n\n[[longrun]]\n\nLiy ki kwaze youn ak lòt peye tou de; yon senbòl yo pataje retire yon sèl fwa.\n\n## GEN PA LIY\n\n[[paytable]]\n\n## KASKAD AK TOU GRATIS\n\nLiy ki genyen yo disparèt, senbòl yo desann epi lòt tonbe pou ranplase yo. Chak nouvo kaskad ki genyen ogmante miltiplikatè a. Kaskad ki long bay tou gratis:\n\n[[freegames]]\n\n[[multiplier]]\n\nRetou pou jwè : [RTP apre sètifikasyon]."
+    },
+    "in_free_games_the_multip_bf657e": {
+      "ht": "Pandan tou gratis, miltiplikatè a pa janm retounen a zewo. Chak tablo ki genyen ak chak kaskad ki genyen fè l monte yon nivo; li pase de yon tou ak yon  lòt, menm apre yon tou ki pa genyen, epi li pa ka depase {value}x. Tou gratis pa ka bay lòt tou gratis."
     }
   }
 }
