@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-BX5dh3L7.js";var t=e();function n(){return(0,t.jsx)(`div`,{className:`p-6 text-sm text-muted-foreground`,children:`math: not ported yet.`})}export{n as View};
