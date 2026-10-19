@@ -2,7 +2,6 @@
   "version": 1,
   "game": "kit",
   "title": "Shared UI sounds",
-  "owner": "web/ui.js (BettingSound, WinSound, the big-win celebration). Every game plays these; a game never overrides them.",
   "events": [
     {
       "id": "click",
@@ -11,8 +10,6 @@
       "volume_db": -17.08,
       "pitch_jitter": 0,
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/2pwPAIIJxdLNQAWbgSRh",
-      "prompt": "A single soft tactile interface button click, warm muted pop with a tiny crisp tick, very short and dry, no music or voices.",
       "takes": [
         {
           "file": "web/assets/audio/click.ogg",
@@ -28,8 +25,6 @@
       "volume_db": -18.42,
       "pitch_jitter": 0,
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/SbZFM9DLX8KmmmoArqSt",
-      "prompt": "A brief soft two-note interface confirmation chime, warm rounded plucked tones rising gently, dry, no voices or background music.",
       "takes": [
         {
           "file": "web/assets/audio/confirm.ogg",
@@ -45,8 +40,6 @@
       "volume_db": -7.13,
       "pitch_jitter": 0,
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/QZDp8zzXUhtra4FrhbF2",
-      "prompt": "One natural handheld paper party popper. A satisfying rounded cork-like pop immediately followed by a soft short puff of air and delicate falling paper rustle. Warm, playful and dry, close microphone. Total duration 0.6 seconds. No firework crackling, no explosion boom, no metallic sounds, no coins, no bells, no music or voices.",
       "takes": [
         {
           "file": "web/assets/audio/win-paper-pop.ogg",
@@ -62,8 +55,6 @@
       "volume_db": -13.98,
       "pitch_jitter": 0,
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/6jxGdrR9AP3ZcRaHjT42",
-      "prompt": "A small handful of coins dropping into a metal cash tray, bright satisfying brief jingling clinks settling, close mic, under one second, no voices or music.",
       "takes": [
         {
           "file": "web/assets/audio/win.ogg",
@@ -95,9 +86,7 @@
           "source": "elevenlabs"
         }
       ],
-      "prompt": "Confident interface button press, warm muted pop with a short bright tick, close-mic, very short and dry",
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/hMGKofqliMqXYKlcJySn",
       "volume_db": -18.66
     },
     {
@@ -123,9 +112,7 @@
           "source": "elevenlabs"
         }
       ],
-      "prompt": "Rewarding interface confirm tap, bright metallic click with a tiny coin ring, close-mic, very short and dry",
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/hMGKofqliMqXYKlcJySn",
       "volume_db": -17.89
     },
     {
@@ -151,9 +138,7 @@
           "source": "elevenlabs"
         }
       ],
-      "prompt": "Small low-pitched interface tick, soft muted pop, close-mic, very short and dry",
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/hMGKofqliMqXYKlcJySn",
       "volume_db": -17.08
     },
     {
@@ -179,9 +164,7 @@
           "source": "elevenlabs"
         }
       ],
-      "prompt": "High bright plastic button click, sharp loud transient, close-mic, very short",
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/hMGKofqliMqXYKlcJySn",
       "volume_db": -17.08
     },
     {
@@ -207,9 +190,7 @@
           "source": "elevenlabs"
         }
       ],
-      "prompt": "Muted low double tick, two quick soft interface clicks, close-mic, dry",
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/hMGKofqliMqXYKlcJySn",
       "volume_db": -16.25
     },
     {
@@ -240,9 +221,7 @@
           "source": "elevenlabs"
         }
       ],
-      "prompt": "Bright crisp double tick, two quick interface clicks rising, close-mic, dry",
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/hMGKofqliMqXYKlcJySn",
       "volume_db": -16.25
     },
     {
@@ -268,9 +247,7 @@
           "source": "elevenlabs"
         }
       ],
-      "prompt": "Poker chip tapped once on a table, sharp bright transient, loud and close, very short",
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/hMGKofqliMqXYKlcJySn",
       "volume_db": -23.6
     },
     {
@@ -296,9 +273,7 @@
           "source": "elevenlabs"
         }
       ],
-      "prompt": "Small toggle switch flick, tiny mechanical click, close-mic, dry",
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/hMGKofqliMqXYKlcJySn",
       "volume_db": -17.05
     },
     {
@@ -324,9 +299,7 @@
           "source": "elevenlabs"
         }
       ],
-      "prompt": "Soft woody tap opening a small panel, muted interface click with a short tail, close-mic, dry",
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/hMGKofqliMqXYKlcJySn",
       "volume_db": null
     },
     {
@@ -352,9 +325,7 @@
           "source": "elevenlabs"
         }
       ],
-      "prompt": "Brief two-note interface chime, warm rounded plucked tones rising gently, dry, no music",
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/hMGKofqliMqXYKlcJySn",
       "volume_db": -21.47
     },
     {
@@ -363,7 +334,8 @@
       "trigger": "Easy, Normal, Hard or Expert is pressed in the tabbed betting panel.",
       "fallback": "click",
       "pitch_jitter": 0,
-      "takes": []
+      "takes": [],
+      "volume_db": null
     },
     {
       "id": "header_click",
@@ -371,27 +343,31 @@
       "trigger": "Back, avatar/account or menu is pressed in the header.",
       "fallback": "click",
       "pitch_jitter": 0,
-      "takes": []
+      "takes": [],
+      "volume_db": null
     },
     {
       "id": "big_win",
       "label": "Big win · BIG WIN",
       "trigger": "The big-win window opens on BIG WIN.",
-      "volume_db": -6.0,
+      "volume_db": -6,
       "pitch_jitter": 0,
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
-      "prompt": "A short bright Haitian kompa win sting: a quick sparkling kompa guitar lick and a punchy brass stab over a cowbell and shaker, landing on a happy major chord. Clean, joyful, about one and a half seconds. Guitar, brass and percussion only: no bamboo trumpets, no flutes, no animals, no voices.",
       "takes": [
         {
           "file": "web/assets/audio/big_win_0.ogg",
-          "enabled": true,
+          "enabled": false,
           "source": "elevenlabs"
         },
         {
           "file": "web/assets/audio/big_win_1.ogg",
           "enabled": false,
           "source": "elevenlabs"
+        },
+        {
+          "file": "web/assets/audio/uploads/big_win-18cd5ec9b59156bd.wav",
+          "enabled": true,
+          "source": "upload:big_win_new.wav"
         }
       ]
     },
@@ -399,11 +375,9 @@
       "id": "mega_win",
       "label": "Big win · MEGA WIN",
       "trigger": "The big-win window climbs to MEGA WIN.",
-      "volume_db": -5.0,
+      "volume_db": -5,
       "pitch_jitter": 0,
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
-      "prompt": "A three second festive Haitian kompa celebration: a bright kompa guitar riff and punchy brass stabs over tanbou drums and a gwiro scraper, a tap-tap bus horn honking along in rhythm, ending on a cheerful brass hit. Joyful street party. Instruments only: no animals, no animal sounds, no voices, no singing.",
       "takes": [
         {
           "file": "web/assets/audio/mega_win_0.ogg",
@@ -421,11 +395,9 @@
       "id": "epic_win",
       "label": "Big win · EPIC WIN",
       "trigger": "The big-win window climbs to EPIC WIN: the kompa band's final hit with coin showers layered after it.",
-      "volume_db": -4.0,
+      "volume_db": -4,
       "pitch_jitter": 0,
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
-      "prompt": "A four second Haitian kompa jackpot finale: a full kompa band with bright guitars, a big brass section and timbales plays a rising triumphant phrase, a fast timbale roll builds up and the whole band hits a huge final chord with a crash cymbal, followed by a shower of gold coins. Joyful and grand. Guitar, brass, drums and coins only: no bamboo trumpets, no flutes, no whistles, no animals, no voices.",
       "takes": [
         {
           "file": "web/assets/audio/epic_win_0.ogg",
@@ -443,11 +415,9 @@
       "id": "big_win_count",
       "label": "Big win · count",
       "trigger": "The amount counting up in the big-win window, about ten times a second.",
-      "volume_db": -16.0,
+      "volume_db": -16,
       "pitch_jitter": 0.05,
       "generator": "ElevenLabs eleven_text_to_sound_v2",
-      "flow_url": "https://elevenlabs.io/app/flows/mRvnVOKON1Luw2cObnVw",
-      "prompt": "One tiny soft bright coin tick, a single short metallic click like a gold coin counter, crisp and gentle, extremely short, dry, no reverb, no music",
       "takes": [
         {
           "file": "web/assets/audio/big_win_count_0.ogg",

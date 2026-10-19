@@ -1,6 +1,9 @@
 {
   "version": 1,
   "entries": {
+    "prize_f904b1": {
+      "ht": "PRIM"
+    },
     "medium_d40496": {
       "en": "Medium",
       "fr": "Moyen",
@@ -8,6 +11,9 @@
     },
     "bet_panels_21dcde": {
       "ht": "Tablo miz yo"
+    },
+    "multiplier_b94c55": {
+      "ht": "BARÈM"
     },
     "candy_0c68cbc0d9eb": {
       "ht": "GWO KOU"
@@ -28,7 +34,8 @@
       "ht": "BÈL LAJAN"
     },
     "road_rules_document": {
-      "ht": "Ede kabrit la Janbe wout la yon liy alafwa. Chak liy ou janbe ogmante miltiplikatè a.\n\nPeze **CASH OUT** nan nenpòt liy pou pran gany miz ou a dapre miltiplikatè aktyèl la.\n\nGen machin k ap pase sou kèk liy. Si w frape ak youn, pati a fini san ou pa genyen anyen.\n\nChwazi Fasil, Mwayen oswa Difisil. Plis nivo a difisil, se plis risk la ak rekonpans lan ogmante. Endikatè risk la montre posiblite pou w echwe nan pwochen pa a. Nan mòd API a, li parèt sèlman lè sèvè a bay enfòmasyon sa a."
+      "fr": "Guidez Loulou sur la route, une voie à la fois. Chaque voie franchie augmente le multiplicateur.\n\nAppuyez sur **CASH OUT** à n’importe quelle voie pour encaisser votre mise au multiplicateur actuel.\n\nDes véhicules circulent sur certaines voies. Si vous en heurtez un, la manche se termine sans gain.\n\nChoisissez Facile, Moyen ou Difficile. Une difficulté plus élevée augmente le risque et le gain. La jauge indique la probabilité d’échec du prochain pas ; en mode API, elle apparaît lorsque le serveur fournit cette probabilité.",
+      "ht": "Ede Loulou Janbe wout la yon liy alafwa. Chak liy ou janbe ogmante miltiplikatè a.\n\nPeze **CASH OUT** nan nenpòt liy pou pran gany miz ou a dapre miltiplikatè aktyèl la.\n\nGen machin k ap pase sou kèk liy. Si w frape ak youn, pati a fini san ou pa genyen anyen.\n\nChwazi Fasil, Mwayen oswa Difisil. Plis nivo a difisil, se plis risk la ak rekonpans lan ogmante. Endikatè risk la montre posiblite pou w echwe nan pwochen pa a. Nan mòd API a, li parèt sèlman lè sèvè a bay enfòmasyon sa a."
     },
     "this_session_48c2a1": {
       "ht": "Sesyon sa "
