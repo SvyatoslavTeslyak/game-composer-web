@@ -42,6 +42,11 @@ const pick=name=>PAIRED.test(name)?name.replace(PAIRED,webp?'.webp':'.png'):name
 const webpProbe=new Promise(resolve=>{const probe=new Image();probe.onload=probe.onerror=()=>resolve(probe.width===1);probe.src='data:image/webp;base64,UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA=='});
 webpProbe.then(decodes=>{if(decodes===webp)return;webp=decodes;document.querySelectorAll('.crash-ui img[data-pair]').forEach(img=>{img.src=base+img.dataset.pair.replace(/^(.*)\.(webp|png)$/,'$1'+(webp?'.webp':'.png'))+version});document.querySelectorAll('.crash-ui').forEach(host=>host.classList.toggle('no-webp',!webp))});
 const icon=(name)=>'<img class="icon" alt="" src="'+base+'assets/icons/'+pick(name)+(name==='play.svg'?'?v=ink-5':version)+'"'+(PAIRED.test(name)?' data-pair="assets/icons/'+name+'"':'')+'>';
+// The notices' marks are fetched while the game is still online and kept as local copies: the
+// "No connection" notice shows exactly when the network is gone, and its mark would not load.
+const NOTICE_MARKS={};
+webpProbe.then(()=>{for(const kind of ['funds','offline','error']){const name='notice-'+kind+'.webp';fetch(base+'assets/icons/'+pick(name)+version).then(r=>r.ok?r.blob():null).then(b=>{if(b)NOTICE_MARKS[name]=URL.createObjectURL(b)}).catch(()=>{})}});
+const noticeMark=name=>NOTICE_MARKS[name]?'<img class="icon" alt="" src="'+NOTICE_MARKS[name]+'">':icon(name);
 // Discrete steps, never interpolation: the stake is the panel's largest figure while it is
 // short, and gives that up one step at a time as the amount grows.
 // The tabbed shell's top-right button opens the sound switches, so it is a speaker.
@@ -882,7 +887,7 @@ class GameUI {
    const notice=NOTICES[this.noticeKind]||NOTICES.error,deposit=notice.intent==='deposit'&&s.canDeposit!==false;
    // The mark, the one line, the one button: read top to bottom without a heading bar.
    body.innerHTML='<div class="notice">'
-    +'<span class="notice-mark" aria-hidden="true">'+icon('notice-'+(notice.mark||this.noticeKind||'error')+'.webp')+'</span>'
+    +'<span class="notice-mark" aria-hidden="true">'+noticeMark('notice-'+(notice.mark||this.noticeKind||'error')+'.webp')+'</span>'
     +'<h3 class="notice-title">'+esc(notice.title)+'</h3>'
     +'<p class="notice-text">'+esc(notice.text)+'</p>'
     +'<div class="notice-actions">'+button('notice',esc(notice.cta)+(notice.intent==='deposit'?LEAVE_ARROW_SVG:''),'primary-button')
