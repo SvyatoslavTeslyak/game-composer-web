@@ -13,13 +13,12 @@ if(!host||typeof window.fetch!=='function')return;
 const native=window.fetch.bind(window);
 const KIT_MANIFEST=/\/crash-ui\/assets\/audio\/sounds\.json$/,MANIFEST=/\/audio\/sounds\.json$/;
 
-// The kit's panel plays its sounds by file name from its own folder, so an event whose chosen
-// sound is a file added in Composer keeps the sound it was built with; everything else follows
-// the draft.
-function kitManifest(built,draft){
- const shipped=new Map((built.events||[]).map(e=>[e.id,e]));
- const added=e=>(e.takes||[]).some(t=>t.media&&t.enabled!==false);
- return {...draft,events:(draft.events||[]).map(e=>added(e)&&shipped.has(e.id)?shipped.get(e.id):e)};
+// The kit's panel loads a take by its path under the audio folder, or by an address as it is: a
+// sound the team added is handed to it as its address in the composer-audio bucket, so the preview
+// plays the added sound itself; everything else follows the draft.
+function kitManifest(draft){
+ const at=t=>t.media?{...t,file:host.mediaUrl(t.media)}:t;
+ return {...draft,events:(draft.events||[]).map(e=>({...e,takes:(e.takes||[]).map(at)}))};
 }
 
 window.fetch=async function(input,options){
@@ -31,7 +30,7 @@ window.fetch=async function(input,options){
  try{
   const draft=await host.manifest(kit?'kit':'game');
   if(!draft)return built;
-  const manifest=kit?kitManifest(await built.clone().json(),draft):draft;
+  const manifest=kit?kitManifest(draft):draft;
   return new Response(JSON.stringify(manifest),{status:200,headers:{'Content-Type':'application/json'}});
  }catch(error){
   console.warn('Composer: the sound draft was not applied to the preview.',error);

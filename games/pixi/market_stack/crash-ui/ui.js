@@ -130,7 +130,7 @@ class BettingSound {
  pool(file,volume){
   const have=this.pools[file];
   if(have)return have
-  return this.pools[file]=Array.from({length:3},()=>{const clip=new Audio(/^https?:/.test(file)?file:base+'assets/audio/'+file);clip.preload='auto';clip.preservesPitch=false;clip.volume=Number.isFinite(volume)?volume:0.14;return clip});
+  return this.pools[file]=Array.from({length:3},()=>{const clip=new Audio(/^(https?|blob|data):/.test(file)?file:base+'assets/audio/'+file);clip.preload='auto';clip.preservesPitch=false;clip.volume=Number.isFinite(volume)?volume:0.14;return clip});
  }
  // Games differ in when cashing out becomes possible: after the first hop in Goat Road, at
  // once in Big Haul. When it arrives on the press itself the chime would only double the
@@ -182,7 +182,7 @@ class BettingSound {
 }
 // Confetti announces the popup; coin clinks belong only to the wallet transfer.
 class WinSound {
- constructor(){this.clip=new Audio(base+'assets/audio/win-paper-pop.ogg');this.clip.preload='auto';this.clip.volume=0.44;this.transferClip=new Audio(base+'assets/audio/win.ogg');this.transferClip.preload='auto';this.transferClip.volume=0.20;this.enabled=false;this.active=false;this.jitter={};this.clip.preservesPitch=false;soundLevels.then(plan=>{const pick=(id,clip,fallback)=>{const spec=plan[id];if(!spec)return;if(spec.file&&spec.file!==fallback)clip.src=base+'assets/audio/'+spec.file;if(Number.isFinite(spec.volume))clip.volume=spec.volume;this.jitter[id]=spec.jitter||0};pick('win',this.clip,'win-paper-pop.ogg');pick('win_transfer',this.transferClip,'win.ogg')})}
+ constructor(){this.clip=new Audio(base+'assets/audio/win-paper-pop.ogg');this.clip.preload='auto';this.clip.volume=0.44;this.transferClip=new Audio(base+'assets/audio/win.ogg');this.transferClip.preload='auto';this.transferClip.volume=0.20;this.enabled=false;this.active=false;this.jitter={};this.clip.preservesPitch=false;soundLevels.then(plan=>{const pick=(id,clip,fallback)=>{const spec=plan[id];if(!spec)return;if(spec.file&&spec.file!==fallback)clip.src=/^(https?|blob|data):/.test(spec.file)?spec.file:base+'assets/audio/'+spec.file;if(Number.isFinite(spec.volume))clip.volume=spec.volume;this.jitter[id]=spec.jitter||0};pick('win',this.clip,'win-paper-pop.ogg');pick('win_transfer',this.transferClip,'win.ogg')})}
  // This runs on every published state, many times a second: it must not touch the clips
  // unless something has actually changed, or the phone spends the round in the audio session.
  update(state){this.enabled=state.settings?.sound===true;if(!this.enabled){if(!this.clip.paused)this.clip.pause();if(!this.transferClip.paused)this.transferClip.pause()}const active=!!state.win;if(state.winToast&&!this.clip.paused)this.clip.pause();if(!state.winToast&&this.game===state.game&&active&&(!this.active||(state.winId!==undefined&&state.winId!==this.winId)))this.play();this.game=state.game;this.active=active;this.winId=state.winId}
@@ -195,6 +195,10 @@ class WinSound {
 // Each panel event resolves to the take it owns, or to the take its fallback owns, so a
 // brand-new event sounds like the base one until somebody records it. Levels come from the
 // same manifest; the built-in ones apply until it loads.
+// A take's file as the panel loads it: an address as it is (Composer's preview gives a sound the
+// team added as one), else its path under the audio folder, sub-folders kept: a sound added in
+// Composer ships in uploads/, and taking only its name looked for it beside the others and failed.
+const audioFile=file=>/^(https?|blob|data):/.test(file)?file:String(file).replace(/^(?:web\/)?(?:assets\/)?audio\//,'');
 function soundPlan(manifest){
  const events=Object.fromEntries((manifest.events||[]).map(e=>[e.id,e]));
  const take=e=>(e&&(e.takes||[]).find(t=>t.enabled!==false))||null;
@@ -205,7 +209,7 @@ function soundPlan(manifest){
  for(const e of manifest.events||[]){
   let own=e,hops=0,found=take(e);
   while(!found&&own&&own.fallback&&hops++<4){own=events[own.fallback];found=take(own)}
-  plan[e.id]={file:found?found.file.split('/').pop():null,volume:found?(inherited(e)??1):0,jitter:Math.min(0.3,Math.max(0,Number(e.pitch_jitter)||0))};
+  plan[e.id]={file:found?audioFile(found.file):null,volume:found?(inherited(e)??1):0,jitter:Math.min(0.3,Math.max(0,Number(e.pitch_jitter)||0))};
  }
  return plan;
 }
