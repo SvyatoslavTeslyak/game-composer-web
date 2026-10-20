@@ -769,6 +769,21 @@
 /* The balance belongs to the same family as the buttons on either side of it: one face, one
    depth, gold kept for the level. */
 .crash-ui.has-tabbed-controls .profile>.balance{min-height:var(--tap-min);background:linear-gradient(var(--button-top),var(--button-bottom));border:var(--stroke-1) solid color-mix(in srgb,var(--button-edge) calc(var(--alpha-strong) * 100%),transparent);box-shadow:inset 0 0 0 var(--stroke-2) color-mix(in srgb,var(--button-edge) calc(var(--alpha-faint) * 100%),transparent),0 var(--web-control-depth) 0 var(--button-side);transition:transform var(--motion-fast-ms),box-shadow var(--motion-fast-ms)}
+/* Until a game turns config.balanceTopUp on, the balance leads nowhere, so it is a read-out
+   rather than a button, and it is drawn pressed into the header where the buttons stand out of
+   it: darker at the top, with the rim's shadow falling inside its top edge. Nothing gives under
+   a finger. */
+.crash-ui .profile>div.balance{cursor:default}
+/* The buttons beside it stand on a side as deep as --web-control-depth; the recess reaches down to
+   that same ground, so the header is one even band, its top level with the buttons' faces. */
+.crash-ui.has-tabbed-controls .profile:has(>div.balance)>*{align-self:start}
+.crash-ui.has-tabbed-controls .profile>div.balance{
+ min-height:calc(var(--tap-min) + var(--web-control-depth));
+ background:linear-gradient(color-mix(in srgb,var(--surface-inset) 55%,var(--shadow)),var(--surface-inset));
+ border-color:color-mix(in srgb,var(--shadow) calc(var(--alpha-strong) * 100%),transparent);
+ box-shadow:inset 0 var(--space-4) var(--space-8) color-mix(in srgb,var(--shadow) calc(var(--alpha-strong) * 100%),transparent),
+  inset 0 var(--stroke-2) var(--stroke-2) color-mix(in srgb,var(--shadow) calc(var(--alpha-strong) * 100%),transparent);
+ transition:none}
 /* A pixel wider than tall: enough to sit evenly between the pills without reading as an oval. */
 .crash-ui.has-tabbed-controls .profile>.icon-button{width:calc(var(--tap-min) + var(--stroke-1));min-width:calc(var(--tap-min) + var(--stroke-1));height:var(--tap-min);aspect-ratio:auto;border-radius:var(--radius-pill)}
 .crash-ui.has-tabbed-controls .profile>.icon-button:active,.crash-ui.has-tabbed-controls .profile>.identity:active{transform:translateY(var(--web-control-depth))}
@@ -1077,7 +1092,9 @@
 
 .crash-ui.has-menu-drawer .drawer-tab-label{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;min-width:0}
 
-.crash-ui .history .history-result{display:inline-flex;align-items:center;gap:var(--space-6);flex-shrink:0;font-family:var(--font-numbers),var(--font-body),sans-serif}.crash-ui .history .history-result.is-cashout .history-result-icon{color:var(--success)}.crash-ui .history .history-result.is-loss .history-result-icon{color:var(--danger)}.crash-ui .history-result-icon{font-family:var(--font-body),sans-serif;font-size:.85em}.crash-ui button.history-result:hover{filter:brightness(1.12)}
+/* The mark and the figure read as one: a small gap between them, more air at the round ends. */.crash-ui .history .history-result{display:inline-flex;align-items:center;gap:var(--space-4);padding:0 var(--space-12);flex-shrink:0;font-family:var(--font-numbers),var(--font-body),sans-serif}.crash-ui .history .history-result.is-cashout .history-result-icon{color:var(--success)}.crash-ui .history .history-result.is-loss .history-result-icon{color:var(--danger)}/* One drawn mark for both results, the same box and stroke: font glyphs drew the cross larger
+   and thinner than the check. The open check is drawn larger than the dense cross so the two
+   weigh the same, and both end at the same edge, the same way from the figure. */.crash-ui .history-result-icon{flex:none;width:var(--space-16);height:var(--space-16)}.crash-ui button.history-result:hover{filter:brightness(1.12)}
 
 /* The cash-out toast: a small pill that pops in under the HUD with a burst of splashes and
    pops out again. The pill is a card inside a transparent wrapper, so the gold bloom behind it
@@ -1217,51 +1234,13 @@
 @media(prefers-reduced-motion:reduce){.crash-ui .action.is-urgent{animation:none}}
 /* A press the game makes for the player looks the same as one a finger makes. */
 .crash-ui .action.is-pressed{transform:translateY(var(--web-button-depth));box-shadow:inset 0 0 0 var(--stroke-3) color-mix(in srgb,var(--button-edge) calc(var(--alpha-faint) * 100%),transparent),0 var(--stroke-1) 0 var(--button-shadow)}
-/* Optional multiplier-only cashout editor beside PLAY. */
-.crash-ui .tabbed-controls.has-auto-cashout .difficulty-row.with-auto{grid-template-columns:1fr}
-.crash-ui .tabbed-controls.has-auto-cashout .difficulty-row [data-action=auto]{display:none}
-.crash-ui .tabbed-controls.has-auto-cashout .bet-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--space-12)}
-.crash-ui .tabbed-controls.has-auto-cashout .bet-grid>.wager{grid-column:1/-1;grid-row:1}
-.crash-ui .tabbed-controls.has-auto-cashout .bet-grid>.actions{grid-column:2;grid-row:2}
-.crash-ui .auto-cashout-panel{grid-column:1;grid-row:2;min-width:0;display:grid;gap:var(--space-8);padding:var(--space-12);border:var(--stroke-1) solid var(--border);border-radius:var(--radius-24);background:var(--surface-inset)}
-.crash-ui .auto-cashout-panel[hidden]{display:none}
-.crash-ui .auto-cashout-toggle{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:0;min-height:var(--space-32);background:none;border:0;color:var(--text);font:inherit;font-size:var(--type-12);text-align:left;cursor:pointer}
-.crash-ui .ac-switch{position:relative;flex:none;box-sizing:border-box;width:calc(2 * var(--space-24) + var(--space-8));height:calc(var(--space-24) + var(--space-8));border-radius:calc(var(--radius-8) + var(--space-4));background:var(--surface-inset);box-shadow:inset 0 0 0 var(--stroke-1) var(--switch-border);transition:background var(--motion-ms) ease}
-.crash-ui .ac-switch .knob{position:absolute;top:var(--space-4);left:var(--space-4);width:var(--space-24);height:var(--space-24);border-radius:var(--radius-8);background:var(--knob);box-shadow:0 var(--stroke-1) var(--stroke-2) var(--button-side);transition:left var(--motion-ms) ease}
-.crash-ui .auto-cashout-toggle[aria-checked=true] .knob{left:calc(100% - var(--space-24) - var(--space-4))}
-.crash-ui.reduced .ac-switch,.crash-ui.reduced .ac-switch .knob{transition:none}
-.crash-ui .auto-cashout-toggle[aria-pressed=true] .ac-switch{background:var(--switch-on)}
-.crash-ui .ac-presets{display:flex;gap:var(--space-4)}
-.crash-ui .ac-presets button{flex:1;min-width:0;min-height:var(--tap-min);padding:var(--space-2);border:var(--stroke-1) solid var(--border);border-radius:var(--radius-8);background:var(--surface);color:var(--text-muted);font:inherit;font-size:var(--type-12);cursor:pointer}
-.crash-ui .ac-presets button[aria-pressed=true]{color:var(--action-go);border-color:var(--action-go)}
-.crash-ui .auto-cashout-panel :disabled{opacity:.5;cursor:default}
-@media(min-width:960px){
- .crash-ui .tabbed-controls.has-auto-cashout .tabbed-main{grid-template-columns:minmax(0,1.1fr) minmax(0,.65fr) minmax(0,1fr)}
- .crash-ui .tabbed-controls.has-auto-cashout .bet-grid{display:contents}
- .crash-ui .tabbed-controls.has-auto-cashout .difficulty-row{grid-column:1;grid-row:1}
- .crash-ui .tabbed-controls.has-auto-cashout .bet-grid>.wager{grid-column:1;grid-row:2}
- .crash-ui .tabbed-controls.has-auto-cashout .auto-cashout-panel{grid-column:2;grid-row:1/3}
- .crash-ui .tabbed-controls.has-auto-cashout .bet-grid>.actions{grid-column:3;grid-row:1/3}
-}
-
-.crash-ui .auto-cashout-panel{align-content:center;padding:var(--space-8);gap:var(--space-8)}
-.crash-ui .auto-cashout-panel .ac-presets .button{min-height:calc(var(--space-32) + var(--space-4));padding:var(--space-2);border-radius:var(--radius-8);font-size:var(--type-12);background:linear-gradient(var(--button-top),var(--button-bottom));box-shadow:inset 0 0 0 var(--stroke-1) var(--button-edge),0 var(--stroke-2) 0 var(--button-side)}
-.crash-ui .auto-cashout-panel .ac-presets .button[aria-pressed=true]{background:color-mix(in srgb,var(--action-go) 14%,var(--surface));box-shadow:inset 0 0 0 var(--stroke-1) var(--action-go)}
-.crash-ui .ac-sheet-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-8);margin-block:var(--space-16)}
-.crash-ui .ac-sheet-presets .button[aria-pressed=true]{color:var(--action-go);border-color:var(--action-go)}
-
-@media(min-width:960px){
- .crash-ui .tabbed-controls.has-auto-cashout:has(.difficulty-row[hidden]) .tabbed-main{grid-template-rows:auto;align-items:center}
- .crash-ui .tabbed-controls.has-auto-cashout:has(.difficulty-row[hidden]) .bet-grid>.wager,
- .crash-ui .tabbed-controls.has-auto-cashout:has(.difficulty-row[hidden]) .auto-cashout-panel,
- .crash-ui .tabbed-controls.has-auto-cashout:has(.difficulty-row[hidden]) .bet-grid>.actions{grid-row:1}
-}
 
 /* MIN, −, the stake, +, MAX: the stake is a button that opens the sheet of ready amounts. */
 .crash-ui .tabbed-controls .wager-amount.stake-pick{display:flex;align-items:center;justify-content:center;gap:var(--space-6);min-height:var(--control-h);border:0;border-radius:var(--radius-16);background:transparent;color:var(--text);font:inherit;cursor:pointer}
 .crash-ui .tabbed-controls .wager-amount.stake-pick:hover:not(:disabled){background:var(--surface-hover-soft)}
 .crash-ui .tabbed-controls .wager-amount.stake-pick:disabled{cursor:default;opacity:.6}
 .crash-ui .tabbed-controls .wager-amount.stake-pick .chevron{opacity:.6}
+.crash-ui .tabbed-controls .wager-amount.stake-pick.is-tight .chevron{display:none}
 .crash-ui .stake-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-8)}
 .crash-ui .stake-grid .button{min-height:var(--web-control-comfort-height);font-size:var(--type-20);font-weight:800;border-radius:var(--radius-16)}
 .crash-ui .stake-grid .button.on{color:var(--on-go);border:var(--stroke-1) solid var(--action-go-edge);background:linear-gradient(var(--action-go-top),var(--action-go-bottom))}
@@ -1310,11 +1289,6 @@
 /* The bet panel's sections - the choice row, the stake, the action row, the tabs - stand 12px
    apart, in every game and at every width. Only the vertical gap: a desktop's columns keep theirs. */
 .crash-ui .controls.tabbed-controls,.crash-ui .tabbed-controls .tabbed-main,.crash-ui .tabbed-controls .bet-grid{row-gap:var(--space-12)}
-/* AUTO CASHOUT stands as tall as the action row beside it (80px), so the panel keeps its
-   12px between sections: a tighter switch row and presets. */
-.crash-ui .tabbed-controls .auto-cashout-panel{height:calc(var(--web-control-action-height) + var(--space-8));align-content:space-between;align-self:center;padding:var(--space-6) var(--space-8);gap:var(--space-4)}
-.crash-ui .tabbed-controls .auto-cashout-panel .auto-cashout-toggle{min-height:calc(var(--space-24) + var(--space-8))}
-.crash-ui .tabbed-controls .auto-cashout-panel .ac-presets .button{min-height:var(--space-32)}
 
 /* Wide screens: the panel's rows stand taller. The choice row and the stake are one height,
    the steppers stay square at it, and the action row fills the whole height of the two rows
@@ -1342,14 +1316,6 @@
  .crash-ui .tabbed-controls:not(:has(.difficulty-row:not([hidden]))) .tabbed-main{grid-template-rows:auto}
  .crash-ui .tabbed-controls:not(:has(.difficulty-row:not([hidden]))) .bet-grid>.wager{grid-row:1;align-self:center}
  .crash-ui .tabbed-controls:not(:has(.difficulty-row:not([hidden]))) .bet-grid>.actions{grid-row:1}
-}
-/* Sky Tap Tap on a wide screen: the stake, AUTO CASHOUT and PLAY stand in one row at one height,
-   AUTO CASHOUT's presets as tall as buttons beside the taller stake. */
-@media(min-width:__CRASH_LAPTOP_BREAKPOINT__px){
- .crash-ui .tabbed-controls.has-auto-cashout .auto-cashout-panel{height:auto;align-self:stretch;align-content:center;padding:var(--space-8);gap:var(--space-8)}
- .crash-ui .tabbed-controls.has-auto-cashout .auto-cashout-panel .ac-presets .button{min-height:var(--space-40)}
- .crash-ui .tabbed-controls.has-auto-cashout .tabbed-main .bet-grid>.wager{align-self:stretch;align-content:center}
- .crash-ui .tabbed-controls.has-auto-cashout .bet-grid>.actions{align-self:stretch}
 }
 /* A rules document's pictures and the game's blocks (a pay table and the like) sit in its flow. */
 .rules-content .rules-figure{margin:var(--space-16) 0}
