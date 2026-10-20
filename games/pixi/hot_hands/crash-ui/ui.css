@@ -1092,7 +1092,7 @@
 
 .crash-ui.has-menu-drawer .drawer-tab-label{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;min-width:0}
 
-.crash-ui .history .history-result{display:inline-flex;align-items:center;gap:var(--space-6);flex-shrink:0;font-family:var(--font-numbers),var(--font-body),sans-serif}.crash-ui .history .history-result.is-cashout .history-result-icon{color:var(--success)}.crash-ui .history .history-result.is-loss .history-result-icon{color:var(--danger)}.crash-ui .history-result-icon{font-family:var(--font-body),sans-serif;font-size:.85em}.crash-ui button.history-result:hover{filter:brightness(1.12)}
+/* The mark and the figure read as one: a small gap between them, more air at the round ends. */.crash-ui .history .history-result{display:inline-flex;align-items:center;gap:var(--space-4);padding:0 var(--space-12);flex-shrink:0;font-family:var(--font-numbers),var(--font-body),sans-serif}.crash-ui .history .history-result.is-cashout .history-result-icon{color:var(--success)}.crash-ui .history .history-result.is-loss .history-result-icon{color:var(--danger)}.crash-ui .history-result-icon{font-family:var(--font-body),sans-serif;font-size:var(--type-16);line-height:var(--leading-none);transform:translateY(calc(-1 * var(--stroke-1)))}.crash-ui button.history-result:hover{filter:brightness(1.12)}
 
 /* The cash-out toast: a small pill that pops in under the HUD with a burst of splashes and
    pops out again. The pill is a card inside a transparent wrapper, so the gold bloom behind it

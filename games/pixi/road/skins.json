@@ -17,12 +17,13 @@
       ]
     },
     {
-      "title": "The hero: three sheets, same behaviour",
+      "title": "The hero: four sheets, same behaviour",
       "lines": [
-        "The hero always does the same things: it stands (Idle), hops to the next lane (Jump) and lands (Landing). The three sheets are replaced together, so the hero never changes mid-hop.",
+        "The hero always does the same things: it stands (Idle), hops to the next lane (Jump), lands (Landing) and looks up the road at the cars coming down (Look up). The four sheets are replaced together, so the hero never changes mid-hop or mid-turn.",
         "It is made in SpriteCook, in two steps. First generate the hero as one still picture (detailed art, model gemini-3.1-flash-image, transparent background), side view facing right, the whole body in the picture. Fix small mistakes with an edit before going on.",
-        "Then animate that still in SpriteCook twice: Idle from the still itself (detailed, 12 frames, WebP), and the jump from a copy with room around the hero (Make the padded copy, in the Hero section) with model pixel-engine-v1.5, which keeps the head in profile. The one jump animation makes both Jump and Landing.",
-        "Upload the two animated WebPs in the Hero section. Composer cuts them into the sheets the game plays: Idle as a 4 × 3 grid of 256 × 256 px frames; from the jump, the three poses in the air as Jump and four touchdown poses as Landing, 2 × 2 grids of 400 × 400 px frames, scaled to stand exactly where the idle stands. Check the picked jump frames and change them if the clip moves differently.",
+        "Then animate that still in SpriteCook three times: Idle from the still itself (detailed, 12 frames, WebP), and the jump and the look up from a copy with room around the hero (Make the padded copy, in the Hero section) with model pixel-engine-v1.5. The one jump animation makes both Jump and Landing.",
+        "Upload the three animated WebPs in the Hero section. Composer cuts them into the sheets the game plays: Idle as a 4 × 3 grid of 256 × 256 px frames; from the jump, the three poses in the air as Jump and four touchdown poses as Landing, 2 × 2 grids of 400 × 400 px frames; from the look, the five frames of the turn as Look up, a 3 × 2 grid of 400 × 400 px frames; all scaled to stand exactly where the idle stands. Check the picked frames and change them if a clip moves differently.",
+        "Look up must start in the idle's pose and end with the head turned all the way: the game plays its frames forward to turn the head, holds the last while the hero watches, and plays them back to face on again.",
         "Idle plays over and over while the hero waits, so its last frame must flow back into its first.",
         "Before saving, play the clips next to each other: the face, the ears and the body must not change between frames, and the jump must not turn the head toward the viewer. A hop lasts a fifth of a second, so any jump in shape between frames reads as a glitch.",
         "A sheet can still be uploaded by itself: a grid of square frames as listed under each picture, the hero horizontally centred in each cell with the feet on the same line near the bottom edge.",
@@ -58,16 +59,16 @@
       "together": true,
       "clips": {
         "tool": "SpriteCook",
-        "about": "The hero is made in SpriteCook in two steps: first one still picture of the character, then two animations made from that still, the idle and the jump. Upload them here and Composer cuts them into the three sheets the game plays; the one jump animation makes both Jump and Landing.",
+        "about": "The hero is made in SpriteCook in two steps: first one still picture of the character, then three animations made from that still: the idle, the jump and the look up the road. Upload them here and Composer cuts them into the four sheets the game plays; the one jump animation makes both Jump and Landing.",
         "still": {
           "title": "1. The hero, still",
           "prompt": "Full-body game character, side view facing right, standing calmly on all four legs: [a lanky Haitian street dog (chen peyi) with spotted tan fur, big round eyes, a goofy grin and a Haitian-flag bandana]. The whole body in the picture from the ears to the paws and the tail, nothing cropped, centred, the feet at the bottom. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. Transparent background, no ground shadow, no text.",
           "settings": "In SpriteCook, generate a still: detailed art (not pixel), model gemini-3.1-flash-image, square 1:1, transparent background, smart crop on. Pick the variation that is clearly side-on, then remove anything extra (a second tongue, a stray paw) with an edit before animating."
         },
         "padded": {
-          "title": "2. A copy with room to jump",
+          "title": "2. A copy with room to move",
           "share": 0.64,
-          "about": "A jump animated from the tight still loses the ears and the tail at the frame edge. Make a copy with the hero at 64% of a 1024 × 1024 canvas here, upload it to SpriteCook and animate the jump from that copy."
+          "about": "A jump or a head turn animated from the tight still loses the ears and the tail at the frame edge. Make a copy with the hero at 64% of a 1024 × 1024 canvas here, upload it to SpriteCook and animate the jump and the look up from that copy."
         },
         "list": [
           {
@@ -107,6 +108,29 @@
                   11
                 ],
                 "about": "Front paws down to standing, played on the ground after it."
+              }
+            ]
+          },
+          {
+            "id": "look",
+            "title": "5. Look up",
+            "frames": 12,
+            "from": "padded",
+            "match": "idle",
+            "prompt": "A look up the road: [the head and neck turn up and back over the shoulder, away from the viewer, as if watching a car coming down the road, hold that look, then turn back to the side profile]. The body, legs, paws, bandana and tail stay perfectly still with the feet planted; the character keeps its ears, face and markings and the same size in every frame.",
+            "settings": "In SpriteCook, animate the padded copy: model pixel-engine-v1.5 in detailed mode, 12 frames, output WebP, background removal Basic.",
+            "split": [
+              {
+                "slot": "hero-look-up",
+                "title": "The turn",
+                "frames": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4
+                ],
+                "about": "From the side profile to the head turned all the way; the game holds the last frame while the hero watches."
               }
             ]
           }
@@ -193,6 +217,23 @@
         "fps": 18
       },
       "prompt": "A forward bound, as if over a puddle: [a short crouch, a leap with the legs stretched out, the front paws landing first, then back to standing]. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer."
+    },
+    {
+      "id": "hero-look-up",
+      "group": "hero",
+      "title": "Look up",
+      "file": "art/goat/atlas/dog/look_up.webp",
+      "size": [
+        1200,
+        800
+      ],
+      "sheet": {
+        "columns": 3,
+        "rows": 2,
+        "frames": 5,
+        "fps": 8
+      },
+      "prompt": "A look up the road: [the head and neck turn up and back over the shoulder, away from the viewer, as if watching a car coming down the road, hold that look, then turn back to the side profile]. The body, legs, paws, bandana and tail stay perfectly still with the feet planted; the character keeps its ears, face and markings and the same size in every frame."
     },
     {
       "id": "vehicle-tap-tap",
@@ -482,6 +523,7 @@
         "hero-idle": "art/skins/numba-ghana/hero-idle-a49e112609f42521.png",
         "hero-jump": "art/skins/numba-ghana/hero-jump-58cb7d5f0fbed70e.png",
         "hero-landing": "art/skins/numba-ghana/hero-landing-47ba5f5eb1fd21a3.png",
+        "hero-look-up": "art/skins/numba-ghana/hero-look-up-2a39ca676ac8ac30.png",
         "win-rain-1": "art/skins/numba-ghana/win-rain-1-b7a0d8c43c5e89ae.png"
       }
     },
@@ -490,6 +532,7 @@
         "hero-idle": "art/skins/numba-nigeria/hero-idle-30bfafd9be8a4a87.png",
         "hero-jump": "art/skins/numba-nigeria/hero-jump-cdb3959c47695bdf.png",
         "hero-landing": "art/skins/numba-nigeria/hero-landing-14facc5ff227d651.png",
+        "hero-look-up": "art/skins/numba-nigeria/hero-look-up-1c1c25877ea3341c.png",
         "win-rain-1": "art/skins/numba-nigeria/win-rain-1-2a441e16ab24f549.png"
       }
     },
