@@ -74,8 +74,9 @@ function setTokens(payload){
  tokens={auth:payload.auth,refresh:payload.refresh,otpAuth:typeof payload.otpAuth==='string'?payload.otpAuth:'',agent:typeof payload.agent==='string'?payload.agent:''};
  return true;
 }
-// Local work: ?debugger with tokens already in this origin's storage needs no AUTH.
-if(active&&query.has('debugger')){
+// Local work: ?debugger with tokens already in this origin's storage needs no AUTH. Only on this
+// machine (localhost): a hosted game, QA or prod, always waits for the app's AUTH.
+if(active&&query.has('debugger')&&local(location.hostname)){
  try{if(setTokens({auth:localStorage.getItem('Authentication'),refresh:localStorage.getItem('Refresh'),otpAuth:localStorage.getItem('OTP-Authentication')||''}))resolveAuthorized()}catch{}
 }
 
@@ -146,7 +147,7 @@ window.CrashHost={
  set baseUrl(value){if(!query.has('baseUrl'))try{const url=new URL(value);if(url.protocol==='https:'||(url.protocol==='http:'&&local(url.hostname)))baseUrl=url.href.replace(/\/?$/,'/')}catch{}},
  /** Reviewer mode (?rm=true); the protocol defines the flag, the games do not act on it yet. */
  reviewer:flag('rm'),
- debug:query.has('debugger'),
+ debug:query.has('debugger')&&local(location.hostname),
  get authorized(){return authorized},
  get signedIn(){return !!tokens},
  /** The parent's last mute (true muted, false sound on), or null until it sends one. */
