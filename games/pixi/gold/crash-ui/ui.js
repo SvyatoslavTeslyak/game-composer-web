@@ -148,7 +148,7 @@ class BettingSound {
  pool(file,volume){
   const have=this.pools[file];
   if(have)return have
-  return this.pools[file]=Array.from({length:3},()=>{const clip=new Audio(/^(https?|blob|data):/.test(file)?file:base+'assets/audio/'+file);clip.preload='auto';clip.preservesPitch=false;clip.volume=Number.isFinite(volume)?volume:0.14;return clip});
+  return this.pools[file]=Array.from({length:3},()=>{const clip=new Audio();audioSrc(clip,file);clip.preload='auto';clip.preservesPitch=false;clip.volume=Number.isFinite(volume)?volume:0.14;return clip});
  }
  // Games differ in when cashing out becomes possible: after the first hop in Goat Road, at
  // once in Big Haul. When it arrives on the press itself the chime would only double the
@@ -200,7 +200,7 @@ class BettingSound {
 }
 // Confetti announces the popup; coin clinks belong only to the wallet transfer.
 class WinSound {
- constructor(){this.clip=new Audio(base+'assets/audio/win-paper-pop.ogg');this.clip.preload='auto';this.clip.volume=0.44;this.transferClip=new Audio(base+'assets/audio/win.ogg');this.transferClip.preload='auto';this.transferClip.volume=0.20;this.enabled=false;this.active=false;this.jitter={};this.clip.preservesPitch=false;soundLevels.then(plan=>{const pick=(id,clip,fallback)=>{const spec=plan[id];if(!spec)return;if(spec.file&&spec.file!==fallback)clip.src=/^(https?|blob|data):/.test(spec.file)?spec.file:base+'assets/audio/'+spec.file;if(Number.isFinite(spec.volume))clip.volume=spec.volume;this.jitter[id]=spec.jitter||0};pick('win',this.clip,'win-paper-pop.ogg');pick('win_transfer',this.transferClip,'win.ogg')})}
+ constructor(){this.clip=new Audio(base+'assets/audio/win-paper-pop.ogg');this.clip.preload='auto';this.clip.volume=0.44;this.transferClip=new Audio(base+'assets/audio/win.ogg');this.transferClip.preload='auto';this.transferClip.volume=0.20;this.enabled=false;this.active=false;this.jitter={};this.clip.preservesPitch=false;soundLevels.then(plan=>{const pick=(id,clip,fallback)=>{const spec=plan[id];if(!spec)return;if(spec.file&&spec.file!==fallback)audioSrc(clip,spec.file);if(Number.isFinite(spec.volume))clip.volume=spec.volume;this.jitter[id]=spec.jitter||0};pick('win',this.clip,'win-paper-pop.ogg');pick('win_transfer',this.transferClip,'win.ogg')})}
  // This runs on every published state, many times a second: it must not touch the clips
  // unless something has actually changed, or the phone spends the round in the audio session.
  update(state){this.enabled=state.settings?.sound===true;if(!this.enabled){if(!this.clip.paused)this.clip.pause();if(!this.transferClip.paused)this.transferClip.pause()}const active=!!state.win;if(state.winToast&&!this.clip.paused)this.clip.pause();if(!state.winToast&&this.game===state.game&&active&&(!this.active||(state.winId!==undefined&&state.winId!==this.winId)))this.play();this.game=state.game;this.active=active;this.winId=state.winId}
@@ -217,6 +217,18 @@ class WinSound {
 // team added as one), else its path under the audio folder, sub-folders kept: a sound added in
 // Composer ships in uploads/, and taking only its name looked for it beside the others and failed.
 const audioFile=file=>/^(https?|blob|data):/.test(file)?file:String(file).replace(/^(?:web\/)?(?:assets\/)?audio\//,'');
+// A WAV (a sound added in Composer) is turned into Opus (.ogg) and AAC (.m4a) by a game's own build
+// (tools/optimize_dist.mjs), which drops the WAV; a ready build from Composer keeps the WAV. A clip
+// asks for the format this browser plays first, the other next, and the WAV last.
+const OPUS=typeof Audio==='function'&&!!new Audio().canPlayType('audio/ogg; codecs=opus');
+const audioSrc=(clip,file)=>{
+ if(/^(https?|blob|data):/.test(file)){clip.src=file;return}
+ const url=base+'assets/audio/'+file;
+ if(!/\.wav$/i.test(file)){clip.src=url;return}
+ const tries=[url.replace(/\.wav$/i,OPUS?'.ogg':'.m4a'),url.replace(/\.wav$/i,OPUS?'.m4a':'.ogg'),url];let at=0;
+ const next=()=>{if(!clip.getAttribute('src')||++at>=tries.length)return clip.removeEventListener('error',next);clip.src=tries[at]};
+ clip.addEventListener('error',next);clip.src=tries[0];
+};
 function soundPlan(manifest){
  const events=Object.fromEntries((manifest.events||[]).map(e=>[e.id,e]));
  const take=e=>(e&&(e.takes||[]).find(t=>t.enabled!==false))||null;
