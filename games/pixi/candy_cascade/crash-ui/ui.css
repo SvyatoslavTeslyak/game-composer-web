@@ -1238,6 +1238,7 @@
 .crash-ui .tabbed-controls .wager-amount.stake-pick:hover:not(:disabled){background:var(--surface-hover-soft)}
 .crash-ui .tabbed-controls .wager-amount.stake-pick:disabled{cursor:default;opacity:.6}
 .crash-ui .tabbed-controls .wager-amount.stake-pick .chevron{opacity:.6}
+.crash-ui .tabbed-controls .wager-amount.stake-pick.is-tight .chevron{display:none}
 .crash-ui .stake-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-8)}
 .crash-ui .stake-grid .button{min-height:var(--web-control-comfort-height);font-size:var(--type-20);font-weight:800;border-radius:var(--radius-16)}
 .crash-ui .stake-grid .button.on{color:var(--on-go);border:var(--stroke-1) solid var(--action-go-edge);background:linear-gradient(var(--action-go-top),var(--action-go-bottom))}

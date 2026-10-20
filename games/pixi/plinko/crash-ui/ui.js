@@ -77,6 +77,24 @@ const DETAIL_ICONS={
 const detailIcon=(label,lost=false)=>{const key=String(label||'').toLowerCase();const name=key.includes('wager')||key.includes('stake')?'wager':key.includes('multipl')||key==='x'?'multiplier':key.includes('prize')||key.includes('payout')||key.includes('win')?'prize':key.includes('result')?(lost?'crashed':'result'):key.includes('difficult')||key.includes('risk')||key.includes('level')?'difficulty':key.includes('lane')||key.includes('step')||key.includes('cross')?'lanes':key.includes('bucket')?'bucket':key==='rows'||key==='row'?'rows':'default';
  return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">'+DETAIL_ICONS[name]+'</svg>'};
 const fitStake=(node,text)=>{node.dataset.fit=text.length>4?'long':text.length>2?'mid':'short'};
+// A figure wider than its box (the header balance, the stake) gives up 2px at a time down to
+// TYPE_14, and only past that reads short (1.2B), keeping the full figure in data-full and as
+// its name. One that fits is left as its stylesheet sets it.
+const fitMoney=node=>{
+ if(!node?.isConnected)return;
+ if(node.dataset.full!==undefined){node.textContent=node.dataset.full;delete node.dataset.full;node.removeAttribute('aria-label')}
+ node.style.fontSize='';
+ const over=()=>node.scrollWidth>node.clientWidth+1;
+ if(!node.clientWidth||!over())return;
+ const base=parseFloat(getComputedStyle(node).fontSize),floor=Math.min(base,CrashTokens.TYPE_14);
+ let size=Math.max(floor,Math.floor(base*node.clientWidth/node.scrollWidth/2)*2);node.style.fontSize=size+'px';
+ while(over()&&size>floor){size=Math.max(floor,size-2);node.style.fontSize=size+'px'}
+ if(!over())return;
+ const full=node.textContent,whole=Number(full.replace(/[.,\u00a0\u202f ]\d{1,2}$/,'').replace(/\D/g,''));
+ if(!(whole>=1e4))return;
+ node.dataset.full=full;node.setAttribute('aria-label',full);
+ node.textContent=new Intl.NumberFormat(window.CrashI18n?.numberLocale||(window.CrashI18n?.locale==='fr'?'fr-FR':'en-US'),{notation:'compact',maximumFractionDigits:1}).format(whole);
+};
 // The player stakes coins and is paid in the currency: the bet, the presets and the amount on
 // PLAY are coin amounts, CASH OUT and every payout stay money(). A PLAY subtitle is either an
 // amount or a label (NEXT FRUIT, GO); a number is an amount, and so is the dollar string the
@@ -249,7 +267,7 @@ class TabbedControls {
  }
  // The stake section may live in a game's own panel (GameUI.mountStake); it is still this panel's.
  q(sel){return this.element.querySelector(sel)||this.mounted?.querySelector(sel)||null}
- text(key,value){if(this.slots[key].textContent!==String(value))this.slots[key].textContent=value}
+ text(key,value){const node=this.slots[key];if((node.dataset.full??node.textContent)!==String(value)){node.textContent=value;if(node.dataset.full!==undefined){delete node.dataset.full;node.removeAttribute('aria-label')}}}
  // The stake on show. After MIN or MAX (rollArm, set by the press) it rolls to the new amount
  // like a counter, in time with the double tick; any other change simply shows.
  showBet(bet){
@@ -258,7 +276,10 @@ class TabbedControls {
   if(this.rolling)return;
   this.setBet(bet);
  }
- setBet(v){this.betShown=v;this.text('tbBet',coinAmount(v));fitStake(this.slots.tbBet,this.slots.tbBet.textContent)}
+ setBet(v){this.betShown=v;this.text('tbBet',coinAmount(v));fitStake(this.slots.tbBet,this.slots.tbBet.textContent);this.fitBet()}
+ // The stake fits its button: smaller first, and when even the smallest size does not fit, the
+ // chevron gives its room (the whole button still opens the picker) before the figure reads short.
+ fitBet(){const node=this.slots.tbBet,pick=node.closest('.stake-pick');pick?.classList.remove('is-tight');fitMoney(node);if(pick&&(node.dataset.full!==undefined||node.scrollWidth>node.clientWidth+1)){pick.classList.add('is-tight');fitMoney(node)}}
  // Along a log scale, so 1 → 1000 reads as an even climb, easing out onto the amount.
  rollBet(from,to){
   cancelAnimationFrame(this.rollFrame);clearTimeout(this.rollDone);this.rolling=true;const start=performance.now(),span=250,slot=this.slots.tbBet;
@@ -268,7 +289,7 @@ class TabbedControls {
   const frame=now=>{const t=Math.min(1,(now-start)/span),e=1-Math.pow(1-t,3);
    if(t>=1){finish();return}
    let v=from>0&&to>0?from*Math.pow(to/from,e):from+(to-from)*e;v=v>=1?Math.round(v):Math.round(v*100)/100;
-   this.text('tbBet',coinAmount(v));fitStake(slot,slot.textContent);this.rollFrame=requestAnimationFrame(frame)};
+   this.text('tbBet',coinAmount(v));fitStake(slot,slot.textContent);this.fitBet();this.rollFrame=requestAnimationFrame(frame)};
   this.rollFrame=requestAnimationFrame(frame);
  }
  // Side actions (config.sideActions): square buttons beside the main action - AUTO, ROWS,
@@ -469,7 +490,7 @@ class GameUI {
   return wager;
  }
  features(){return {auto:true,difficulty:true,presets:true,...(this.state?.features||{})}}
- text(key,value){if(this.slots[key].textContent!==String(value))this.slots[key].textContent=value}
+ text(key,value){const node=this.slots[key];if((node.dataset.full??node.textContent)!==String(value)){node.textContent=value;if(node.dataset.full!==undefined){delete node.dataset.full;node.removeAttribute('aria-label')}}}
  action(action,value){
   if(action==='go'&&this.winToast)this.finishWinToast();
   // MIN and MAX roll the stake to its new amount (TabbedControls.showBet).
@@ -524,7 +545,7 @@ class GameUI {
    // The player's button says what it shows: in the tabbed shell the name is not drawn, only the
    // picture and the rank, so a screen reader hears "Rank #1" rather than "You". The picture is
    // decoration beside it.
-   {const identity=this.q('.identity'),label=this.tabbed?'Rank '+this.slots.level.textContent:'';if(identity.getAttribute('aria-label')!==(label||null)){if(label)identity.setAttribute('aria-label',label);else identity.removeAttribute('aria-label')}}this.text('balance',this.heldWinBalance!==undefined?this.heldWinBalance:s.balanceKnown===false?'—':(window.CrashI18n?.number?window.CrashI18n.number(Number(s.balance||0),{useGrouping:true,minimumFractionDigits:0,maximumFractionDigits:0}):new Intl.NumberFormat('en-US',{useGrouping:true,maximumFractionDigits:0}).format(Number(s.balance||0))));this.text('bet',coinAmount(s.bet));fitStake(this.slots.bet,this.slots.bet.textContent);
+   {const identity=this.q('.identity'),label=this.tabbed?'Rank '+this.slots.level.textContent:'';if(identity.getAttribute('aria-label')!==(label||null)){if(label)identity.setAttribute('aria-label',label);else identity.removeAttribute('aria-label')}}this.text('balance',this.heldWinBalance!==undefined?this.heldWinBalance:s.balanceKnown===false?'—':(window.CrashI18n?.number?window.CrashI18n.number(Number(s.balance||0),{useGrouping:true,minimumFractionDigits:0,maximumFractionDigits:0}):new Intl.NumberFormat('en-US',{useGrouping:true,maximumFractionDigits:0}).format(Number(s.balance||0))));this.text('bet',coinAmount(s.bet));fitStake(this.slots.bet,this.slots.bet.textContent);fitMoney(this.slots.bet);
 
   this.text('personal',money(s.personal));this.text('top',money(s.record?.payout));this.text('owner',s.record?.name||'');this.q('.record-top').title=[s.record?.name,s.record?.date].filter(Boolean).join(' · ');
   const signature=JSON.stringify([s.players,s.record?.name,s.avatars]);if(signature!==this.avatarSignature){this.avatarSignature=signature;this.slots.avatar.innerHTML=avatar('You',s.players);this.slots.avatar.firstElementChild?.setAttribute('aria-hidden','true')}
@@ -572,7 +593,7 @@ class GameUI {
  }
  showWinToast(s){
   this.finishWinToast();
-  this.heldWinBalance=this.slots.balance.textContent;
+  this.heldWinBalance=this.slots.balance.dataset.full??this.slots.balance.textContent;
   this.winBalanceFrom=this.state.balanceKnown===false?null:Number(this.state.balance);
   const toast=document.createElement('div');toast.className='win-toast'+(this.config.winPresentation==='center'?' is-center':'');toast.setAttribute('role','status');
   const amount=s.winToastAmount??s.winAmount,multiplier=s.history?.[0]?.multiplier;
@@ -689,7 +710,7 @@ class GameUI {
  releaseWinBalance(){
   this.heldWinBalance=undefined;
   const s=this.state;
-  this.text('balance',s.balanceKnown===false?'—':new Intl.NumberFormat(window.CrashI18n?.numberLocale||(window.CrashI18n?.locale==='fr'?'fr-FR':'en-US'),{maximumFractionDigits:0}).format(Number(s.balance||0)));
+  this.text('balance',s.balanceKnown===false?'—':new Intl.NumberFormat(window.CrashI18n?.numberLocale||(window.CrashI18n?.locale==='fr'?'fr-FR':'en-US'),{maximumFractionDigits:0}).format(Number(s.balance||0)));fitMoney(this.slots.balance);
  }
  pulseBalance(){
   if(this.state.settings?.reduced_motion||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
@@ -719,7 +740,7 @@ class GameUI {
     const value=this.winBalanceFrom+(Number(this.state.balance)-this.winBalanceFrom)*progress;
     if(Number.isFinite(value)){
      this.heldWinBalance=new Intl.NumberFormat(window.CrashI18n?.numberLocale||(window.CrashI18n?.locale==='fr'?'fr-FR':'en-US'),{maximumFractionDigits:0}).format(value);
-     this.text('balance',this.heldWinBalance);
+     this.text('balance',this.heldWinBalance);fitMoney(this.slots.balance);
     }
    }
    const a=source.getBoundingClientRect(),b=target.getBoundingClientRect();
@@ -1012,6 +1033,7 @@ class GameUI {
   const a=this.q('.account-column').getBoundingClientRect(),b=this.q('.bottom').getBoundingClientRect();
   this.host.style.setProperty('--bet-controls-top',b.top+'px');
   this.tabPresentation();
+  fitMoney(this.slots.balance);this.tabbed?.fitBet();
   const history=this.q('.history'),historyRect=history.getBoundingClientRect();
   this.host.style.setProperty('--win-toast-top',(historyRect.height>0?historyRect.top-this.host.getBoundingClientRect().top:72)+'px');
   this.host.style.setProperty('--dev-top',(Math.max(a.bottom,wide?winners.getBoundingClientRect().bottom:0)+8)+'px');
