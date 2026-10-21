@@ -103,7 +103,7 @@ const amountOf=v=>typeof v==='number'?v:(m=>m?Number(m[1]):NaN)(/^\$?(\d+(?:\.\d
 const coinSlot=(node,v)=>{const n=amountOf(v);const amount=Number.isFinite(n);node.classList.toggle('coin-amount',amount);const text=amount?coinAmount(n):String(v??'');if(node.textContent!==text)node.textContent=text};
 // Pixel crop origins of the six painted circles in the 1536 x 1024 atlas.
 // The artwork is not an evenly spaced 3 x 2 grid; its second row sits higher.
-// Swipe to dismiss: a pull of this many pixels decides the direction, and a window closes when
+// Swipe to dismiss: a window follows the finger after this many pixels down, and closes when
 // pulled down past this distance (or a quarter of its height) or flicked faster (px per ms).
 const SWIPE_SLOP=10,SWIPE_CLOSE_PX=120,SWIPE_FLICK=0.6;
 // A date as the i18n layer writes it in the player's language (it re-writes every <time> when the
@@ -1051,15 +1051,17 @@ class GameUI {
    const t=e.touches[0];drag={x:t.clientX,y:t.clientY,time:e.timeStamp,dy:0,on:false,scroller:scroller(e.target)};
   },{passive:true});
   layer.addEventListener('touchmove',e=>{
-   if(!drag)return;const t=e.touches[0],modal=this.q('.modal');
+   if(!drag)return;const t=e.touches[0],modal=this.q('.modal'),dx=t.clientX-drag.x,dy=t.clientY-drag.y;
+   // The first move decides, while the browser still lets it be cancelled: once a scroll has
+   // begun it refuses (and logs it). Up, sideways, or down inside a list that is not at its top
+   // is a scroll; down from the top is a pull, and from then on no scroll starts.
+   if(!drag.claimed){if(dy<=0||Math.abs(dx)>dy||drag.scroller?.scrollTop>0){drag=null;return}drag.claimed=true}
+   if(e.cancelable)e.preventDefault();
    if(!drag.on){
-    const dx=t.clientX-drag.x,dy=t.clientY-drag.y;
-    if(Math.abs(dx)<SWIPE_SLOP&&Math.abs(dy)<SWIPE_SLOP)return;
-    // Up, sideways, or down inside a list that is not at its top: that is a scroll, not a pull.
-    if(dy<=Math.abs(dx)||drag.scroller?.scrollTop>0){drag=null;return}
+    if(dy<SWIPE_SLOP)return;
     drag.on=true;drag.y=t.clientY;drag.time=e.timeStamp;modal.style.transition='none';
    }
-   e.preventDefault();drag.dy=Math.max(0,t.clientY-drag.y);modal.style.translate='0 '+drag.dy+'px';
+   drag.dy=Math.max(0,t.clientY-drag.y);modal.style.translate='0 '+drag.dy+'px';
   },{passive:false});
   const end=e=>{
    if(!drag?.on){drag=null;return}
