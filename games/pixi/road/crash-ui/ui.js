@@ -103,6 +103,12 @@ const amountOf=v=>typeof v==='number'?v:(m=>m?Number(m[1]):NaN)(/^\$?(\d+(?:\.\d
 const coinSlot=(node,v)=>{const n=amountOf(v);const amount=Number.isFinite(n);node.classList.toggle('coin-amount',amount);const text=amount?coinAmount(n):String(v??'');if(node.textContent!==text)node.textContent=text};
 // Pixel crop origins of the six painted circles in the 1536 x 1024 atlas.
 // The artwork is not an evenly spaced 3 x 2 grid; its second row sits higher.
+// Swipe to dismiss: a pull of this many pixels decides the direction, and a window closes when
+// pulled down past this distance (or a quarter of its height) or flicked faster (px per ms).
+const SWIPE_SLOP=10,SWIPE_CLOSE_PX=120,SWIPE_FLICK=0.6;
+// A date as the i18n layer writes it in the player's language (it re-writes every <time> when the
+// language changes); English until that layer is there.
+const dateText=(date,kind)=>window.CrashI18n?.date?.(date,kind)||new Intl.DateTimeFormat(kind==='time'?'en-US':'en-GB',kind==='day'?{weekday:'short',day:'numeric',month:'short',year:'numeric'}:kind==='full'?{weekday:'long',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit'}:{hour:'numeric',minute:'2-digit'}).format(date);
 const avatarCrops=[[25,11],[537,10],[1045,10],[26,489],[530,489],[1045,490]];
 // A host that knows a player's own picture passes it as `avatars: {name: url}`; anyone else keeps a
 // face from the roster. Only a plain https address is taken, so nothing can break out of the style.
@@ -432,6 +438,7 @@ class GameUI {
   host.addEventListener('change',e=>{if(e.target.dataset.setting==='sound')this.bettingSound.setEnabled(e.target.checked);if(e.target.dataset.setting)this.send('setting',{key:e.target.dataset.setting,value:e.target.type==='checkbox'?e.target.checked:Number(e.target.value)});if(e.target.dataset.flag)this.send('flag',{key:e.target.dataset.flag,value:e.target.checked})});
   this.dismissWinClick=e=>{if(this.modal!=='win')return;e.preventDefault();e.stopImmediatePropagation();this.dismissedWin=true;this.close(false);this.send('dismissWin',{})};document.addEventListener('click',this.dismissWinClick,true);
   host.querySelector('.modal-layer').addEventListener('click',e=>{if(e.target===e.currentTarget&&this.modal!=='win')this.close()});
+  this.swipeToDismiss(host.querySelector('.modal-layer'));
   this.keyHandler=e=>{if(!this.modal)return;if(e.target.matches?.('[data-action=drawerTab]')&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const tabs=[...e.target.parentElement.children],index=tabs.indexOf(e.target),next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(index+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;this.action('drawerTab',tabs[next].dataset.value);return;}if(['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Home','End'].includes(e.key)&&e.target.matches('[role=radio]')){e.preventDefault();const items=[...e.target.parentElement.querySelectorAll('[role=radio]')];let index=items.indexOf(e.target);index=e.key==='Home'?0:e.key==='End'?items.length-1:(index+(e.key==='ArrowDown'||e.key==='ArrowRight'?1:-1)+items.length)%items.length;items[index].focus();return;}if(e.key==='Escape'&&this.modal!=='win'){e.preventDefault();if(this.betDetail)this.backToBets();else if(this.modal.startsWith('limit:'))this.open('menu');else this.close()}if(e.key==='Tab'&&!this.contextPanel){const items=[...host.querySelectorAll('.modal-layer button,.modal-layer input,.modal-layer select')].filter(n=>!n.disabled&&!n.hidden&&n.getClientRects().length);if(!items.length){e.preventDefault();return}const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}};
   document.addEventListener('keydown',this.keyHandler);
   this.outsideMenu=e=>{if(['menu','account'].includes(this.modal)&&this.tabbed&&!this.q('.modal').contains(e.target)&&!this.q('.profile [data-action='+this.modal+']').contains(e.target))this.close(false)};
@@ -787,22 +794,31 @@ class GameUI {
  limitRow(key,option){const current=this.state.settings?.[key]??option.values[0];return '<div class="setting"><span>'+esc(option.title)+'</span><button class="button flat-button" data-action="limit" data-value="'+key+'">'+esc(this.limitText(current,option.suffix))+' <span aria-hidden="true">›</span></button></div>'}
  winRows(rows){return rows.map(v=>'<div class="winner">'+avatar(v.name,this.state.players)+'<span class="winner-name">'+esc(v.name)+'</span><span class="win-multiple">'+Number(v.multiplier||1).toFixed(2)+'×</span><span class="money">+'+money(v.payout)+'</span></div>').join('')}
  betTable(kind){
-  const top=kind==='topbets',s=this.state;
-  const rows=top?[...(s.topBets||s.wins||[])].sort((a,b)=>b.payout-a.payout).slice(0,25):[...(Array.isArray(s.bets)?s.bets:[])].sort((a,b)=>b.time-a.time);
-  this.betRows=rows.map(v=>({...v}));
+  const top=kind==='topbets',s=this.state,board=top?this.topBoard():[];
+  const rows=top?board.slice(0,25):[...(Array.isArray(s.bets)?s.bets:[])].sort((a,b)=>b.time-a.time);
+  // The player's own best bet is pinned above the board, and stays in it too: the game passes it
+  // (myTopBet, with its rank), or it is the board's row the game marked mine or named You.
+  const at=board.findIndex(v=>v.mine||v.name==='You'),own=!top?null:s.myTopBet?{...s.myTopBet,rank:s.myTopBet.rank??(at>=0?at+1:'')}:at>=0?{...board[at],rank:at+1}:null;
+  this.betRows=[...rows.map((v,i)=>({...v,rank:top?i+1:''})),...(own?[own]:[])];
+  if(this.modal===kind&&!this.betDetail&&this.q('.modal h2'))this.q('.modal h2').textContent=this.betsTitle(kind);
   // A stake is counted in coins, a payout in the currency, in the table as on the panel.
   const amount=(v,stake=false)=>Number.isFinite(v)?(stake?'<span class="coin-amount">'+esc(coinAmount(v))+'</span>':esc(money(v))):'—';
   let day='';
-  const body=rows.map((v,i)=>{
+  const topRow=(v,i,rank,cls='')=>'<tr class="bet-selectable'+cls+'" data-action="betDetails" data-value="'+i+'"><td class="bet-rank">'+esc(rank)+'</td><td><button type="button" class="bet-row-open" data-action="betDetails" data-value="'+i+'" aria-label="View bet details for '+esc(v.name)+'"><span class="bet-player">'+avatar(v.name,s.players)+'<span title="'+esc(v.name)+'">'+esc(v.name)+'</span></span></button></td><td>'+amount(v.wager,true)+'</td><td>'+(Number.isFinite(Number(v.multiplier))?esc(Number(v.multiplier).toFixed(2))+'×':'—')+'</td><td class="bet-prize">'+amount(v.payout)+'</td></tr>';
+  const body=(own?topRow(own,rows.length,own.rank,' is-mine'):'')+rows.map((v,i)=>{
+   if(top)return topRow(v,i,i+1);
    const row='<tr class="bet-selectable" data-action="betDetails" data-value="'+i+'">';
-   const trigger='<button type="button" class="bet-row-open" data-action="betDetails" data-value="'+i+'" aria-label="View bet details'+(top?' for '+esc(v.name):'')+'">';
-   if(top)return row+'<td class="bet-rank">'+(i+1)+'</td><td>'+trigger+'<span class="bet-player">'+avatar(v.name,s.players)+'<span title="'+esc(v.name)+'">'+esc(v.name)+'</span></span></button></td><td>'+amount(v.wager,true)+'</td><td>'+esc(Number(v.multiplier).toFixed(2))+'×</td><td class="bet-prize">'+amount(v.payout)+'</td></tr>';
+   const trigger='<button type="button" class="bet-row-open" data-action="betDetails" data-value="'+i+'" aria-label="View bet details">';
    const date=new Date(v.time),key=date.toDateString();let heading='';
-   if(key!==day){day=key;heading='<tr class="bet-day"><th colspan="3" scope="rowgroup">'+'<time data-date-only datetime="'+date.toISOString()+'">'+esc(date.toLocaleDateString(window.CrashI18n?.locale==='fr'?'fr-FR':'en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}))+'</time>'+'</th></tr>'}
-   return heading+row+'<td>'+trigger+'<time datetime="'+date.toISOString()+'">'+esc(date.toLocaleTimeString(window.CrashI18n?.locale==='fr'?'fr-FR':'en-US',{hour:'numeric',minute:'2-digit'}))+'</time></button></td><td>'+amount(v.wager,true)+'</td><td class="bet-prize">'+(v.payout>0?amount(v.payout):'—')+'</td></tr>';
+   if(key!==day){day=key;heading='<tr class="bet-day"><th colspan="3" scope="rowgroup">'+'<time data-date-only datetime="'+date.toISOString()+'">'+esc(dateText(date,'day'))+'</time>'+'</th></tr>'}
+   return heading+row+'<td>'+trigger+'<time datetime="'+date.toISOString()+'">'+esc(dateText(date,'time'))+'</time></button></td><td>'+amount(v.wager,true)+'</td><td class="bet-prize">'+(v.payout>0?amount(v.payout):'—')+'</td></tr>';
   }).join('');
-  return '<table class="bets-table '+(top?'top-bets':'my-bets')+'"><caption class="bet-caption">'+(top?'Top bets':'My bets')+'</caption><thead><tr>'+(top?'<th scope="col" class="bet-rank">#</th>':'')+'<th scope="col">'+(top?'Players':'Time')+'</th><th scope="col">Wager</th>'+(top?'<th scope="col">X</th>':'')+'<th scope="col">Prize</th></tr></thead><tbody>'+body+'</tbody></table>'+(!rows.length?'<p class="bets-empty">No bets yet.</p>':'');
+  return '<table class="bets-table '+(top?'top-bets':'my-bets')+'"><caption class="bet-caption">'+esc(this.betsTitle(kind))+'</caption><thead><tr>'+(top?'<th scope="col" class="bet-rank">#</th>':'')+'<th scope="col">'+(top?'Players':'Time')+'</th><th scope="col">Wager</th>'+(top?'<th scope="col">X</th>':'')+'<th scope="col">Prize</th></tr></thead><tbody>'+body+'</tbody></table>'+(!rows.length?'<p class="bets-empty">No bets yet.</p>':'');
  }
+ /** The leaderboard, best payout first. */
+ topBoard(){return [...(this.state.topBets||this.state.wins||[])].sort((a,b)=>b.payout-a.payout)}
+ /** Top bets is titled by how many bets it lists: Top 3. */
+ betsTitle(kind){if(kind!=='topbets')return 'My bets';const count=Math.min(this.topBoard().length,25);return count?'Top '+count:'Top bets'}
  /** The button dips as a press does, and sounds as a press does. */
  showPress(action){
   // Both control variants are in the page; press the one the player can actually see.
@@ -838,8 +854,8 @@ class GameUI {
   // Prize or Wager), and then no result card below, since the hero has already said it.
   const mine=this.modal!=='topbets',won=entry.payout>0;
   // The same size of disc for every bet: a player's face, or the medal / the coins in a glow.
-  const hero=mine?'<div class="bet-detail-outcome '+(won?'is-won':'is-lost')+'">'+icon(won?'outcome-won.webp':'outcome-lost.webp')+'</div>':'<div class="bet-detail-avatar">'+avatar(name,this.state.players)+'<span class="bet-detail-rank">'+(won?icon('trophy-badge.webp'):'')+'<b>#'+(index+1)+'</b></span></div>';
-  body.innerHTML='<div class="bet-detail-hero">'+hero+'</div><h3 class="bet-detail-title">'+(mine?(won?'Prize':'Wager'):esc(name))+'</h3>'+(hasDate?'<p class="bet-detail-date"><time datetime="'+date.toISOString()+'">'+esc(date.toLocaleString(window.CrashI18n?.locale==='fr'?'fr-FR':'en-GB',{weekday:'long',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit'}))+'</time></p>':'')
+  const hero=mine?'<div class="bet-detail-outcome '+(won?'is-won':'is-lost')+'">'+icon(won?'outcome-won.webp':'outcome-lost.webp')+'</div>':'<div class="bet-detail-avatar">'+avatar(name,this.state.players)+'<span class="bet-detail-rank">'+(won?icon('trophy-badge.webp'):'')+(entry.rank?'<b>#'+esc(entry.rank)+'</b>':'')+'</span></div>';
+  body.innerHTML='<div class="bet-detail-hero">'+hero+'</div><h3 class="bet-detail-title">'+(mine?(won?'Prize':'Wager'):esc(name))+'</h3>'+(hasDate?'<p class="bet-detail-date"><time datetime="'+date.toISOString()+'">'+esc(dateText(date,'full'))+'</time></p>':'')
    +'<div class="bet-detail-list">'+row('WAGER',Number.isFinite(entry.wager)?esc(coinAmount(entry.wager)):'—','',Number.isFinite(entry.wager))+row('MULTIPLIER',multiplier!==null?esc(multiplier.toFixed(2))+'×':'—')+row('PRIZE',value(entry.payout),'is-prize')+'</div>'
    +(result&&!mine?tile(esc(result.label),esc(result.value),'bet-detail-result'+(won?' is-won':' is-lost'),!won):'')
    +(this.config.renderBetExtras?.(entry) ?? (rest.length?'<div class="bet-detail-extras">'+rest.map(d=>tile(esc(d.label),esc(d.value))).join('')+'</div>':''));
@@ -861,7 +877,7 @@ class GameUI {
   // From the tabbed variant's side buttons these open as a sheet from the right on a wide
   // screen (the CSS decides the breakpoint); the same modal from the menu stays a popup.
   layer.classList.toggle('is-sheet',!drawer&&!!this.tabbed&&(kind==='topbets'||kind==='mybets'||(kind==='rules'&&this.rulesFrom==='tab')));this.q('.modal').classList.toggle('win-modal',kind==='win');
-  this.q('.modal h2').textContent={notice:NOTICES[this.noticeKind]?.title||NOTICES.error.title,menu:this.tabbed&&this.config.presentationPreset!=='menu-drawer-v1'?'Settings':'Menu',account:'Your account',wins:'Live Wins',difficulty:this.tabbed?'Difficulty':'Choose difficulty',stake:'Bet amount',options:this.optionSpec?.title||'',rules:'How to play',dev:'Visible panels',win:'NICE WIN!',topbets:'Top bets',mybets:'My bets'}[kind];
+  this.q('.modal h2').textContent={notice:NOTICES[this.noticeKind]?.title||NOTICES.error.title,menu:this.tabbed&&this.config.presentationPreset!=='menu-drawer-v1'?'Settings':'Menu',account:'Your account',wins:'Live Wins',difficulty:this.tabbed?'Difficulty':'Choose difficulty',stake:'Bet amount',options:this.optionSpec?.title||'',rules:'How to play',dev:'Visible panels',win:'NICE WIN!',topbets:this.betsTitle('topbets'),mybets:'My bets'}[kind];
   this.q('[data-action=close]').hidden=kind==='win'&&!this.config.demo;
   const body=this.q('.modal-body');body.classList.toggle('rules-content',kind==='rules');
   // A game's own choice in the kit's option sheet (GameUI.openOptions): the level sheet's look,
@@ -943,7 +959,7 @@ class GameUI {
   if(drawer){
    const nav=document.createElement('div');nav.className='drawer-tabs';nav.setAttribute('role','tablist');nav.setAttribute('aria-label','Menu sections');
    nav.innerHTML=[['topbets','Top bets'],['mybets','My bets'],['rules','Rules'],['menu','Settings']].map(([id,label])=>'<button type="button" class="drawer-tab" role="tab" id="drawer-tab-'+id+'" aria-controls="drawer-panel" aria-selected="'+(kind===id)+'" tabindex="'+(kind===id?'0':'-1')+'" data-action="drawerTab" data-value="'+id+'"><span class="drawer-tab-label">'+label+'</span></button>').join('');
-   drawerBody.before(nav);drawerBody.id='drawer-panel';drawerBody.setAttribute('role','tabpanel');drawerBody.setAttribute('aria-labelledby','drawer-tab-'+kind);this.q('.modal h2').textContent=kind==='menu'?'Settings':kind==='rules'?'Rules':kind==='topbets'?'Top bets':'My bets';
+   drawerBody.before(nav);drawerBody.id='drawer-panel';drawerBody.setAttribute('role','tabpanel');drawerBody.setAttribute('aria-labelledby','drawer-tab-'+kind);this.q('.modal h2').textContent=kind==='menu'?'Settings':kind==='rules'?'Rules':this.betsTitle(kind);
   }
   const tabView=!drawer&&!!this.tabbed&&['topbets','mybets','rules'].includes(kind)&&(kind!=='rules'||this.rulesFrom==='tab');
   layer.classList.toggle('is-tab-view',tabView);
@@ -1021,6 +1037,39 @@ class GameUI {
   if(this.modal==='win'){this.dismissedWin=true;this.close(false);this.send('dismissWin',{});return true}
   if(this.betDetail)this.backToBets();else if(this.modal.startsWith('limit:'))this.open('menu');else this.close();
   return true;
+ }
+ /**
+  * On a touch screen a window is pulled down to close it: by its header, or by its content once
+  * that is scrolled to the top. Only a window with a close button; the big win closes by itself.
+  */
+ swipeToDismiss(layer){
+  let drag=null;
+  const scroller=el=>{for(let n=el;n&&n!==layer;n=n.parentElement)if(n.scrollHeight>n.clientHeight+1&&/auto|scroll/.test(getComputedStyle(n).overflowY))return n;return null};
+  layer.addEventListener('touchstart',e=>{
+   drag=null;const modal=this.q('.modal'),close=modal.querySelector('[data-action=close]');
+   if(e.touches.length!==1||!this.modal||this.modal==='win'||!modal.contains(e.target)||!close?.getClientRects().length||e.target.closest('input,textarea,select'))return;
+   const t=e.touches[0];drag={x:t.clientX,y:t.clientY,time:e.timeStamp,dy:0,on:false,scroller:scroller(e.target)};
+  },{passive:true});
+  layer.addEventListener('touchmove',e=>{
+   if(!drag)return;const t=e.touches[0],modal=this.q('.modal');
+   if(!drag.on){
+    const dx=t.clientX-drag.x,dy=t.clientY-drag.y;
+    if(Math.abs(dx)<SWIPE_SLOP&&Math.abs(dy)<SWIPE_SLOP)return;
+    // Up, sideways, or down inside a list that is not at its top: that is a scroll, not a pull.
+    if(dy<=Math.abs(dx)||drag.scroller?.scrollTop>0){drag=null;return}
+    drag.on=true;drag.y=t.clientY;drag.time=e.timeStamp;modal.style.transition='none';
+   }
+   e.preventDefault();drag.dy=Math.max(0,t.clientY-drag.y);modal.style.translate='0 '+drag.dy+'px';
+  },{passive:false});
+  const end=e=>{
+   if(!drag?.on){drag=null;return}
+   const modal=this.q('.modal'),{dy}=drag,far=dy>Math.min(SWIPE_CLOSE_PX,modal.offsetHeight/4)||dy/Math.max(1,e.timeStamp-drag.time)>SWIPE_FLICK;drag=null;
+   const reset=()=>{modal.style.transition='';modal.style.translate=''};
+   if(far&&(this.state.settings?.reduced_motion||matchMedia('(prefers-reduced-motion: reduce)').matches)){this.close();reset();return}
+   modal.style.transition='translate '+CrashTokens.MOTION_MS+'ms ease-out';modal.style.translate=far?'0 '+innerHeight+'px':'0 0';
+   setTimeout(()=>{if(far)this.close();reset()},CrashTokens.MOTION_MS);
+  };
+  layer.addEventListener('touchend',end);layer.addEventListener('touchcancel',end);
  }
  close(restoreFocus=true){this.q('.profile [data-action=account]').setAttribute('aria-expanded','false');this.q('.profile [data-action=menu]').setAttribute('aria-expanded','false');this.clearBetDetails();this.contextPanel=false;this.restoreTabs();this.clearWinCoins();this.modal='';this.q('.modal-layer').hidden=true;for(const n of [this.q('.top'),this.q('.bottom'),this.q('.dev')])n.inert=false;this.send('modal',{open:false});if(restoreFocus&&this.lastFocus?.isConnected)this.lastFocus.focus()}
  /**

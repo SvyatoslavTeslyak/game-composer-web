@@ -7841,6 +7841,22 @@
         "tabbed-shell-v1"
       ],
       "previewState": "round-dependent"
+    },
+    "top_value_6e8bd1": {
+      "source": "Top {value}",
+      "en": "Top {value}",
+      "fr": "Top {value}",
+      "ht": "Top {value}",
+      "group": "Tabs & windows",
+      "games": [],
+      "usage": [
+        "text",
+        "caption"
+      ],
+      "presets": [
+        "tabbed-shell-v1"
+      ],
+      "previewWindow": "topbets"
     }
   }
 }

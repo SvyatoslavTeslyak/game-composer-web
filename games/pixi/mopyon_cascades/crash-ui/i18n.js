@@ -22,6 +22,16 @@ function t(source,values={}){
  const value=entry[locale]||entry.en||entry.source;
  return source.slice(0,source.indexOf(trimmed))+value.replace(/\{(\w+)\}/g,(m,k)=>params[k]??m)+source.slice(source.indexOf(trimmed)+trimmed.length);
 }
+// A bet's day, time or both, in the player's language. Intl has no Haitian Creole, so its days
+// and months are written here, with the time in 24 hours.
+const DATE_OPTIONS={day:{weekday:'short',day:'numeric',month:'short',year:'numeric'},full:{weekday:'long',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit'},time:{hour:'numeric',minute:'2-digit'}};
+const HT_DAYS=['dimanch','lendi','madi','mèkredi','jedi','vandredi','samdi'],HT_MONTHS=['jan','fev','mas','avr','me','jen','jiy','out','sep','okt','nov','des'];
+function date(value,kind='time'){
+ const d=value instanceof Date?value:new Date(value);if(!Number.isFinite(d.getTime()))return '';
+ if(locale==='ht'){const two=n=>String(n).padStart(2,'0'),day=HT_DAYS[d.getDay()],when=d.getDate()+' '+HT_MONTHS[d.getMonth()]+' '+d.getFullYear(),time=two(d.getHours())+':'+two(d.getMinutes());
+  return kind==='day'?day[0].toUpperCase()+day.slice(1,3)+', '+when:kind==='full'?day[0].toUpperCase()+day.slice(1)+', '+when+', '+time+':'+two(d.getSeconds()):time}
+ return new Intl.DateTimeFormat(locale==='fr'?'fr-FR':kind==='time'?'en-US':'en-GB',DATE_OPTIONS[kind]).format(d);
+}
 function updateValue(node,key,value,set){const record=originals.get(node)||{};const old=record[key];const source=old&&value===old.output?old.source:value;const output=t(source);record[key]={source,output};originals.set(node,record);if(output!==value)set(output)}
 let highlightKey='',highlightLayer=null;
 // Limited Markdown: escape all HTML before adding supported formatting. A rules document takes
@@ -136,7 +146,7 @@ function translate(root=document.body){if(!root)return;observer?.disconnect();
  translateDocuments();
  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;
  while((node=walker.nextNode())){if(node.parentElement?.closest('script,style,textarea,[data-no-translate]'))continue;updateValue(node,'text',node.nodeValue,v=>node.nodeValue=v)}
- for(const el of root.querySelectorAll('time[datetime]')){const date=new Date(el.dateTime);if(!Number.isFinite(date.getTime()))continue;const options=el.hasAttribute('data-date-only')?{weekday:'short',day:'numeric',month:'short',year:'numeric'}:el.closest('.bet-detail-date')?{weekday:'long',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit'}:{hour:'numeric',minute:'2-digit'};const value=new Intl.DateTimeFormat(locale==='fr'?'fr-FR':el.closest('.bet-detail-date')||el.hasAttribute('data-date-only')?'en-GB':'en-US',options).format(date);if(el.textContent!==value)el.textContent=value}
+ for(const el of root.querySelectorAll('time[datetime]')){const value=date(el.dateTime,el.hasAttribute('data-date-only')?'day':el.closest('.bet-detail-date')?'full':'time');if(value&&el.textContent!==value)el.textContent=value}
  for(const el of root.querySelectorAll('[aria-label],[title],[placeholder],[alt]'))for(const attr of ['aria-label','title','placeholder','alt'])if(el.hasAttribute(attr))updateValue(el,attr,el.getAttribute(attr),v=>el.setAttribute(attr,v));
  paintHighlight();
  observer?.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['aria-label','title','placeholder','alt']});
@@ -145,7 +155,7 @@ function changed(){revision++;document.documentElement.lang=locale;translate();f
 function setLanguage(value){locale=['en','fr','ht'].includes(value)?value:'en';try{localStorage.setItem('crash-language',locale)}catch{}changed()}
 function setDraft(data){draftActive=true;catalog=data.catalog||catalog;overrides=data.overrides||{};rebuild();changed()}
 async function setGame(id){if(!id||id===game)return;game=id;rebuild();changed();if(/(?:^|\/)(?:demo|game)\.html$/.test(location.pathname))return;const current=id;try{const r=await fetch(new URL('../locales/overrides.json',base));if(r.ok&&current===game&&!draftActive){overrides=(await r.json()).entries||{};rebuild();changed()}}catch{}}
-const api={t,markdown,rulesDocument,highlight,describe,reveal,setLanguage,setDraft,setGame,translate,get locale(){return locale},get numberLocale(){return numberLocale},get revision(){return revision},get catalog(){return catalog},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn)},number(value,options={}){return new Intl.NumberFormat(numberLocale||(locale==='fr'?'fr-FR':'en-US'),options).format(value)}};
+const api={t,date,markdown,rulesDocument,highlight,describe,reveal,setLanguage,setDraft,setGame,translate,get locale(){return locale},get numberLocale(){return numberLocale},get revision(){return revision},get catalog(){return catalog},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn)},number(value,options={}){return new Intl.NumberFormat(numberLocale||(locale==='fr'?'fr-FR':'en-US'),options).format(value)}};
 window.CrashI18n=api;
 // Any embedding site can select a supported language, but only our immediate
 // parent may do so. Editable dictionaries remain restricted to same-origin Composer.

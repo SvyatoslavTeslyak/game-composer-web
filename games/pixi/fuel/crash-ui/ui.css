@@ -656,6 +656,10 @@
 /* Bet rows open an in-panel detail view; typography and surfaces follow the brand. */
 .crash-ui .bet-selectable{cursor:pointer}
 .crash-ui .bet-selectable:hover,.crash-ui .bet-selectable:focus-within{background:var(--surface-raised)}
+/* The player's own best bet, pinned above the board. */
+.crash-ui .bets-table .is-mine{background:color-mix(in srgb,var(--action-go) 14%,var(--surface))}
+.crash-ui .bets-table .is-mine td{border-bottom:var(--stroke-1) solid var(--border)}
+.crash-ui .bets-table .is-mine .bet-rank{color:var(--action-go)}
 /* The whole row is the tap target, so the opener inside it need not be tap height itself. */
 .crash-ui .bet-row-open{display:block;width:100%;min-height:var(--space-32);padding:0;border:0;background:none;color:inherit;text-align:left;font:inherit;min-width:0;overflow:hidden}
 .crash-ui .is-tab-view .is-bet-detail header .bet-detail-back{left:0;right:auto}
