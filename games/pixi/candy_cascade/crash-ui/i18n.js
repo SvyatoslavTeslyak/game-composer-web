@@ -76,8 +76,11 @@ function translateDocuments(){
  if(window.CrashUI?.instance?.modal!=='rules')return;
  const key=rulesDocument(),entry=catalog.entries[key];
  const body=document.querySelector('.modal-body');if(!key||!body)return;
- let block=body.querySelector('[data-i18n-document]');
- if(!block){const back=body.querySelector('.back-button');body.replaceChildren();if(back)body.append(back);block=document.createElement('div');block.dataset.i18nDocument=key;block.className='translated-document';body.append(block)}
+ // With a pay table the window has two pages, and the document is the How to play page only.
+ const page=body.querySelector('.rules-page');if(page&&page.dataset.page!=='rules')return;
+ const box=page||body;
+ let block=box.querySelector('[data-i18n-document]');
+ if(!block){const back=box.querySelector('.back-button');box.replaceChildren();if(back)box.append(back);block=document.createElement('div');block.dataset.i18nDocument=key;block.className='translated-document';box.append(block)}
  // Compared with what was last drawn, not with the page: the blocks inside change as they are translated.
  const html=markdown(overrides[key]?.[locale]||entry[locale]||entry.en||entry.source,{document:true});
  // A redraw (another language, an edit) keeps the game's blocks as they are, so a pay table's

@@ -14,8 +14,10 @@ let currency='';
 // How high a multiplier reads: the same four tiers colour the live badge and the history.
 const tintFor=m=>Number(m)>=10?'gold':Number(m)>=5?'purple':Number(m)>=2?'success':'cyan';
 // Road lane markers belong to the scene and keep this palette across brands.
-const multiplierColour=(m,game)=>game==='road'?(Number(m)<=0?'#ff9999':{gold:'#ffd468',purple:'#d5a0ff',success:'#62e4ad',cyan:'#71d5ff'}[tintFor(m)]):'var(--'+tintFor(m)+')';
+const multiplierColour=(m,game)=>game==='road'?(Number(m)<=0?'var(--lane-lost)':'var(--lane-'+tintFor(m)+')'):'var(--'+tintFor(m)+')';
 const goIsCash=s=>s.goCash!==undefined?!!s.goCash:s.goTitle==='CASH OUT';
+// A sum without its currency, written as money() writes it; the currency then goes beside it.
+const amountText=(v,digits=2)=>window.CrashI18n?.locale==='fr'||window.CrashI18n?.numberLocale?window.CrashI18n.number(Number(v||0),{minimumFractionDigits:digits,maximumFractionDigits:digits}):Number(v||0).toFixed(digits);
 const money=(v,digits=2)=>window.CrashI18n?.locale==='fr'||window.CrashI18n?.numberLocale?window.CrashI18n.number(Number(v||0),{minimumFractionDigits:digits,maximumFractionDigits:digits})+' '+(currency||'$'):currency?Number(v||0).toFixed(digits)+' '+currency:'$'+Number(v||0).toFixed(digits);
 const wager=v=>money(v,Number.isInteger(Number(v||0))?0:2);
 // On an action button the currency is a small unit after the figure, so a payout stays on one
@@ -60,7 +62,7 @@ const GO_ARROW_SVG='<svg class="go-arrow" viewBox="2.18 2.18 19.64 19.64" fill="
 const SPEAKER_SVG='<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10.99 3.98c.69-.53 1.5-.96 2.38-.59.86.36 1.14 1.24 1.26 2.11.12.88.12 2.1.12 3.62v5.76c0 1.52 0 2.74-.12 3.62-.12.87-.4 1.75-1.26 2.11-.88.37-1.69-.06-2.38-.59-.7-.54-1.6-1.45-2.64-2.52-.54-.55-.9-.82-1.26-.97-.37-.15-.81-.21-1.58-.21-.67 0-1.27 0-1.72-.05-.47-.05-.92-.16-1.31-.43-.76-.51-1.05-1.27-1.16-1.96-.08-.52-.07-1.09-.06-1.55v-.68c-.01-.46-.02-1.03.06-1.54.11-.7.4-1.45 1.16-1.97.39-.27.84-.38 1.31-.43.45-.04 1.05-.04 1.72-.04.77 0 1.21-.07 1.58-.22.36-.15.72-.41 1.26-.97 1.05-1.07 1.94-1.98 2.64-2.52Z"/><path fill="currentColor" fill-rule="evenodd" d="M16.39 8.2a1 1 0 0 1 1.4.19A5.98 5.98 0 0 1 19 12a5.98 5.98 0 0 1-1.2 3.6 1 1 0 1 1-1.6-1.2A3.98 3.98 0 0 0 17 12c0-.91-.3-1.75-.8-2.39a1 1 0 0 1 .19-1.4Z"/><path fill="currentColor" fill-rule="evenodd" d="M19.32 6.26a1 1 0 0 1 1.41.06A8.25 8.25 0 0 1 23 12a8.25 8.25 0 0 1-2.26 5.68 1 1 0 1 1-1.48-1.36A6.25 6.25 0 0 0 21 12a6.25 6.25 0 0 0-1.74-4.32 1 1 0 0 1 .06-1.42Z"/></svg>';
 // The cash-out toast's clock: the check pops for half a second, flips into the coin, the coins fly
 // (WEB_WIN_COIN_DURATION_MS plus their stagger), and the toast leaves once they have landed.
-const WIN_FLIP_AT=500,WIN_FLIP_MS=250,WIN_TOAST_MS=1800;
+const WIN_FLIP_AT=CrashTokens.MOTION_WIN_FLIP_AT_MS,WIN_FLIP_MS=CrashTokens.MOTION_WIN_FLIP_MS,WIN_TOAST_MS=CrashTokens.MOTION_WIN_TOAST_MS;
 // Bet details icons, keyed by the label a game sends (matched loosely, case-free). The filled
 // ones are Hugeicons; the result marks are the kit's own strokes. Bucket and rows are Plinko's (Hugeicons).
 const DETAIL_ICONS={
@@ -77,6 +79,27 @@ const DETAIL_ICONS={
 const detailIcon=(label,lost=false)=>{const key=String(label||'').toLowerCase();const name=key.includes('wager')||key.includes('stake')?'wager':key.includes('multipl')||key==='x'?'multiplier':key.includes('prize')||key.includes('payout')||key.includes('win')?'prize':key.includes('result')?(lost?'crashed':'result'):key.includes('difficult')||key.includes('risk')||key.includes('level')?'difficulty':key.includes('lane')||key.includes('step')||key.includes('cross')?'lanes':key.includes('bucket')?'bucket':key==='rows'||key==='row'?'rows':'default';
  return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">'+DETAIL_ICONS[name]+'</svg>'};
 const fitStake=(node,text)=>{node.dataset.fit=text.length>4?'long':text.length>2?'mid':'short'};
+// The stake row the tabbed panel and the pay table share: MIN, −, the amount, +, MAX. `press`
+// makes each of the four buttons; the amount opens the stake sheet when it has an action, and
+// only then carries the chevron.
+const stakeRow=(press,amountAction,slot)=>'<div class="stake" aria-label="Bet amount">'+press('min','MIN')+press('minus','−')
+ +'<button type="button" class="wager-amount stake-pick"'+(amountAction?' data-action="'+amountAction+'" aria-label="Choose bet amount"':' tabindex="-1" aria-label="Bet amount"')+'><output class="money coin-amount" '+slot+'></output>'+(amountAction?'<svg class="chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 6 8 10 12 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')+'</button>'
+ +press('plus','+')+press('max','MAX')+'</div>';
+// The level row the tabbed panel and the pay table share: one button per level, `action` its press.
+const levelButtons=(names,action)=>names.map((n,i)=>'<button type="button" class="button" role="radio" data-action="'+action+'" data-value="'+i+'">'+esc(n)+'</button>').join('');
+// Marks the chosen level in such a row; `locked` while a round is under way.
+const markLevel=(row,index,locked)=>{for(const b of row.querySelectorAll('[role=radio]')){const on=Number(b.dataset.value)===index;b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-checked',String(on));b.disabled=!!locked}};
+// The section switch the menu drawer and the rules window share: one segment per section, the
+// chosen one lit. `cls` names where it sits; `panel`, when given, is the id of what it switches.
+const segmented=(cls,label,items,selected,action,panel)=>{
+ const nav=document.createElement('div');nav.className='segmented '+cls;nav.setAttribute('role','tablist');nav.setAttribute('aria-label',label);
+ nav.innerHTML=items.map(([id,text])=>'<button type="button" class="segment" role="tab"'+(panel?' id="'+panel+'-'+id+'" aria-controls="'+panel+'"':'')+' aria-selected="'+(selected===id)+'" tabindex="'+(selected===id?'0':'-1')+'" data-action="'+action+'" data-value="'+id+'"><span class="segment-label">'+text+'</span></button>').join('');
+ return nav};
+// The amount fits its button: smaller first, and when even the smallest size does not fit, the
+// chevron gives its room (the whole button still opens the picker) before the figure reads short.
+const fitStakePick=node=>{const pick=node.closest('.stake-pick');pick?.classList.remove('is-tight');fitMoney(node);if(pick&&(node.dataset.full!==undefined||node.scrollWidth>node.clientWidth+1)){pick.classList.add('is-tight');fitMoney(node)}};
+// Writes a stake into such an amount and fits it.
+const showStake=(node,value)=>{const text=coinAmount(value);if((node.dataset.full??node.textContent)!==text)node.textContent=text;fitStake(node,node.textContent);fitStakePick(node)};
 // A figure wider than its box (the header balance, the stake) gives up 2px at a time down to
 // TYPE_14, and only past that reads short (1.2B), keeping the full figure in data-full and as
 // its name. One that fits is left as its stylesheet sets it.
@@ -105,7 +128,7 @@ const coinSlot=(node,v)=>{const n=amountOf(v);const amount=Number.isFinite(n);no
 // The artwork is not an evenly spaced 3 x 2 grid; its second row sits higher.
 // Swipe to dismiss: a window follows the finger after this many pixels down, and closes when
 // pulled down past this distance (or a quarter of its height) or flicked faster (px per ms).
-const SWIPE_SLOP=10,SWIPE_CLOSE_PX=120,SWIPE_FLICK=0.6;
+const SWIPE_SLOP=CrashTokens.WEB_SWIPE_SLOP,SWIPE_CLOSE_PX=CrashTokens.WEB_SWIPE_CLOSE,SWIPE_FLICK=CrashTokens.SWIPE_FLICK;
 // A date as the i18n layer writes it in the player's language (it re-writes every <time> when the
 // language changes); English until that layer is there.
 const dateText=(date,kind)=>window.CrashI18n?.date?.(date,kind)||new Intl.DateTimeFormat(kind==='time'?'en-US':'en-GB',kind==='day'?{weekday:'short',day:'numeric',month:'short',year:'numeric'}:kind==='full'?{weekday:'long',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit'}:{hour:'numeric',minute:'2-digit'}).format(date);
@@ -113,7 +136,7 @@ const avatarCrops=[[25,11],[537,10],[1045,10],[26,489],[530,489],[1045,490]];
 // A host that knows a player's own picture passes it as `avatars: {name: url}`; anyone else keeps a
 // face from the roster. Only a plain https address is taken, so nothing can break out of the style.
 let avatarUrls={};
-const avatar=(name,players=[])=>{const url=avatarUrls[name];if(typeof url==='string'&&/^https:\/\/[^\s"'()\\<>]+$/.test(url))return '<span class="avatar" role="img" aria-label="'+esc(name)+'" style="background-image:url('+url+');background-size:cover;background-position:center"></span>';const i=name==='You'?2:players.indexOf(name),[x,y]=avatarCrops[i]||avatarCrops[5];return '<span class="avatar" role="img" aria-label="'+esc(name)+'" style="--avatar-x:'+(x/(1536-464)*100)+'%;--avatar-y:'+(y/(1024-464)*100)+'%"></span>'};
+const avatar=(name,players=[])=>{const url=avatarUrls[name];if(typeof url==='string'&&/^https:\/\/[^\s"'()\\<>]+$/.test(url))return '<span class="avatar" role="img" aria-label="'+esc(name)+'" style="background-image:url('+url+');background-size:cover;background-position:center"></span>';const i=name==='You'?2:players.indexOf(name),[x,y]=avatarCrops[i]||avatarCrops[5];return '<span class="avatar" role="img" aria-label="'+esc(name)+'" style="--avatar-x:'+(x/(CrashTokens.AVATAR_SHEET_WIDTH-CrashTokens.AVATAR_FACE)*100)+'%;--avatar-y:'+(y/(CrashTokens.AVATAR_SHEET_HEIGHT-CrashTokens.AVATAR_FACE)*100)+'%"></span>'};
 // Three things can stop a round, and each is said plainly: the balance is short, the
 // connection is gone, or something else went wrong. Anything the server says beyond that
 // belongs in the console, not in front of a player.
@@ -130,7 +153,7 @@ const LEAVE_ARROW_SVG='<svg class="leave-arrow" viewBox="0 0 24 24" fill="none" 
 const countdownOf=s=>Number.isFinite(s.countdown)&&Number.isFinite(s.countdownTotal)&&s.countdownTotal>0&&s.countdown>0?s.countdown/s.countdownTotal:null;
 // The last few seconds are worth noticing: the rail turns to the danger colour and the
 // button shivers, which a player catches from the corner of an eye.
-const URGENT_SECONDS=3;
+const URGENT_SECONDS=CrashTokens.COUNTDOWN_URGENT_SECONDS;
 const urgentOf=s=>Number.isFinite(s.countdown)&&s.countdown>0&&s.countdown<=URGENT_SECONDS;
 // A round has a clock, and it is drawn inside GO: a ring around the button's own icon,
 // sweeping round as the seconds go. The ring is already in the markup, around that icon,
@@ -274,7 +297,7 @@ class TabbedControls {
    '<div class="tabbed-main"><div class="risk" hidden><div class="risk-label">RISK <span data-slot="riskPct"></span></div><div class="risk-meter" aria-hidden="true">'+'<i></i>'.repeat(10)+'</div></div>'+
    '<div class="difficulty-row" role="radiogroup" aria-label="Difficulty"></div>'+
    '<div class="bet-grid">'+
-    '<div class="wager"><div class="stake" aria-label="Bet amount">'+button('min','MIN')+button('minus','−')+'<button type="button" class="wager-amount stake-pick" data-action="stake" aria-label="Choose bet amount"><output class="money coin-amount" data-slot="tbBet"></output><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 6 8 10 12 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'+button('plus','+')+button('max','MAX')+'</div></div>'+
+    '<div class="wager">'+stakeRow(button,'stake','data-slot="tbBet"')+'</div>'+
     '<div class="actions">'+button('cash','<span class="action-title">CASH OUT</span><span class="money" data-slot="tbCash"></span>','action cash')+button('go','<span class="money" data-slot="tbGoAmount"></span><span class="action-title" data-slot="tbGoTitle"></span><span class="go-dial" aria-hidden="true">'+GO_ARROW_SVG+'</span>','action go')+'</div>'+
    '</div></div>'+
    '<div class="tabs">'+button('topbets',icon(trophy),'tab')+button('mybets',icon(receipt),'tab')+button('rulesTab',icon(doc),'tab')+'</div>';
@@ -295,15 +318,13 @@ class TabbedControls {
   this.setBet(bet);
  }
  setBet(v){this.betShown=v;this.text('tbBet',coinAmount(v));fitStake(this.slots.tbBet,this.slots.tbBet.textContent);this.fitBet()}
- // The stake fits its button: smaller first, and when even the smallest size does not fit, the
- // chevron gives its room (the whole button still opens the picker) before the figure reads short.
- fitBet(){const node=this.slots.tbBet,pick=node.closest('.stake-pick');pick?.classList.remove('is-tight');fitMoney(node);if(pick&&(node.dataset.full!==undefined||node.scrollWidth>node.clientWidth+1)){pick.classList.add('is-tight');fitMoney(node)}}
+ fitBet(){fitStakePick(this.slots.tbBet)}
  // Along a log scale, so 1 → 1000 reads as an even climb, easing out onto the amount.
  rollBet(from,to){
-  cancelAnimationFrame(this.rollFrame);clearTimeout(this.rollDone);this.rolling=true;const start=performance.now(),span=250,slot=this.slots.tbBet;
+  cancelAnimationFrame(this.rollFrame);clearTimeout(this.rollDone);this.rolling=true;const start=performance.now(),span=CrashTokens.MOTION_STAKE_ROLL_MS,slot=this.slots.tbBet;
   const finish=()=>{cancelAnimationFrame(this.rollFrame);clearTimeout(this.rollDone);this.rolling=false;this.setBet(this.betTarget)};
   // Frames can be sparse on a busy page; the amount lands on time regardless.
-  this.rollDone=setTimeout(finish,span+80);
+  this.rollDone=setTimeout(finish,span+CrashTokens.MOTION_ROLL_GRACE_MS);
   const frame=now=>{const t=Math.min(1,(now-start)/span),e=1-Math.pow(1-t,3);
    if(t>=1){finish();return}
    let v=from>0&&to>0?from*Math.pow(to/from,e):from+(to-from)*e;v=v>=1?Math.round(v):Math.round(v*100)/100;
@@ -359,12 +380,12 @@ class TabbedControls {
   if(key!==this.lastDifficulties){this.lastDifficulties=key;row.classList.toggle('with-auto',withAuto);row.setAttribute('role',withAuto?'group':'radiogroup');
    row.innerHTML=withAuto
     ?button('auto','<span class="auto-label">'+esc(config.autoLabel||'Auto')+'</span><span class="auto-switch" aria-hidden="true"><span class="knob"></span></span>','auto')+(config.turboSwitch?button('turbo','<span class="auto-label">Turbo</span><span class="auto-switch" aria-hidden="true"><span class="knob"></span></span>','auto turbo-switch'):'')+button('difficulty','<span data-slot="tbDifficulty"></span><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 6 8 10 12 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>','level-pick')
-    :names.map((n,i)=>'<button type="button" class="button" role="radio" data-action="pickDifficulty" data-value="'+i+'">'+esc(n)+'</button>').join('')}
+    :levelButtons(names,'pickDifficulty')}
   const pick=row.querySelector('[data-action=difficulty]');
   row.hidden=withAuto?false:!features.difficulty||names.length===0;
   const turbo=row.querySelector('[data-action=turbo]');if(turbo){turbo.setAttribute('aria-pressed',String(!!s.turbo));pick.hidden=true}
   if(withAuto){const auto=row.querySelector('[data-action=auto]');auto.setAttribute('aria-pressed',String(!!s.auto));auto.disabled=!s.canBet&&!s.auto;if(!turbo)pick.hidden=!features.difficulty||names.length===0;pick.disabled=!s.canBet;pick.setAttribute('aria-label','Difficulty: '+(names[s.difficulty]||''));const label=pick.querySelector('[data-slot=tbDifficulty]');if(label.textContent!==String(names[s.difficulty]||''))label.textContent=names[s.difficulty]||''}
-  else for(const b of row.children){const on=Number(b.dataset.value)===s.difficulty;b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-checked',String(on));b.disabled=!s.canBet}
+  else markLevel(row,s.difficulty,!s.canBet)
   this.showBet(Number(s.bet));const [lo,hi]=betLimits(s),bet=Number(s.bet);for(const [a,off] of [['min',bet<=lo],['minus',bet<=lo],['plus',bet>=hi],['max',bet>=hi],['stake',false]])this.q('[data-action='+a+']').disabled=!s.canBet||off;
   // A game may draw its own action on the button (state.goIcon for the moment, or config.goIcon,
   // an SVG with class go-arrow); GO's arrow otherwise.
@@ -410,7 +431,7 @@ class GameUI {
  constructor(host,send,config={}){
   this.host=host;this.send=send;this.config=config;GameUI.setBrand(config.brand||GameUI.queryBrand()||document.documentElement.dataset.brand||'default');GameUI.setTheme(config.theme||new URLSearchParams(location.search).get('theme')||document.documentElement.dataset.theme||'');this.state={};this.modal='';this.lastFocus=null;this.lastWins='';this.lastHistory='';this.bettingSound=new BettingSound(config.soundOverrides);this.winSound=new WinSound();
   if(!instance&&!config.demo){instance=this;window.CrashHost?.attach?.(this)}
-  host.className='crash-ui'+(webp?'':' no-webp');host.innerHTML='<div class="top"><section class="account panel" aria-label="Player and records"><div class="profile"><button class="identity" data-action="account"><span data-slot="avatar"></span><span><strong>You</strong><span class="level" data-slot="level"></span></span></button>'+(config.balanceTopUp?'<button type="button" class="balance" data-action="wallet" aria-label="Balance">':'<div class="balance" aria-label="Balance">')+icon('coin.png')+'<span class="money" data-slot="balance"></span>'+(config.balanceTopUp?'</button>':'</div>')+'<button class="icon-button" data-action="menu" aria-label="Menu">'+icon('menu.svg')+'</button></div><section class="records"><div class="records-heading">'+icon('trophy.svg')+'<span>Your best</span></div><div class="records-line"><span class="money record-value personal" data-slot="personal"></span><div class="record-top"><span class="record-summary-label">Top</span><span class="money record-value" data-slot="top"></span><span class="record-by">by</span><span class="owner-name" data-slot="owner"></span></div></div></section><div class="history" aria-label="Round history"></div></section><section class="winners panel"><div class="wins-head"><strong>Live Wins</strong><span class="online"><span class="dot"></span><span data-slot="online"></span></span><button class="text-button" data-action="wins">See all ›</button></div><div class="wins-list"></div></section></div><div class="bottom"><div class="multiplier"></div><section class="controls panel" aria-label="Bet controls"><div class="settings-row">'+button('auto','<span class="knob" aria-hidden="true"></span><span class="auto-label">Auto</span>','auto')+button('difficulty','<span data-slot="difficulty"></span><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 10 8 6 12 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>')+'</div><div class="stake" aria-label="Bet amount">'+button('min','MIN')+button('minus','−')+'<output class="money coin-amount" data-slot="bet"></output>'+button('plus','+')+button('max','MAX')+'</div><div class="presets"></div><div class="actions">'+button('cash','<span class="action-title">CASH OUT</span><span class="money" data-slot="cash"></span>','action cash')+button('go','<span class="action-title"><span class="go-dial" data-slot="playIcon" aria-hidden="true"><svg class="icon" viewBox="0 0 44 44" aria-hidden="true"><path d="M14 7.5 C9.5 5 6 7 6 12 V32 C6 37 9.5 39 14 36.5 L34 25.5 C38.5 23 38.5 21 34 18.5 Z" fill="currentColor"/></svg></span><span data-slot="goTitle"></span></span><span class="money" data-slot="goSubtitle"></span>','action go')+'</div></section></div><button class="dev" data-action="dev" hidden>DEV · UI</button><div class="toast" role="status" hidden></div><div class="modal-layer" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="crash-modal-title"><header><h2 id="crash-modal-title"></h2><button class="icon-button" data-action="close" aria-label="Close">'+icon('close.svg')+'</button></header><div class="modal-body"></div></section></div>';
+  host.className='crash-ui'+(webp?'':' no-webp');host.innerHTML='<div class="top"><section class="account panel" aria-label="Player and records"><div class="profile"><button class="identity" data-action="account"><span data-slot="avatar"></span><span><strong>You</strong><span class="level" data-slot="level"></span></span></button>'+(config.balanceTopUp?'<button type="button" class="balance" data-action="wallet" aria-label="Balance">':'<div class="balance" aria-label="Balance">')+icon('coin.png')+'<span class="money" data-slot="balance"></span>'+(config.balanceTopUp?'</button>':'</div>')+'<button class="icon-button" data-action="menu" aria-label="Menu">'+icon('menu.svg')+'</button></div><section class="records"><div class="records-heading">'+icon('trophy.svg')+'<span>Your best</span></div><div class="records-line"><span class="money record-value personal" data-slot="personal"></span><div class="record-top"><span class="record-summary-label">Top</span><span class="money record-value" data-slot="top"></span><span class="record-by">by</span><span class="owner-name" data-slot="owner"></span></div></div></section><div class="history" aria-label="Round history"></div></section><section class="winners panel"><div class="wins-head"><strong>Live Wins</strong><span class="online"><span class="dot"></span><span data-slot="online"></span></span><button class="text-button" data-action="wins">See all ›</button></div><div class="wins-list"></div></section></div><div class="bottom"><div class="multiplier"></div></div><button class="dev" data-action="dev" hidden>DEV · UI</button><div class="toast" role="status" hidden></div><div class="modal-layer" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="crash-modal-title"><header><h2 id="crash-modal-title"></h2><button class="icon-button" data-action="close" aria-label="Close">'+icon('close.svg')+'</button></header><div class="modal-body"></div></section></div>';
   // A game whose round climbs a fixed table of steps shows them beside the scene. It is the
   // kit's panel, not the game's canvas, so brands and themes reach it like everything else.
   const ladder=document.createElement('section');ladder.className='ladder';ladder.hidden=true;
@@ -439,7 +460,7 @@ class GameUI {
   this.dismissWinClick=e=>{if(this.modal!=='win')return;e.preventDefault();e.stopImmediatePropagation();this.dismissedWin=true;this.close(false);this.send('dismissWin',{})};document.addEventListener('click',this.dismissWinClick,true);
   host.querySelector('.modal-layer').addEventListener('click',e=>{if(e.target===e.currentTarget&&this.modal!=='win')this.close()});
   this.swipeToDismiss(host.querySelector('.modal-layer'));
-  this.keyHandler=e=>{if(!this.modal)return;if(e.target.matches?.('[data-action=drawerTab]')&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const tabs=[...e.target.parentElement.children],index=tabs.indexOf(e.target),next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(index+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;this.action('drawerTab',tabs[next].dataset.value);return;}if(['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Home','End'].includes(e.key)&&e.target.matches('[role=radio]')){e.preventDefault();const items=[...e.target.parentElement.querySelectorAll('[role=radio]')];let index=items.indexOf(e.target);index=e.key==='Home'?0:e.key==='End'?items.length-1:(index+(e.key==='ArrowDown'||e.key==='ArrowRight'?1:-1)+items.length)%items.length;items[index].focus();return;}if(e.key==='Escape'&&this.modal!=='win'){e.preventDefault();if(this.betDetail)this.backToBets();else if(this.modal.startsWith('limit:'))this.open('menu');else this.close()}if(e.key==='Tab'&&!this.contextPanel){const items=[...host.querySelectorAll('.modal-layer button,.modal-layer input,.modal-layer select')].filter(n=>!n.disabled&&!n.hidden&&n.getClientRects().length);if(!items.length){e.preventDefault();return}const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}};
+  this.keyHandler=e=>{if(!this.modal)return;if(e.target.matches?.('.segment')&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const tabs=[...e.target.parentElement.children],index=tabs.indexOf(e.target),next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(index+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;this.action(tabs[next].dataset.action,tabs[next].dataset.value);return;}if(['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Home','End'].includes(e.key)&&e.target.matches('[role=radio]')){e.preventDefault();const items=[...e.target.parentElement.querySelectorAll('[role=radio]')];let index=items.indexOf(e.target);index=e.key==='Home'?0:e.key==='End'?items.length-1:(index+(e.key==='ArrowDown'||e.key==='ArrowRight'?1:-1)+items.length)%items.length;items[index].focus();return;}if(e.key==='Escape'&&this.modal!=='win'){e.preventDefault();if(this.betDetail)this.backToBets();else if(this.modal.startsWith('limit:'))this.open('menu');else this.close()}if(e.key==='Tab'&&!this.contextPanel){const items=[...host.querySelectorAll('.modal-layer button,.modal-layer input,.modal-layer select')].filter(n=>!n.disabled&&!n.hidden&&n.getClientRects().length);if(!items.length){e.preventDefault();return}const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}};
   document.addEventListener('keydown',this.keyHandler);
   this.outsideMenu=e=>{if(['menu','account'].includes(this.modal)&&this.tabbed&&!this.q('.modal').contains(e.target)&&!this.q('.profile [data-action='+this.modal+']').contains(e.target))this.close(false)};
   document.addEventListener('pointerdown',this.outsideMenu,true);
@@ -448,7 +469,10 @@ class GameUI {
   this.embedFlags=Object.fromEntries(['leaderboard','history','personal_record','online_count','multiplier_ladder'].filter(key=>['0','1'].includes(embed.get(key))).map(key=>[key,embed.get(key)==='1']));
   // A game can make a feature compulsory (config.requiredFeatures): the embed's ?key=0 cannot switch it off.
   this.embedFeatures=Object.fromEntries(['auto','difficulty','presets'].filter(key=>['0','1'].includes(embed.get(key))&&!(this.config.requiredFeatures||[]).includes(key)).map(key=>[key,embed.get(key)==='1']));
-  this.standardControls=this.q('.controls');this.betSettings=this.q('.settings-row');this.setControlsVariant(config.controlsVariant);
+  // Auto and the level for the three-position panel, which shows them above its bets.
+  const settings=document.createElement('template');settings.innerHTML='<div class="settings-row">'+button('auto','<span class="auto-label">Auto</span><span class="auto-switch" aria-hidden="true"><span class="knob"></span></span>','auto')+button('difficulty','<span data-slot="difficulty"></span><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 10 8 6 12 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>')+'</div>';this.betSettings=settings.content.firstElementChild;
+  for(const n of this.betSettings.querySelectorAll('[data-slot]'))this.slots[n.dataset.slot]=n;
+  this.setControlsVariant(config.controlsVariant);
   this.resize=new ResizeObserver(()=>this.layout());this.resize.observe(host);this.resize.observe(host.querySelector('.account'));this.resize.observe(column);this.resize.observe(host.querySelector('.controls'));if(this.multiBet)this.resize.observe(this.multiBet.element);
  }
  setPresentationPreset(name='standard'){
@@ -457,8 +481,11 @@ class GameUI {
   this.config.presentationPreset=name;this.setControlsVariant(this.controlsVariant);
   if(this.state.game)this.update(this.state);
  }
- setControlsVariant(variant='standard'){
+ // 'tabbed' (every game's panel), 'three-position' (three bets at once) or 'none' (the game's
+ // own panel). The kit's older standard panel is gone; a game that names it gets the tabbed one.
+ setControlsVariant(variant='tabbed'){
   if(this.modal)this.close(false);
+  if(!variant||variant==='standard')variant='tabbed';
   this.controlsVariant=variant;
   const tabbed=variant==='tabbed'||['tabbed-shell-v1','menu-drawer-v1'].includes(this.config.presentationPreset);
   this.host.classList.toggle('has-tabbed-controls',tabbed);
@@ -477,10 +504,8 @@ class GameUI {
   const multi=variant==='three-position';
   if(multi&&!this.multiBet){this.multiBet=new MultiBetControls();this.q('.bottom').append(this.multiBet.element);this.resize?.observe(this.multiBet.element)}
   if(multi)this.multiBet.element.prepend(this.betSettings);
-  else this.standardControls.prepend(this.betSettings);
+  else this.betSettings.remove();
   if(!multi&&this.multiBet){this.resize?.unobserve(this.multiBet.element);this.multiBet.element.remove();this.multiBet=null}
-  // 'none': the kit keeps its header and tabs, and the game draws its own bet panel (a slot's, say).
-  this.standardControls.hidden=multi||variant==='tabbed'||variant==='none';
  }
  q(s){return this.host.querySelector(s)}
  /**
@@ -529,9 +554,17 @@ class GameUI {
   if(['menu','account'].includes(action)&&this.tabbed&&this.modal===action){this.close();return}
   const tabKind=action==='rulesTab'?'rules':action;
   if(['topbets','mybets','rulesTab'].includes(action)&&this.modal===tabKind&&this.q('.modal-layer').classList.contains('is-tab-view')){this.close();return}
-  if(['menu','account','wins','difficulty','dev','rules','topbets','mybets'].includes(action)){this.rulesFrom=action==='rules'?'menu':this.rulesFrom;this.open(action);return}
+  if(['menu','account','wins','difficulty','dev','rules','topbets','mybets'].includes(action)){if(action==='rules'){this.rulesFrom='menu';this.rulesPage='rules';this.payView=null}this.open(action);return}
   // The rules tab opens the same modal as the menu's button, but there is no menu to go back to.
-  if(action==='rulesTab'){this.rulesFrom='tab';this.open('rules');return}
+  if(action==='rulesTab'){this.rulesFrom='tab';this.rulesPage='rules';this.payView=null;this.open('rules');return}
+  // A game with a pay table has two pages in its rules window: How to play and Pay table.
+  if(action==='rulesPage'){this.rulesPage=value==='paytable'?'paytable':'rules';this.open('rules');return}
+  // The pay table's own level and stake: they only change what the table shows, never the bet.
+  // Its stake row is the panel's, its buttons marked data-value="paytable" so they stay here.
+  if(action==='payLevel'||(value==='paytable'&&['min','minus','plus','max'].includes(action))){
+   const view=this.payView,pay=this.config.payTable;if(!view||!pay)return;
+   if(action==='payLevel'){this.bettingSound.play('pickDifficulty');view.difficulty=Number(value)}else{const next=Number(pay.stake(view.bet,action));if(Number.isFinite(next))view.bet=next}
+   this.syncPayTable();return}
   // The tabbed row picks a difficulty in place; nothing to close afterwards.
   if(action==='pickDifficulty'){if(this.state?.canBet)this.send('difficulty',{index:Number(value)});return}
   if(action==='close'){this.close();return}
@@ -564,27 +597,25 @@ class GameUI {
    // The player's button says what it shows: in the tabbed shell the name is not drawn, only the
    // picture and the rank, so a screen reader hears "Rank #1" rather than "You". The picture is
    // decoration beside it.
-   {const identity=this.q('.identity'),label=this.tabbed?'Rank '+this.slots.level.textContent:'';if(identity.getAttribute('aria-label')!==(label||null)){if(label)identity.setAttribute('aria-label',label);else identity.removeAttribute('aria-label')}}this.text('balance',this.heldWinBalance!==undefined?this.heldWinBalance:s.balanceKnown===false?'—':(window.CrashI18n?.number?window.CrashI18n.number(Number(s.balance||0),{useGrouping:true,minimumFractionDigits:0,maximumFractionDigits:0}):new Intl.NumberFormat('en-US',{useGrouping:true,maximumFractionDigits:0}).format(Number(s.balance||0))));this.text('bet',coinAmount(s.bet));fitStake(this.slots.bet,this.slots.bet.textContent);fitMoney(this.slots.bet);
+   {const identity=this.q('.identity'),label=this.tabbed?'Rank '+this.slots.level.textContent:'';if(identity.getAttribute('aria-label')!==(label||null)){if(label)identity.setAttribute('aria-label',label);else identity.removeAttribute('aria-label')}}this.text('balance',this.heldWinBalance!==undefined?this.heldWinBalance:s.balanceKnown===false?'—':this.balanceText(s.balance));
 
   this.text('personal',money(s.personal));this.text('top',money(s.record?.payout));this.text('owner',s.record?.name||'');this.q('.record-top').title=[s.record?.name,s.record?.date].filter(Boolean).join(' · ');
   const signature=JSON.stringify([s.players,s.record?.name,s.avatars]);if(signature!==this.avatarSignature){this.avatarSignature=signature;this.slots.avatar.innerHTML=avatar('You',s.players);this.slots.avatar.firstElementChild?.setAttribute('aria-hidden','true')}
-  this.text('difficulty',s.difficulties?.[s.difficulty]||'Normal');moneySlot(this.slots.cash,s.cash);this.text('goTitle',s.goTitle||'PLAY');coinSlot(this.slots.goSubtitle,(s.game==='road'&&!s.showCash)?s.bet:(s.goSubtitle||s.bet));this.text('online',(s.online||6)+' ONLINE');
-  this.q('[data-action=auto]').setAttribute('aria-pressed',String(!!s.auto));
-  for(const a of ['auto','difficulty','min','minus','plus','max'])this.q('[data-action='+a+']').disabled=!s.canBet;
-  const go=this.q('[data-action=go]');go.disabled=!s.canGo||!!s.win;const asCash=goIsCash(s);go.classList.toggle('cash',asCash);goTimerRing(go,countdownOf(s),urgentOf(s));this.slots.playIcon.hidden=asCash;
-  const cash=this.q('[data-action=cash]');cash.hidden=!s.showCash;cash.disabled=!s.canCash||!!s.win; // Button visibility never changes the shared control layout.
-  const presets=s.presets||[2,3,8,20];const presetKey=JSON.stringify(presets);if(presetKey!==this.lastPresets){this.lastPresets=presetKey;this.q('.presets').innerHTML=presets.map(v=>'<button class="button" data-action="preset" data-value="'+Number(v)+'"><span class="coin-amount">'+esc(coinAmount(v))+'</span></button>').join('')}
-  for(const b of this.q('.presets').children){b.disabled=!s.canBet;b.setAttribute('aria-pressed',String(Number(b.dataset.value)===s.bet))}
+  this.text('difficulty',s.difficulties?.[s.difficulty]||'Normal');this.text('online',(s.online||6)+' ONLINE');
+  // Auto and the level above the three-position panel's bets.
+  const settingsAuto=this.betSettings.querySelector('[data-action=auto]');settingsAuto.setAttribute('aria-pressed',String(!!s.auto));
+  for(const b of this.betSettings.querySelectorAll('[data-action]'))b.disabled=!s.canBet;
   const flags=s.flags||{};this.q('.personal').hidden=false;this.q('.record-top').hidden=false;this.q('.records').hidden=!!this.tabbed||flags.personal_record===false;
   this.q('.winners').hidden=!!this.tabbed||flags.leaderboard===false;this.q('.history').hidden=flags.history===false;this.q('.online').hidden=flags.online_count===false;this.q('.dev').hidden=true;
   this.ladder(s.ladder,flags.multiplier_ladder!==false);
+  if(this.modal==='rules')this.syncPayTable();
   if(this.tabbed)this.tabbed.sync(s,this.features(),this.config);
   // Operator features remove whole groups; the grid releases their tracks.
-  const features=this.features(),controls=this.multiBet?.element||this.standardControls,settingsVisible=features.auto||features.difficulty;
+  const features=this.features(),controls=this.multiBet?.element,settingsVisible=features.auto||features.difficulty;
   // On a phone the preset row stays away unless the embed asks for it (?presets=1): the bet stepper is enough there.
   const presetsShown=features.presets&&(!matchMedia('(max-width:'+(CrashTokens.MODAL_PHONE_BREAKPOINT-1)+'px)').matches||new URLSearchParams(location.search).get('presets')==='1');
-  this.q('[data-action=auto]').hidden=!features.auto;this.q('[data-action=difficulty]').hidden=!features.difficulty;this.q('.settings-row').hidden=!settingsVisible;this.q('.presets').hidden=!presetsShown;
-  controls.classList.toggle('no-settings',!settingsVisible);controls.classList.toggle('auto-only',features.auto&&!features.difficulty);controls.classList.toggle('difficulty-only',features.difficulty&&!features.auto);controls.classList.toggle('no-presets',!presetsShown);
+  settingsAuto.hidden=!features.auto;this.betSettings.querySelector('[data-action=difficulty]').hidden=!features.difficulty;this.betSettings.hidden=!settingsVisible;
+  if(controls)controls.classList.toggle('no-settings',!settingsVisible);if(controls){controls.classList.toggle('auto-only',features.auto&&!features.difficulty);controls.classList.toggle('difficulty-only',features.difficulty&&!features.auto);controls.classList.toggle('no-presets',!presetsShown)}
   const featureKey=JSON.stringify(features);if(featureKey!==this.lastFeatures){const changed=this.lastFeatures!==undefined;this.lastFeatures=featureKey;const modal=this.modal||'';if((modal==='difficulty'&&!features.difficulty)||(modal.startsWith('limit:auto')&&!features.auto))this.close();else if(changed&&modal==='menu')this.open('menu')}
   const winsKey=JSON.stringify(s.wins);if(winsKey!==this.lastWins){this.lastWins=winsKey;this.q('.wins-list').innerHTML=this.winRows((s.wins||[]).slice(0,5));if(this.modal==='wins')this.q('.modal-body').innerHTML=this.winRows(s.wins||[])||'<p class=muted>No wins yet.</p>'}
   const histKey=JSON.stringify([s.game,s.history,(Array.isArray(s.bets)?s.bets:[]).map(v=>v.time)]);if(histKey!==this.lastHistory){this.lastHistory=histKey;this.q('.history').innerHTML=(s.history||[]).slice(0,15).map((v,i)=>{const spoken=Number(v.multiplier).toFixed(2)+'×',value=this.config.historyMultiplierSign===false?spoken.slice(0,-1):spoken,colour=multiplierColour(v.multiplier,s.game);if(typeof v.cashed_out!=='boolean')return '<span style="color:'+colour+'" class="pill tier-'+tintFor(v.multiplier)+'">'+value+'</span>';const label=v.cashed_out?'Cashed out':'Lost',linked=!!s.bets?.[i],tag=linked?'button':'span';return '<'+tag+(linked?' type="button" data-action="historyDetails" data-value="'+i+'"':'')+' style="color:'+colour+'" class="pill history-result tier-'+tintFor(v.multiplier)+' '+(v.cashed_out?'is-cashout':'is-loss')+'" title="'+label+'" aria-label="'+label+', '+spoken+'"><svg class="history-result-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="'+(v.cashed_out?'M2 8.5 6 12.5 12 4.5':'M4.75 4.875 12 12.125M12 4.875 4.75 12.125')+'" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>'+value+'</span></'+tag+'>'}).join('')}
@@ -607,7 +638,6 @@ class GameUI {
   if(this.lastTransferId!==undefined&&transfer!==this.lastTransferId&&s.win&&!s.winToast){this.winSound.playTransfer();requestAnimationFrame(()=>this.flyWinCoins())}
   this.lastTransferId=transfer;
   if(s.settings?.reduced_motion){this.clearWinCoins();if(this.winToast)this.releaseWinBalance()}
-  this.standardControls.hidden=!!this.multiBet||this.controlsVariant==='tabbed'||this.controlsVariant==='none';
   this.layout();
  }
  showWinToast(s){
@@ -652,7 +682,7 @@ class GameUI {
   const toast=this.winToast;if(!toast)return;
   if(this.state.settings?.reduced_motion||matchMedia('(prefers-reduced-motion: reduce)').matches){this.finishWinToast();return}
   toast.classList.add('is-leaving');
-  this.toastHideTimer=setTimeout(()=>{if(this.winToast===toast)this.finishWinToast()},300);
+  this.toastHideTimer=setTimeout(()=>{if(this.winToast===toast)this.finishWinToast()},CrashTokens.MOTION_TOAST_MS);
  }
  // A big win's celebration over the whole game, the same in every game. The amount counts up from
  // nothing and the title climbs through every tier it passes (BIG WIN, then MEGA, then EPIC), each
@@ -700,8 +730,8 @@ class GameUI {
   const total=marks.reduce((sum,m)=>sum+m.seconds,0);
   return new Promise(resolve=>{
    const started=performance.now();let finished=false,closed=false,lastTick=0,frameId=0;
-   const close=()=>{if(closed)return;closed=true;cancelAnimationFrame(frameId);fitting?.disconnect();root.classList.add('is-leaving');setTimeout(()=>{root.remove();resolve(reached[reached.length-1])},reduced?0:280)};
-   const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frameId);show(reached.length-1);figure.textContent=money(amount);root.classList.add('is-done');if(!hold)setTimeout(close,hurried?1200:2600)};
+   const close=()=>{if(closed)return;closed=true;cancelAnimationFrame(frameId);fitting?.disconnect();root.classList.add('is-leaving');setTimeout(()=>{root.remove();resolve(reached[reached.length-1])},reduced?0:CrashTokens.MOTION_BIG_WIN_OUT_MS)};
+   const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frameId);show(reached.length-1);figure.textContent=money(amount);root.classList.add('is-done');if(!hold)setTimeout(close,hurried?CrashTokens.MOTION_BIG_WIN_HURRIED_MS:CrashTokens.MOTION_BIG_WIN_HOLD_MS)};
    const frame=now=>{if(finished)return;let t=(now-started)/1000,i=0;while(i<marks.length-1&&t>marks[i].seconds){t-=marks[i].seconds;i++}
     const m=marks[i],k=Math.min(1,t/m.seconds),eased=i===marks.length-1?1-Math.pow(1-k,2.2):k;
     show(i);figure.textContent=money(m.from+(m.to-m.from)*eased);
@@ -729,12 +759,12 @@ class GameUI {
  releaseWinBalance(){
   this.heldWinBalance=undefined;
   const s=this.state;
-  this.text('balance',s.balanceKnown===false?'—':new Intl.NumberFormat(window.CrashI18n?.numberLocale||(window.CrashI18n?.locale==='fr'?'fr-FR':'en-US'),{maximumFractionDigits:0}).format(Number(s.balance||0)));fitMoney(this.slots.balance);
+  this.text('balance',s.balanceKnown===false?'—':this.balanceText(s.balance));fitMoney(this.slots.balance);
  }
  pulseBalance(){
   if(this.state.settings?.reduced_motion||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   this.balancePulse?.cancel();
-  this.balancePulse=this.slots.balance.animate([{transform:'translateY(0) scale(1)'},{transform:'translateY(-2px) scale(1.055)',offset:.3},{transform:'translateY(0) scale(1)'}],{duration:180,easing:'ease-out'});
+  this.balancePulse=this.slots.balance.animate([{transform:'translateY(0) scale(1)'},{transform:'translateY(-2px) scale(1.055)',offset:.3},{transform:'translateY(0) scale(1)'}],{duration:CrashTokens.MOTION_PULSE_MS,easing:'ease-out'});
  }
  clearWinCoins(){
   if(this.coinFrame)cancelAnimationFrame(this.coinFrame);
@@ -758,7 +788,7 @@ class GameUI {
     const progress=Math.min(1,(now-start-duration)/Math.max(1,(coins.length-1)*stagger));
     const value=this.winBalanceFrom+(Number(this.state.balance)-this.winBalanceFrom)*progress;
     if(Number.isFinite(value)){
-     this.heldWinBalance=new Intl.NumberFormat(window.CrashI18n?.numberLocale||(window.CrashI18n?.locale==='fr'?'fr-FR':'en-US'),{maximumFractionDigits:0}).format(value);
+     this.heldWinBalance=this.balanceText(value);
      this.text('balance',this.heldWinBalance);fitMoney(this.slots.balance);
     }
    }
@@ -813,7 +843,49 @@ class GameUI {
    if(key!==day){day=key;heading='<tr class="bet-day"><th colspan="3" scope="rowgroup">'+'<time data-date-only datetime="'+date.toISOString()+'">'+esc(dateText(date,'day'))+'</time>'+'</th></tr>'}
    return heading+row+'<td>'+trigger+'<time datetime="'+date.toISOString()+'">'+esc(dateText(date,'time'))+'</time></button></td><td>'+amount(v.wager,true)+'</td><td class="bet-prize">'+(v.payout>0?amount(v.payout):'—')+'</td></tr>';
   }).join('');
-  return '<table class="bets-table '+(top?'top-bets':'my-bets')+'"><caption class="bet-caption">'+esc(this.betsTitle(kind))+'</caption><thead><tr>'+(top?'<th scope="col" class="bet-rank">#</th>':'')+'<th scope="col">'+(top?'Players':'Time')+'</th><th scope="col">Wager</th>'+(top?'<th scope="col">X</th>':'')+'<th scope="col">Prize</th></tr></thead><tbody>'+body+'</tbody></table>'+(!rows.length?'<p class="bets-empty">No bets yet.</p>':'');
+  return '<table class="data-table bets-table '+(top?'top-bets':'my-bets')+'"><caption class="bet-caption">'+esc(this.betsTitle(kind))+'</caption><thead><tr>'+(top?'<th scope="col" class="bet-rank">#</th>':'')+'<th scope="col">'+(top?'Players':'Time')+'</th><th scope="col">Wager</th>'+(top?'<th scope="col">X</th>':'')+'<th scope="col">Prize</th></tr></thead><tbody>'+body+'</tbody></table>'+(!rows.length?'<p class="bets-empty">No bets yet.</p>':'');
+ }
+ /** The header's balance: whole coins, or as many decimals as the game asks (balanceDecimals). */
+ balanceText(v){const digits=this.config.balanceDecimals??0,options={useGrouping:true,minimumFractionDigits:digits,maximumFractionDigits:digits};return window.CrashI18n?.number?window.CrashI18n.number(Number(v||0),options):new Intl.NumberFormat('en-US',options).format(Number(v||0))}
+ /**
+  * A game gives its rules window a Pay table page with config.payTable: rows(bet, level), one row
+  * per step ({step, multiplier, payout}), and stake(bet, press), the stake MIN, −, + or MAX would
+  * give from that bet. The page starts at the bet and level in play and is a preview: its own
+  * level and stake change the table only, never the bet.
+  */
+ hasPayTable(){return typeof this.config.payTable?.rows==='function'&&typeof this.config.payTable?.stake==='function'}
+ /** The Pay table page: the panel's level row and stake row, then what each step pays. */
+ payTablePage(){
+  const s=this.state,names=s.difficulties||[],press=(action,text)=>'<button type="button" class="button" data-action="'+action+'" data-value="paytable">'+text+'</button>';
+  return '<div class="controls tabbed-controls paytable-controls">'
+   +(names.length&&this.features().difficulty?'<div class="difficulty-row" role="radiogroup" aria-label="Difficulty">'+levelButtons(names,'payLevel')+'</div>':'')
+   +'<div class="wager">'+stakeRow(press,'','data-paytable="bet"')+'</div>'
+   +'</div><table class="data-table paytable"><thead><tr><th scope="col">Step</th><th scope="col">Prize</th></tr></thead><tbody></tbody></table>';
+ }
+ /** Keeps an open Pay table in step with the state: the controls' choice and the prizes. */
+ syncPayTable(){
+  const page=this.q('.rules-page[data-page=paytable]');if(!page||!this.hasPayTable())return;
+  const s=this.state,pay=this.config.payTable,view=this.payView??={bet:Number(s.bet),difficulty:Number(s.difficulty)||0},bet=view.bet;
+  const lo=Number(pay.stake(bet,'min')),hi=Number(pay.stake(bet,'max'));
+  const levels=page.querySelector('.difficulty-row');if(levels)markLevel(levels,view.difficulty,false)
+  for(const [a,off] of [['min',bet<=lo],['minus',bet<=lo],['plus',bet>=hi],['max',bet>=hi]])page.querySelector('[data-action='+a+'][data-value=paytable]').disabled=off;
+  showStake(page.querySelector('[data-paytable=bet]'),bet);
+  const rows=pay.rows(bet,view.difficulty)||[],key=JSON.stringify([rows,currency,window.CrashI18n?.locale]);if(key===this.payTableKey)return;this.payTableKey=key;
+  page.querySelector('.paytable tbody').innerHTML=rows.map(r=>'<tr><td class="paytable-step">'+esc(r.step)+'</td><td class="paytable-prize">'+(Number.isFinite(Number(r.payout))?(currency?esc(amountText(r.payout))+'<span class="currency-badge">'+esc(currency)+'</span>':esc(money(r.payout))):'—')+'</td></tr>').join('');
+ }
+ /**
+  * The table runs from edge to edge of the window: the page takes the window's own side padding
+  * (it differs by preset and screen) and the controls keep it, while the table does not.
+  */
+ bleedPayTable(){
+  const modal=this.q('.modal');if(!modal||!this.q('.rules-page[data-page=paytable]'))return;
+  const style=getComputedStyle(modal);modal.style.setProperty('--paytable-bleed-start',style.paddingLeft);modal.style.setProperty('--paytable-bleed-end',style.paddingRight);
+  const amount=this.q('[data-paytable=bet]');if(amount)showStake(amount,this.payView?.bet);
+ }
+ /** The stake sheet's amounts: the game's own list, or the kit's; one the balance cannot cover is off. */
+ stakeGrid(){
+  const s=this.state,options=Array.isArray(s.stakeOptions)&&s.stakeOptions.length?s.stakeOptions:STAKE_OPTIONS;
+  return '<div class="stake-grid" role="radiogroup" aria-label="Bet amount">'+options.map(v=>'<button type="button" class="button'+(Number(v)===Number(s.bet)?' on':'')+'" role="radio" aria-checked="'+(Number(v)===Number(s.bet))+'" data-action="chooseStake" data-value="'+esc(v)+'" '+(s.balanceKnown!==false&&Number(v)>Number(s.balance)?'disabled':'')+'>'+'<span class="money coin-amount">'+coinAmount(v)+'</span>'+'</button>').join('')+'</div>';
  }
  /** The leaderboard, best payout first. */
  topBoard(){return [...(this.state.topBets||this.state.wins||[])].sort((a,b)=>b.payout-a.payout)}
@@ -890,10 +962,9 @@ class GameUI {
   // The stake as a sheet of ready amounts: one tap instead of a run of +. A game may name its
   // own (state.stakeOptions); amounts over the balance are there but cannot be picked.
   if(kind==='stake'){
-   const options=Array.isArray(s.stakeOptions)&&s.stakeOptions.length?s.stakeOptions:STAKE_OPTIONS;
    const [lo,hi]=betLimits(s);
    // MIN and MAX here are the panel's own: the game's lowest and highest stake, not a sheet amount.
-   body.innerHTML='<div class="stake-limits">'+button('min','MIN')+button('max','MAX')+'</div><div class="stake-grid" role="radiogroup" aria-label="Bet amount">'+options.map(v=>'<button type="button" class="button'+(Number(v)===Number(s.bet)?' on':'')+'" role="radio" aria-checked="'+(Number(v)===Number(s.bet))+'" data-action="chooseStake" data-value="'+esc(v)+'" '+(s.balanceKnown!==false&&Number(v)>Number(s.balance)?'disabled':'')+'>'+'<span class="money coin-amount">'+coinAmount(v)+'</span>'+'</button>').join('')+'</div>';
+   body.innerHTML='<div class="stake-limits">'+button('min','MIN')+button('max','MAX')+'</div>'+this.stakeGrid();
    const [minB,maxB]=body.querySelectorAll('.stake-limits .button');minB.disabled=Number(s.bet)<=lo;maxB.disabled=Number(s.bet)>=hi;
   }
   if(kind==='difficulty'){
@@ -916,7 +987,12 @@ class GameUI {
    if(this.config.rulesHTML||window.CrashI18n?.rulesDocument?.())body.innerHTML+=button('rules','How to play','flat-button');
    body.innerHTML+='<p class="modal-note centered">'+esc(this.config.menuNote||'Progress saved on this device')+'</p>';
   }
-  if(kind==='rules')body.innerHTML=(this.rulesFrom==='tab'?'':'<button class="text-button back-button" data-action="back">← Back to menu</button>')+(this.config.rulesHTML||'<p class=muted>No rules provided.</p>');
+  if(kind==='rules'){
+   const rules=this.config.rulesHTML||'<p class=muted>No rules provided.</p>',paged=this.hasPayTable(),page=paged&&this.rulesPage==='paytable'?'paytable':'rules';
+   body.innerHTML=(this.rulesFrom==='tab'?'':'<button class="text-button back-button" data-action="back">← Back to menu</button>')
+    +(paged?'<div class="rules-page" data-page="'+page+'" role="tabpanel">'+(page==='paytable'?this.payTablePage():rules)+'</div>':rules);
+   if(paged){this.q('.modal h2').textContent=page==='paytable'?'Pay table':'How to play';body.classList.toggle('rules-content',page==='rules');this.payTableKey='';this.syncPayTable();requestAnimationFrame(()=>this.bleedPayTable());if(!this.payTableResize){this.payTableResize=()=>this.bleedPayTable();addEventListener('resize',this.payTableResize)}}
+  }
   if(kind==='topbets'||kind==='mybets')body.innerHTML=this.betTable(kind);
   if(kind.startsWith('limit:')){
    const key=kind.slice(6),option=this.limitOptions()[key];
@@ -929,7 +1005,7 @@ class GameUI {
    if(this.tabbed)body.innerHTML='';
    // Winnings are paid in the currency, so a money() figure carries its unit and never the coin.
    const row=(k,v,tone='')=>'<div class="setting"><span>'+esc(k)+'</span><strong class="account-stat '+tone+'">'+esc(v)+'</strong></div>';
-   body.innerHTML+=row('Balance',s.balanceKnown===false?'Not provided by API':money(s.balance,0))+row('Personal record',money(s.personal),'gold')+'<h3 class="modal-section-title">This session</h3>'+row('Completed rounds',s.rounds||0)+row('Successful cash outs',s.roundWins||0,'success')+row('Best cashed-out multiplier',s.roundWins?Number(s.bestMultiplier||0).toFixed(2)+'×':'—','gold');
+   body.innerHTML+=row('Balance',s.balanceKnown===false?'Not provided by API':money(s.balance,this.config.balanceDecimals??0))+row('Personal record',money(s.personal),'gold')+'<h3 class="modal-section-title">This session</h3>'+row('Completed rounds',s.rounds||0)+row('Successful cash outs',s.roundWins||0,'success')+row('Best cashed-out multiplier',s.roundWins?Number(s.bestMultiplier||0).toFixed(2)+'×':'—','gold');
    if(this.tabbed){
     const stat=(label,value,tone='',wide=false)=>'<div class="account-session-stat'+(wide?' account-session-wide':'')+'"><span>'+label+'</span><strong class="'+tone+'">'+esc(value)+'</strong></div>';
     body.innerHTML='<div class="account-record-card"><span class="account-record-label"><span>Personal record</span></span><strong>'+esc(money(s.personal))+'</strong></div><h3 class="modal-section-title">This session</h3><div class="account-session-grid">'+stat('Completed rounds',s.rounds||0)+stat('Successful cash outs',s.roundWins||0,'success')+stat('Best cashed-out multiplier',s.roundWins?Number(s.bestMultiplier||0).toFixed(2)+'×':'—','gold',true)+'</div>';
@@ -950,17 +1026,19 @@ class GameUI {
   if(kind==='dev')body.innerHTML=Object.entries({leaderboard:'Leaderboard / live wins',history:'Round history',personal_record:'My record',online_count:'Online count',...(s.game==='market_stack'?{multiplier_ladder:'Multiplier ladder'}:{})}).map(([k,v])=>'<label class="setting">'+v+'<input class="switch" type="checkbox" role="switch" data-flag="'+k+'" '+(s.flags?.[k]!==false?'checked':'')+'></label>').join('');
   if(kind==='win'){
    body.innerHTML=(this.tabbed?'<div class="win-emblem" aria-hidden="true"><span class="win-spark win-spark-left">✦</span>':'')+'<img class="win-coin" src="'+base+'assets/icons/coin.png'+version+'" alt="">'+(this.tabbed?'<span class="win-spark win-spark-right">✦</span></div>':'')+'<div class="win-total">'+money(s.winAmount)+'</div>'+(this.tabbed?'':'<div class="win-subtitle">'+esc(s.winSubtitle||'Well played!')+'</div>');
-   if(!s.settings?.reduced_motion){const fx=document.createElement('div');fx.className='confetti';fx.innerHTML=Array.from({length:32},(_,i)=>'<i style="--angle:'+i*13+'deg;--x:'+((Math.random()-.5)*600)+'px;--y:'+(Math.random()*400-240)+'px"></i>').join('');layer.append(fx);setTimeout(()=>fx.remove(),2000)}
+   if(!s.settings?.reduced_motion){const fx=document.createElement('div');fx.className='confetti';fx.innerHTML=Array.from({length:32},(_,i)=>'<i style="--angle:'+i*13+'deg;--x:'+((Math.random()-.5)*600)+'px;--y:'+(Math.random()*400-240)+'px"></i>').join('');layer.append(fx);setTimeout(()=>fx.remove(),CrashTokens.MOTION_CONFETTI_CLEAR_MS)}
   }
-  this.q('.drawer-tabs')?.remove();
+  this.q('.drawer-sections')?.remove();
   this.q('[data-action=close]').innerHTML=icon('close.svg');
   if(this.tabbed){this.q('[data-action=close]').innerHTML='<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m4 4 16 16M20 4 4 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';}
   const drawerBody=this.q('.modal-body');drawerBody.removeAttribute('role');drawerBody.removeAttribute('aria-labelledby');drawerBody.removeAttribute('id');
   if(drawer){
-   const nav=document.createElement('div');nav.className='drawer-tabs';nav.setAttribute('role','tablist');nav.setAttribute('aria-label','Menu sections');
-   nav.innerHTML=[['topbets','Top bets'],['mybets','My bets'],['rules','Rules'],['menu','Settings']].map(([id,label])=>'<button type="button" class="drawer-tab" role="tab" id="drawer-tab-'+id+'" aria-controls="drawer-panel" aria-selected="'+(kind===id)+'" tabindex="'+(kind===id?'0':'-1')+'" data-action="drawerTab" data-value="'+id+'"><span class="drawer-tab-label">'+label+'</span></button>').join('');
-   drawerBody.before(nav);drawerBody.id='drawer-panel';drawerBody.setAttribute('role','tabpanel');drawerBody.setAttribute('aria-labelledby','drawer-tab-'+kind);this.q('.modal h2').textContent=kind==='menu'?'Settings':kind==='rules'?'Rules':this.betsTitle(kind);
+   const nav=segmented('drawer-sections','Menu sections',[['topbets','Top bets'],['mybets','My bets'],['rules','Rules'],['menu','Settings']],kind,'drawerTab','drawer-panel');
+   drawerBody.before(nav);drawerBody.id='drawer-panel';drawerBody.setAttribute('role','tabpanel');drawerBody.setAttribute('aria-labelledby','drawer-panel-'+kind);this.q('.modal h2').textContent=kind==='menu'?'Settings':kind==='rules'?'Rules':this.betsTitle(kind);
   }
+  // The two pages' switch sits above the scrolling page, so it stays in view while the page scrolls.
+  this.q('.rules-pages')?.remove();
+  if(kind==='rules'&&this.hasPayTable())this.q('.modal-body').before(segmented('rules-pages','Rules',[['rules','How to play'],['paytable','Pay table']],this.rulesPage==='paytable'?'paytable':'rules','rulesPage'));
   const tabView=!drawer&&!!this.tabbed&&['topbets','mybets','rules'].includes(kind)&&(kind!=='rules'||this.rulesFrom==='tab');
   layer.classList.toggle('is-tab-view',tabView);
   layer.classList.toggle('is-rules-panel',tabView&&kind==='rules');
@@ -978,7 +1056,7 @@ class GameUI {
   }
   this.tabPresentation();
   const history=this.q('.history'),historyRect=history.getBoundingClientRect();
-  this.host.style.setProperty('--win-toast-top',(historyRect.height>0?historyRect.top-this.host.getBoundingClientRect().top:72)+'px');
+  this.host.style.setProperty('--win-toast-top',(historyRect.height>0?historyRect.top-this.host.getBoundingClientRect().top:CrashTokens.WEB_WIN_TOAST_TOP)+'px');
   requestAnimationFrame(()=>{const target=drawer?layer.querySelector('[role=tab][aria-selected=true]'):layer.querySelector('button:not([hidden]),input,select');if(target)target.focus({preventScroll:true});else{this.q('.modal').tabIndex=-1;this.q('.modal').focus()}});
  }
  tabPresentation(){
@@ -1007,7 +1085,7 @@ class GameUI {
   }
 
   if(contextual&&innerWidth>=CrashTokens.CRASH_MEDIUM_BREAKPOINT){
-   const rail=this.tabbed.tabs.getBoundingClientRect(),controls=(this.controlsVariant==='tabbed'?this.tabbed.element:this.multiBet?.element||this.standardControls).getBoundingClientRect();
+   const rail=this.tabbed.tabs.getBoundingClientRect(),controls=(this.multiBet?.element||this.tabbed.element).getBoundingClientRect();
    const css=getComputedStyle(this.host),token=name=>parseFloat(css.getPropertyValue(name));
    const gap=token('--space-8'),edge=token('--space-16'),preferred=token('--web-context-panel-width');
    const left=rail.right+gap,beside=controls.left-left-gap;
@@ -1015,7 +1093,7 @@ class GameUI {
    // the window may extend above them, but never across their action buttons.
    const fitsBeside=beside>=6*token('--web-control-comfort-height');
    const width=Math.min(preferred,innerWidth-left-edge,fitsBeside?beside:preferred);
-   const actions=(this.controlsVariant==='tabbed'?this.tabbed.q('.actions'):this.multiBet?.element||this.standardControls.querySelector('.actions')).getBoundingClientRect();
+   const actions=(this.multiBet?.element||this.tabbed.q('.actions')).getBoundingClientRect();
    const bottom=fitsBeside?innerHeight-edge:Math.min(innerHeight-edge,actions.top-gap);
    // One height cap across desktop and intermediate layouts; scroll the content.
    const height=Math.min(preferred+2*token('--space-48'),bottom-edge);
@@ -1098,8 +1176,8 @@ class GameUI {
   this.tabPresentation();
   fitMoney(this.slots.balance);this.tabbed?.fitBet();
   const history=this.q('.history'),historyRect=history.getBoundingClientRect();
-  this.host.style.setProperty('--win-toast-top',(historyRect.height>0?historyRect.top-this.host.getBoundingClientRect().top:72)+'px');
-  this.host.style.setProperty('--dev-top',(Math.max(a.bottom,wide?winners.getBoundingClientRect().bottom:0)+8)+'px');
+  this.host.style.setProperty('--win-toast-top',(historyRect.height>0?historyRect.top-this.host.getBoundingClientRect().top:CrashTokens.WEB_WIN_TOAST_TOP)+'px');
+  this.host.style.setProperty('--dev-top',(Math.max(a.bottom,wide?winners.getBoundingClientRect().bottom:0)+CrashTokens.SPACE_8)+'px');
   // The fishing boat occupies the right side; reserve the taller Live Wins panel too.
   const sceneTop=this.state.game==='gold'?account.getBoundingClientRect().bottom:
    ['haul','catch'].includes(this.state.game)&&wide?Math.max(a.bottom,winners.getBoundingClientRect().bottom):a.bottom;
@@ -1111,5 +1189,5 @@ class GameUI {
  destroy(){this.balancePulse?.cancel();this.finishWinToast();document.removeEventListener('click',this.dismissWinClick,true);this.winSound.destroy();this.bettingSound.destroy();this.clearWinCoins();this.resize.disconnect();document.removeEventListener('keydown',this.keyHandler);document.removeEventListener('pointerdown',this.outsideMenu,true);this.host.remove()}
 }
 let callback=null,instance=null;
-window.CrashUI={presentationPresets:Object.freeze({'menu-drawer-v1':Object.freeze({id:'menu-drawer-v1',title:'Menu tabs',version:1,scope:'header-navigation-windows'}),'tabbed-shell-v1':Object.freeze({id:'tabbed-shell-v1',title:'Bottom tabs',version:1,scope:'header-navigation-windows'})}),GameUI,MultiBetControls,connect(fn){callback=fn;if(!instance){const host=document.createElement('div');host.hidden=true;document.body.append(host);instance=new GameUI(host,(action,data)=>callback?.(JSON.stringify({action,...data})));}return true},receive(state){instance?.update(typeof state==='string'?JSON.parse(state):state)},get instance(){return instance}};
+window.CrashUI={presentationPresets:Object.freeze({'menu-drawer-v1':Object.freeze({id:'menu-drawer-v1',title:'Menu tabs',version:1,scope:'header-navigation-windows'}),'tabbed-shell-v1':Object.freeze({id:'tabbed-shell-v1',title:'Bottom tabs',version:1,scope:'header-navigation-windows'})}),GameUI,MultiBetControls,connect(fn,config={}){callback=fn;if(!instance){const host=document.createElement('div');host.hidden=true;document.body.append(host);instance=new GameUI(host,(action,data)=>callback?.(JSON.stringify({action,...data})),config);}return true},receive(state){instance?.update(typeof state==='string'?JSON.parse(state):state)},get instance(){return instance}};
 })();

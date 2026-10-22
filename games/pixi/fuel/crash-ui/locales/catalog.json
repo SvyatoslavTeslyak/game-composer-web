@@ -7857,6 +7857,40 @@
         "tabbed-shell-v1"
       ],
       "previewWindow": "topbets"
+    },
+    "pay_table_0e995f": {
+      "source": "Pay table",
+      "en": "Pay table",
+      "fr": "Table des gains",
+      "ht": "Tablo peman",
+      "group": "Tabs & windows",
+      "games": [
+        "road"
+      ],
+      "usage": [
+        "text"
+      ],
+      "presets": [
+        "tabbed-shell-v1"
+      ],
+      "previewWindow": "rules"
+    },
+    "step_dc416e": {
+      "source": "Step",
+      "en": "Step",
+      "fr": "Étape",
+      "ht": "Etap",
+      "group": "Tabs & windows",
+      "games": [
+        "road"
+      ],
+      "usage": [
+        "text"
+      ],
+      "presets": [
+        "tabbed-shell-v1"
+      ],
+      "previewWindow": "rules"
     }
   }
 }

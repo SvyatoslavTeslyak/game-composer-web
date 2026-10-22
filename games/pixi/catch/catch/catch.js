@@ -38,7 +38,7 @@ const accountUI=new CatchAccountUI(accountHost,(action,data)=>{
   if(data.key==='reduced_motion')reduceMotion=!!data.value;
   send('setting',data);
  }
-},{controlsVariant:'three-position',menuSettings:['sound','music'],refill:false,menuNote:'Catch Clash · demo credits',rulesHTML:Array.from($('.catch-dialog').querySelectorAll('p')).map(p=>p.outerHTML).join('')});accountHost.classList.add('catch-shared');
+},{presentationPreset:'tabbed-shell-v1',controlsVariant:'three-position',menuSettings:['sound','music'],refill:false,menuNote:'Catch Clash · demo credits',rulesHTML:Array.from($('.catch-dialog').querySelectorAll('p')).map(p=>p.outerHTML).join('')});accountHost.classList.add('catch-shared');
 // Reserve the same scene boundary for the large countdown and the smaller multiplier badge.
 const multiplierSlot=document.createElement('div');multiplierSlot.className='catch-multiplier-slot';
 const multiplierDisplay=accountUI.q('.multiplier');multiplierDisplay.before(multiplierSlot);multiplierSlot.append(multiplierDisplay);
