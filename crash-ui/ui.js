@@ -18,6 +18,10 @@ const multiplierColour=(m,game)=>game==='road'?(Number(m)<=0?'var(--lane-lost)':
 const goIsCash=s=>s.goCash!==undefined?!!s.goCash:s.goTitle==='CASH OUT';
 // A sum without its currency, written as money() writes it; the currency then goes beside it.
 const amountText=(v,digits=2)=>window.CrashI18n?.locale==='fr'||window.CrashI18n?.numberLocale?window.CrashI18n.number(Number(v||0),{minimumFractionDigits:digits,maximumFractionDigits:digits}):Number(v||0).toFixed(digits);
+// A sum in the kit's tables: the figure, then the currency as a small tag (HTG); $ before the figure when there is no currency.
+const prizeHtml=v=>currency?esc(amountText(v))+'<span class="currency-badge">'+esc(currency)+'</span>':esc(money(v));
+// A lost bet's prize: a double hyphen where the figure would be, with the currency as for a sum.
+const LOST='--';const lostPrizeHtml=()=>currency?LOST+'<span class="currency-badge">'+esc(currency)+'</span>':LOST;
 const money=(v,digits=2)=>window.CrashI18n?.locale==='fr'||window.CrashI18n?.numberLocale?window.CrashI18n.number(Number(v||0),{minimumFractionDigits:digits,maximumFractionDigits:digits})+' '+(currency||'$'):currency?Number(v||0).toFixed(digits)+' '+currency:'$'+Number(v||0).toFixed(digits);
 const wager=v=>money(v,Number.isInteger(Number(v||0))?0:2);
 // On an action button the currency is a small unit after the figure, so a payout stays on one
@@ -832,7 +836,7 @@ class GameUI {
   this.betRows=[...rows.map((v,i)=>({...v,rank:top?i+1:''})),...(own?[own]:[])];
   if(this.modal===kind&&!this.betDetail&&this.q('.modal h2'))this.q('.modal h2').textContent=this.betsTitle(kind);
   // A stake is counted in coins, a payout in the currency, in the table as on the panel.
-  const amount=(v,stake=false)=>Number.isFinite(v)?(stake?'<span class="coin-amount">'+esc(coinAmount(v))+'</span>':esc(money(v))):'—';
+  const amount=(v,stake=false)=>Number.isFinite(v)?(stake?'<span class="coin-amount">'+esc(coinAmount(v))+'</span>':prizeHtml(v)):'—';
   let day='';
   const topRow=(v,i,rank,cls='')=>'<tr class="bet-selectable'+cls+'" data-action="betDetails" data-value="'+i+'"><td class="bet-rank">'+esc(rank)+'</td><td><button type="button" class="bet-row-open" data-action="betDetails" data-value="'+i+'" aria-label="View bet details for '+esc(v.name)+'"><span class="bet-player">'+avatar(v.name,s.players)+'<span title="'+esc(v.name)+'">'+esc(v.name)+'</span></span></button></td><td>'+amount(v.wager,true)+'</td><td>'+(Number.isFinite(Number(v.multiplier))?esc(Number(v.multiplier).toFixed(2))+'×':'—')+'</td><td class="bet-prize">'+amount(v.payout)+'</td></tr>';
   const body=(own?topRow(own,rows.length,own.rank,' is-mine'):'')+rows.map((v,i)=>{
@@ -841,7 +845,7 @@ class GameUI {
    const trigger='<button type="button" class="bet-row-open" data-action="betDetails" data-value="'+i+'" aria-label="View bet details">';
    const date=new Date(v.time),key=date.toDateString();let heading='';
    if(key!==day){day=key;heading='<tr class="bet-day"><th colspan="3" scope="rowgroup">'+'<time data-date-only datetime="'+date.toISOString()+'">'+esc(dateText(date,'day'))+'</time>'+'</th></tr>'}
-   return heading+row+'<td>'+trigger+'<time datetime="'+date.toISOString()+'">'+esc(dateText(date,'time'))+'</time></button></td><td>'+amount(v.wager,true)+'</td><td class="bet-prize">'+(v.payout>0?amount(v.payout):'—')+'</td></tr>';
+   return heading+row+'<td>'+trigger+'<time datetime="'+date.toISOString()+'">'+esc(dateText(date,'time'))+'</time></button></td><td>'+amount(v.wager,true)+'</td><td class="bet-prize">'+(v.payout>0?amount(v.payout):lostPrizeHtml())+'</td></tr>';
   }).join('');
   return '<table class="data-table bets-table '+(top?'top-bets':'my-bets')+'"><caption class="bet-caption">'+esc(this.betsTitle(kind))+'</caption><thead><tr>'+(top?'<th scope="col" class="bet-rank">#</th>':'')+'<th scope="col">'+(top?'Players':'Time')+'</th><th scope="col">Wager</th>'+(top?'<th scope="col">X</th>':'')+'<th scope="col">Prize</th></tr></thead><tbody>'+body+'</tbody></table>'+(!rows.length?'<p class="bets-empty">No bets yet.</p>':'');
  }
@@ -871,7 +875,7 @@ class GameUI {
   for(const [a,off] of [['min',bet<=lo],['minus',bet<=lo],['plus',bet>=hi],['max',bet>=hi]])page.querySelector('[data-action='+a+'][data-value=paytable]').disabled=off;
   showStake(page.querySelector('[data-paytable=bet]'),bet);
   const rows=pay.rows(bet,view.difficulty)||[],key=JSON.stringify([rows,currency,window.CrashI18n?.locale]);if(key===this.payTableKey)return;this.payTableKey=key;
-  page.querySelector('.paytable tbody').innerHTML=rows.map(r=>'<tr><td class="paytable-step">'+esc(r.step)+'</td><td class="paytable-prize">'+(Number.isFinite(Number(r.payout))?(currency?esc(amountText(r.payout))+'<span class="currency-badge">'+esc(currency)+'</span>':esc(money(r.payout))):'—')+'</td></tr>').join('');
+  page.querySelector('.paytable tbody').innerHTML=rows.map(r=>'<tr><td class="paytable-step">'+esc(r.step)+'</td><td class="paytable-prize">'+(Number.isFinite(Number(r.payout))?prizeHtml(r.payout):'—')+'</td></tr>').join('');
  }
  /**
   * The table runs from edge to edge of the window: the page takes the window's own side padding
@@ -928,7 +932,7 @@ class GameUI {
   // The same size of disc for every bet: a player's face, or the medal / the coins in a glow.
   const hero=mine?'<div class="bet-detail-outcome '+(won?'is-won':'is-lost')+'">'+icon(won?'outcome-won.webp':'outcome-lost.webp')+'</div>':'<div class="bet-detail-avatar">'+avatar(name,this.state.players)+'<span class="bet-detail-rank">'+(won?icon('trophy-badge.webp'):'')+(entry.rank?'<b>#'+esc(entry.rank)+'</b>':'')+'</span></div>';
   body.innerHTML='<div class="bet-detail-hero">'+hero+'</div><h3 class="bet-detail-title">'+(mine?(won?'Prize':'Wager'):esc(name))+'</h3>'+(hasDate?'<p class="bet-detail-date"><time datetime="'+date.toISOString()+'">'+esc(dateText(date,'full'))+'</time></p>':'')
-   +'<div class="bet-detail-list">'+row('WAGER',Number.isFinite(entry.wager)?esc(coinAmount(entry.wager)):'—','',Number.isFinite(entry.wager))+row('MULTIPLIER',multiplier!==null?esc(multiplier.toFixed(2))+'×':'—')+row('PRIZE',value(entry.payout),'is-prize')+'</div>'
+   +'<div class="bet-detail-list">'+row('WAGER',Number.isFinite(entry.wager)?esc(coinAmount(entry.wager)):'—','',Number.isFinite(entry.wager))+row('MULTIPLIER',multiplier!==null?esc(multiplier.toFixed(2))+'×':'—')+row('PRIZE',entry.payout>0?value(entry.payout):LOST+(currency?'<small class="money-unit">'+esc(currency)+'</small>':''),'is-prize')+'</div>'
    +(result&&!mine?tile(esc(result.label),esc(result.value),'bet-detail-result'+(won?' is-won':' is-lost'),!won):'')
    +(this.config.renderBetExtras?.(entry) ?? (rest.length?'<div class="bet-detail-extras">'+rest.map(d=>tile(esc(d.label),esc(d.value))).join('')+'</div>':''));
   body.scrollTop=0;back.focus();

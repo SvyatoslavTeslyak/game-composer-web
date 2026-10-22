@@ -896,7 +896,7 @@
 /* Every table writes its sums in the numbers face, at the size of the bets tables. */
 .crash-ui .paytable td:last-child{font-family:var(--font-numbers),var(--font-body),sans-serif}
 /* The currency is a quiet tag beside the sum, not a second figure. */
-.crash-ui .paytable .currency-badge{display:inline-block;margin-left:var(--space-4);padding:var(--stroke-2) var(--space-4);border-radius:var(--radius-4);background:color-mix(in srgb,var(--text) var(--tint-12),transparent);color:var(--text-muted);font-family:var(--font-body),sans-serif;font-size:var(--type-12);font-weight:var(--weight-semibold);letter-spacing:var(--tracking-sm);line-height:var(--leading-none);vertical-align:middle}
+.crash-ui .data-table .currency-badge{display:inline-block;margin-left:var(--space-4);padding:var(--stroke-2) var(--space-4);border-radius:var(--radius-4);background:color-mix(in srgb,var(--text) var(--tint-12),transparent);color:var(--text-muted);font-family:var(--font-body),sans-serif;font-size:var(--type-12);font-weight:var(--weight-semibold);letter-spacing:var(--tracking-sm);line-height:var(--leading-none);vertical-align:middle}
 @media(max-width:599px){
  .crash-ui .modal-layer.is-tab-view .modal:not(:has(.bets-table)){padding:var(--space-16)}
 }
@@ -1015,7 +1015,7 @@
    section in a pill track, the chosen one lit. */
 .crash-ui .segmented{display:flex;align-items:stretch;gap:0;flex:none;padding:var(--space-4);border:var(--stroke-1) solid var(--border);border-radius:var(--radius-pill);background:color-mix(in srgb,var(--text) var(--tint-4),var(--surface))}
 .crash-ui.has-menu-drawer .modal.is-bet-detail .drawer-sections{display:none}
-.crash-ui .segment{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;flex:1 1 auto;height:max(var(--tap-min),calc(var(--type-12) * var(--leading-tight) * var(--lines-tab-label) + var(--space-8)));min-height:var(--tap-min);padding:0;font-size:var(--type-12);line-height:var(--leading-tight);text-align:center;white-space:normal;overflow-wrap:normal;appearance:none;border:0;border-radius:var(--radius-pill);background:transparent;color:var(--text-muted);box-shadow:none;transition:background var(--motion-fast-ms),color var(--motion-fast-ms)}
+.crash-ui .segment{position:relative;display:flex;align-items:center;justify-content:center;min-width:min-content;flex:1 1 auto;height:max(var(--tap-min),calc(var(--type-14) * var(--leading-tight) * var(--lines-tab-label) + var(--space-8)));min-height:var(--tap-min);padding:0 var(--space-6);font-size:var(--type-14);line-height:var(--leading-tight);text-align:center;white-space:normal;overflow-wrap:normal;appearance:none;border:0;border-radius:var(--radius-pill);background:transparent;color:var(--text-muted);box-shadow:none;transition:background var(--motion-fast-ms),color var(--motion-fast-ms)}
 .crash-ui .segment:hover{background:color-mix(in srgb,var(--text) var(--tint-6),transparent);color:var(--text)}
 .crash-ui .segment[aria-selected=true]{background:color-mix(in srgb,var(--action-go) var(--tint-14),var(--surface));color:var(--action-go)}
 .crash-ui .segment:focus-visible{outline-offset:calc(-1 * var(--stroke-3))}
@@ -1104,7 +1104,8 @@
 
 .crash-ui.has-tabbed-controls .modal-layer.is-bets-panel .modal:has(.bets-table){--table-inset:var(--space-16);padding-inline:var(--space-16)}
 
-.crash-ui .segment-label{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--lines-tab-label);overflow:hidden;overflow-wrap:anywhere;min-width:0}
+/* A long name wraps between its words, never inside one: the segment is never narrower than its longest word. */
+.crash-ui .segment-label{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--lines-tab-label);overflow:hidden;overflow-wrap:normal}
 
 /* The mark and the figure read as one: a small gap between them, more air at the round ends. */.crash-ui .history .history-result{display:inline-flex;align-items:center;gap:var(--space-4);padding:0 var(--space-12);flex-shrink:0;font-family:var(--font-numbers),var(--font-body),sans-serif}.crash-ui .history .history-result.is-cashout .history-result-icon{color:var(--success)}.crash-ui .history .history-result.is-loss .history-result-icon{color:var(--danger)}/* One drawn mark for both results, the same box and stroke: font glyphs drew the cross larger
    and thinner than the check. The open check is drawn larger than the dense cross so the two
