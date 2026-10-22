@@ -838,7 +838,7 @@ class GameUI {
   // A stake is counted in coins, a payout in the currency, in the table as on the panel.
   const amount=(v,stake=false)=>Number.isFinite(v)?(stake?'<span class="coin-amount">'+esc(coinAmount(v))+'</span>':prizeHtml(v)):'—';
   let day='';
-  const topRow=(v,i,rank,cls='')=>'<tr class="bet-selectable'+cls+'" data-action="betDetails" data-value="'+i+'"><td class="bet-rank">'+esc(rank)+'</td><td><button type="button" class="bet-row-open" data-action="betDetails" data-value="'+i+'" aria-label="View bet details for '+esc(v.name)+'"><span class="bet-player">'+avatar(v.name,s.players)+'<span title="'+esc(v.name)+'">'+esc(v.name)+'</span></span></button></td><td>'+amount(v.wager,true)+'</td><td>'+(Number.isFinite(Number(v.multiplier))?esc(Number(v.multiplier).toFixed(2))+'×':'—')+'</td><td class="bet-prize">'+amount(v.payout)+'</td></tr>';
+  const topRow=(v,i,rank,cls='')=>'<tr class="bet-selectable'+cls+'" data-action="betDetails" data-value="'+i+'"><td class="bet-rank">'+esc(rank)+'</td><td><button type="button" class="bet-row-open" data-action="betDetails" data-value="'+i+'" aria-label="View bet details for '+esc(v.name)+'"><span class="bet-player">'+avatar(v.name,s.players)+'<span title="'+esc(v.name)+'">'+esc(v.name)+'</span></span></button></td><td>'+amount(v.wager,true)+'</td><td>'+(Number.isFinite(Number(v.multiplier))?esc(Number(v.multiplier).toFixed(2)):'—')+'</td><td class="bet-prize">'+amount(v.payout)+'</td></tr>';
   const body=(own?topRow(own,rows.length,own.rank,' is-mine'):'')+rows.map((v,i)=>{
    if(top)return topRow(v,i,i+1);
    const row='<tr class="bet-selectable" data-action="betDetails" data-value="'+i+'">';
