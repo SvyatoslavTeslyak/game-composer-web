@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "M\u00f2pyon Cascades",
+    "fr": "M\u00f2pyon Cascades",
+    "ht": "M\u00f2pyon Cascades"
+  },
+  "default": "thumbnail.png",
+  "tenants": {
+    "LotomobilPlayers": "thumbnails/LotomobilPlayers.png",
+    "NumbaGhanaPlayers": "thumbnails/NumbaGhanaPlayers.png",
+    "NumbaNigeriaPlayers": "thumbnails/NumbaNigeriaPlayers.png"
+  }
+}

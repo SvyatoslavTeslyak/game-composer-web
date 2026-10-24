@@ -178,6 +178,9 @@
 --motion-confetti-clear-ms:2000ms;
 --motion-charge-ms:350ms;
 --motion-pour-ms:600ms;
+--motion-message-toast-ms:2200ms;
+--motion-music-fade-in-ms:2000ms;
+--motion-music-fade-out-ms:1000ms;
 --web-elevation-panel-y:4px;
 --web-elevation-panel-blur:12px;
 --web-elevation-sheet-y:6px;
@@ -190,6 +193,9 @@
 --web-big-win-rays:640px;
 --web-rain-start:80px;
 --web-win-toast-top:72px;
+--web-win-toast-compact-flip:28px;
+--web-win-toast-compact-inline:14px;
+--web-scroll-end-margin:80px;
 --web-icon-sm:20px;
 --web-icon-md:24px;
 --web-icon-lg:32px;

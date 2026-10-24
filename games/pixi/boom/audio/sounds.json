@@ -2,7 +2,7 @@
   "version": 1,
   "game": "boom",
   "title": "Fruit Boom",
-  "owner": "Audio (src/platform/audio.ts)",
+  "owner": "The kit's CrashAudio (crash-ui/audio.js), from src/main.ts",
   "events": [
     {
       "id": "slice",

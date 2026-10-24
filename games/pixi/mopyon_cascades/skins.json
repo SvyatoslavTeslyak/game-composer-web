@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "about": "The pictures a tenant or one of its themes may replace. Composer reads this file from the build: the thumbnail is set per tenant in Game settings, and every other slot is offered in the Assets tab. On release the chosen files are written into `brands`.",
+  "links": {
+    "SpriteCook": "https://spritecook.ai"
+  },
+  "groups": [
+    {
+      "id": "game",
+      "title": "Game"
+    }
+  ],
+  "slots": [
+    {
+      "id": "thumbnail",
+      "group": "game",
+      "title": "Thumbnail",
+      "file": "art/thumbnail.png",
+      "size": [
+        512,
+        512
+      ],
+      "prompt": "A square game thumbnail for Mòpyon Cascades, 512 × 512 px, shown as the game's tile in an app's lobby, on the showcase and in link previews: [the game's hero and its world in one bold, readable picture, with the game's name Mòpyon Cascades in big playful letters]. Bright, saturated cartoon mobile-game art, thick dark outlines, soft cel shading, light from the top left. Fills the square edge to edge, no rounded corners, no border, no transparent margins."
+    }
+  ]
+}

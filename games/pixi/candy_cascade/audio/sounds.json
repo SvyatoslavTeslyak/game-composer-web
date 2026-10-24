@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "game": "candy_cascade",
+  "title": "Candy Cascade",
+  "owner": "The music through the kit's CrashAudio (crash-ui/audio.js), from src/main.ts. The candies' sounds are src/platform/audio.ts's own files in public/audio.",
+  "events": [
+    {
+      "id": "music",
+      "label": "Background music",
+      "trigger": "Loops in the background while Music is on.",
+      "volume_db": -14.9,
+      "pitch_jitter": 0,
+      "generator": "ElevenLabs",
+      "takes": [
+        {
+          "file": "public/audio/music.m4a",
+          "enabled": true,
+          "source": "elevenlabs"
+        }
+      ]
+    }
+  ]
+}

@@ -561,7 +561,7 @@
 .crash-ui .notice-text{margin:0;max-width:var(--web-account-popover-width);color:var(--text-muted);font-size:var(--type-16);line-height:var(--leading-body)}
 .crash-ui .notice-actions{display:grid;justify-items:center;gap:var(--space-8);width:100%;max-width:var(--web-account-popover-width);margin-top:var(--space-16)}
 .crash-ui .notice-actions .button{width:100%;min-height:var(--tap-min);border-radius:var(--radius-pill);font-size:var(--type-18);font-weight:var(--weight-bold)}
-.crash-ui .notice-actions .primary-button{color:var(--on-go);border:var(--stroke-1) solid var(--action-go-edge);background:linear-gradient(var(--action-go-top),var(--action-go-bottom));box-shadow:inset 0 0 0 var(--stroke-2) color-mix(in srgb,var(--action-go-edge) calc(var(--alpha-soft) * 100%),transparent),0 var(--web-control-depth) 0 var(--action-go-shadow)}
+.crash-ui :is(.notice-actions,.sheet-actions) .primary-button{color:var(--on-go);border:var(--stroke-1) solid var(--action-go-edge);background:linear-gradient(var(--action-go-top),var(--action-go-bottom));box-shadow:inset 0 0 0 var(--stroke-2) color-mix(in srgb,var(--action-go-edge) calc(var(--alpha-soft) * 100%),transparent),0 var(--web-control-depth) 0 var(--action-go-shadow)}
 /* The arrow rides with the label, a little above its baseline, the way a link mark does. */
 .crash-ui .leave-arrow{width:var(--type-20);height:var(--type-20);flex:none;margin-left:var(--space-8)}
 /* The balance is the way to the wallet, so it is built like the buttons beside it: the same
@@ -1153,6 +1153,30 @@
 .crash-ui .win-toast.is-center .win-flip{width:var(--space-48);height:var(--space-48)}
 .crash-ui .win-toast.is-center .win-toast-card>div>strong{font-size:var(--type-16)}
 .crash-ui .win-toast.is-center .win-toast-card>div>span{font-size:var(--type-32)}
+/* The compact toast (config.winToastCompact): a smaller card and mark, and the game's detail line
+   (state.winToastDetail) beside the amount, for a game whose board leaves little room above it. */
+.crash-ui .win-toast.is-compact .win-toast-card{gap:var(--space-8);padding:var(--space-6) var(--web-win-toast-compact-inline)}
+.crash-ui .win-toast.is-compact .win-flip{width:var(--web-win-toast-compact-flip);height:var(--web-win-toast-compact-flip)}
+.crash-ui .win-toast.is-compact .win-toast-card>div{display:grid;grid-template-columns:auto auto;align-items:baseline;column-gap:var(--space-8)}
+.crash-ui .win-toast.is-compact .win-toast-card>div>strong{grid-column:1/-1}
+.crash-ui .win-toast.is-compact .win-detail{grid-column:2;grid-row:2;margin:0;color:var(--text-muted);font-size:var(--type-12);line-height:var(--leading-tight);white-space:nowrap}
+.crash-ui .win-toast.is-compact .win-detail[hidden]{display:none}
+
+/* A message over the scene (GameUI.toast), where the win toast lands: one line on a pill, in the
+   surface's colours or a tone's. It pops in, stays, and lifts off. */
+.crash-ui .message-toast{position:absolute;top:var(--win-toast-top,calc(var(--space-48) + var(--space-24)));left:50%;transform:translateX(-50%);z-index:var(--layer-toast);box-sizing:border-box;max-width:calc(100% - var(--space-32));padding:var(--space-6) var(--space-16);border:var(--stroke-1) solid var(--border);border-radius:var(--radius-pill);background:var(--surface);color:var(--text);box-shadow:var(--elevation-panel);font-size:var(--type-14);font-weight:var(--weight-extrabold);line-height:var(--leading-tight);letter-spacing:var(--tracking-sm);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;animation:message-toast-enter var(--motion-toast-ms) var(--ease-enter) both}
+.crash-ui .message-toast[data-tone=gold]{color:var(--on-go);border-color:var(--action-go-edge);background:linear-gradient(var(--action-go-top),var(--action-go-bottom))}
+.crash-ui .message-toast[data-tone=success]{color:var(--on-success);border-color:var(--success);background:var(--success)}
+.crash-ui .message-toast[data-tone=danger]{color:var(--on-cash);border-color:var(--danger-edge);background:linear-gradient(var(--danger-top),var(--danger-bottom))}
+.crash-ui .message-toast.is-leaving{animation:message-toast-exit var(--motion-toast-ms) var(--ease-exit) both}
+@keyframes message-toast-enter{0%{scale:.8;opacity:0}100%{scale:1;opacity:1}}
+@keyframes message-toast-exit{0%{translate:0 0;opacity:1}100%{translate:0 calc(-1 * var(--space-12));opacity:0}}
+.crash-ui.reduced .message-toast{animation:none}
+@media(prefers-reduced-motion:reduce){.crash-ui .message-toast{animation:none}}
+
+/* A game's own window on the kit's sheet (GameUI.openSheet): the modal as it is, and its actions
+   in one row of equal buttons under the game's content, the primary one in gold as on a notice. */
+.crash-ui .sheet-actions{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:var(--space-8)}
 
 /* The settings popover in the tabbed shell is a small card next to its button, not a panel:
    a panel's 32px corner and comfort-height rows made it look inflated. A card corner, one
@@ -1265,7 +1289,7 @@
 /* A stake section a game placed in its own panel (GameUI.mountStake): only the section, laid
    out as it is in the kit's panel, without the kit layer's full-screen box. */
 .crash-ui.stake-mount{position:static;inset:auto;z-index:auto;pointer-events:auto;width:100%;min-width:0}
-.crash-ui.stake-mount>.controls.tabbed-controls.navigation-only{display:block;width:100%;padding:0;margin:0;background:none;border:0;box-shadow:none}
+.crash-ui.stake-mount>.controls.tabbed-controls.navigation-only{display:block;position:static;width:100%;max-width:none;padding:0;margin:0;background:none;border:0;box-shadow:none}
 /* The stake rolling to its new amount after MIN or MAX: steady digits, so it does not jitter. */
 .crash-ui .coin-amount[data-slot=tbBet]{font-variant-numeric:tabular-nums}
 /* Side actions (config.sideActions): squares beside the main action, as tall as the row it

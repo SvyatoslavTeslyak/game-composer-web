@@ -2,7 +2,7 @@
   "version": 1,
   "game": "hot_hands",
   "title": "Hot Hands",
-  "owner": "src/platform/sounds.ts. The kit plays its own button, cash-out and win sounds.",
+  "owner": "The kit's CrashAudio (crash-ui/audio.js), from src/main.ts. The kit plays its own button, cash-out and win sounds.",
   "events": [
     {
       "id": "slap",
@@ -139,6 +139,23 @@
         },
         {
           "file": "assets/audio/eleven/teen_ayy_2.mp3",
+          "enabled": true,
+          "source": "elevenlabs"
+        }
+      ]
+    },
+    {
+      "id": "music",
+      "label": "Background music",
+      "trigger": "Loops in the background while Music is on.",
+      "volume_db": -20.0,
+      "pitch_jitter": 0,
+      "generator": "ElevenLabs eleven_music_v2",
+      "flow_url": "https://elevenlabs.io/app/flows/W52owP1MUSiU3ecbnO3P",
+      "prompt": "Playful upbeat Haitian kompa groove for a cheeky courtyard hand-slapping game, about 112 BPM: bouncy tanbou hand drums and claps, bright plucked guitar riff, round bass, light cowbell and shakers, a teasing call-and-response marimba hook; crisp modern production, steady energy with no build-up or ending so it loops seamlessly as casual mobile game background music, instrumental, no vocals.",
+      "takes": [
+        {
+          "file": "assets/audio/music/theme.ogg",
           "enabled": true,
           "source": "elevenlabs"
         }

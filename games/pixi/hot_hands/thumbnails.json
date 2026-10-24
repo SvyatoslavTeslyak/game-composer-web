@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "Hot Hands",
+    "fr": "Hot Hands",
+    "ht": "Hot Hands"
+  },
+  "default": "thumbnail.png",
+  "tenants": {
+    "LotomobilPlayers": "thumbnails/LotomobilPlayers.png",
+    "NumbaGhanaPlayers": "thumbnails/NumbaGhanaPlayers.png",
+    "NumbaNigeriaPlayers": "thumbnails/NumbaNigeriaPlayers.png"
+  }
+}

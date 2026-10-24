@@ -10,7 +10,13 @@
    The frame is the host only when the URL carries the app's own parameters (origin or
    baseUrl). Composer and the showcase embed games too, with tenantId, lang and theme but never
    those two, and are left alone. The tenant's brand is the kit's business (GameUI.queryBrand),
-   inside the app or not. Load this after tokens.js and before ui.js. */
+   inside the app or not. Load this after tokens.js and before ui.js.
+
+   Inside the app it wires itself: APP_READY goes once the page's #splash is done (or, with no
+   splash, once the page has loaded), and the app's mute moves the kit's sound switches, whose
+   presses go back to the app as one mute. A game that calls ready() or failed() itself, or listens
+   for 'sound' itself, does that part on its own and the kit stays out of it, so wiring a game by
+   hand as well is harmless. Outside the app none of it runs. */
 (function(){
 'use strict';
 const query=new URLSearchParams(location.search);
@@ -31,6 +37,8 @@ const brand=window.CrashTokens?.TENANTS?.[tenant]||'default';
 const listeners={auth:new Set(),back:new Set(),sound:new Set(),insets:new Set()};
 const emit=(name,value)=>{for(const fn of listeners[name])try{fn(value)}catch(error){console.error(error)}};
 let tokens=null,attached=null,muted=null,refreshing=null;
+// The game said ready or failed itself; the kit's own APP_READY has gone.
+let manualReady=false,autoReadySent=false;
 let resolveAuthorized;
 const authorized=new Promise(resolve=>{resolveAuthorized=resolve});
 
@@ -81,6 +89,29 @@ if(active&&query.has('debugger')&&local(location.hostname)){
 }
 
 function home(){post('NAVIGATION',{type:'NAVIGATE_HOME'})}
+
+/** APP_READY on the game's behalf, once, unless the game has said ready or failed itself. */
+function autoReady(){if(!active||manualReady||autoReadySent)return;autoReadySent=true;post('APP_READY',true)}
+/** The splash every game draws (#splash) is done when it carries `done`, is hidden or is gone. */
+function watchSplash(){
+ const splash=document.getElementById('splash');
+ if(!splash){if(document.readyState==='complete')autoReady();else window.addEventListener('load',autoReady,{once:true});return}
+ const done=()=>!splash.isConnected||splash.hidden||splash.classList.contains('done');
+ if(done()){autoReady();return}
+ const watch=new MutationObserver(()=>{if(done()){watch.disconnect();autoReady()}});
+ watch.observe(splash,{attributes:true,attributeFilter:['class','hidden']});
+ if(splash.parentNode)watch.observe(splash.parentNode,{childList:true});
+}
+if(active){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchSplash,{once:true});else watchSplash()}
+/**
+ * The app's mute on the kit's sound switches (GameUI.applyHostMute), when the game does not listen
+ * for 'sound' itself. A turn later, so a game that subscribes right after building its panel is
+ * seen first.
+ */
+function syncMute(){
+ if(!active||muted===null||listeners.sound.size)return;
+ setTimeout(()=>{if(muted!==null&&!listeners.sound.size)attached?.applyHostMute?.(muted)},0);
+}
 /** Hardware back: the game's own handlers first, then the kit closes what is open, then home. */
 function back(){
  for(const fn of listeners.back)try{if(fn()===true)return}catch(error){console.error(error)}
@@ -94,7 +125,7 @@ window.addEventListener('message',event=>{
  const payload=data.payload;
  if(data.type==='AUTH'){if(setTokens(payload)){resolveAuthorized();emit('auth',undefined)}return}
  if(data.type==='NAVIGATION'&&payload.type==='NAVIGATE_BACK'){back();return}
- if(data.type==='SETTINGS_CHANGE'&&payload.type==='SOUNDS'&&typeof payload.value==='boolean'){muted=payload.value;emit('sound',muted);return}
+ if(data.type==='SETTINGS_CHANGE'&&payload.type==='SOUNDS'&&typeof payload.value==='boolean'){muted=payload.value;emit('sound',muted);syncMute();return}
  if(data.type==='ACTION'&&payload.infoType==='safe-area'){setInsets({top:payload.safeAreaTop,bottom:payload.safeAreaBottom,left:payload.safeAreaLeft,right:payload.safeAreaRight});return}
 });
 
@@ -154,14 +185,19 @@ window.CrashHost={
  get muted(){return muted},
  get insets(){return {...insets}},
  request,
- ready(){post('APP_READY',true)},
- failed(){post('APP_FAILED',false)},
+ ready(){manualReady=true;post('APP_READY',true)},
+ failed(){manualReady=true;post('APP_FAILED',false)},
  home,
  balanceError(){post('ACTION',{type:'SHOW_BALANCE_ERROR',data:null})},
  /** The player muted (true) or unmuted (false) in the game. */
  soundChanged(value){muted=!!value;post('SETTINGS_CHANGE',{type:'SOUNDS',value:!!value})},
+ /**
+  * The kit's own report of the player's sound switches: sent only when the game does not listen
+  * for 'sound' itself (it then reports on its own) and only when the mute changed.
+  */
+ kitSoundChanged(value){if(!active||listeners.sound.size||!!value===muted)return;muted=!!value;post('SETTINGS_CHANGE',{type:'SOUNDS',value:!!value})},
  on(name,fn){listeners[name]?.add(fn);return()=>listeners[name]?.delete(fn)},
  /** The kit's GameUI hands itself over, so back can close its windows and insets relayout it. */
- attach(ui){attached=ui},
+ attach(ui){attached=ui;syncMute()},
 };
 })();

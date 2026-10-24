@@ -7,13 +7,16 @@
 <title>Plinko</title>
 <link rel="icon" type="image/png" sizes="64x64" href="./assets/favicon-64-CotqllLG.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon-BG3PcUR5.png">
-<link rel="stylesheet" href="crash-ui/tokens.css?v=4178e9e48a7f">
-<link rel="stylesheet" href="crash-ui/ui.css?v=4178e9e48a7f">
+<link rel="stylesheet" href="crash-ui/tokens.css?v=3fba8210d5f2">
+<link rel="stylesheet" href="crash-ui/ui.css?v=3fba8210d5f2">
 <style>#splash{z-index:1000;background:var(--surface,#212121);justify-content:center;align-items:center;transition:opacity .25s;display:flex;position:fixed;inset:0}#splash .ring{width:160px;height:160px;position:relative}#splash svg{width:100%;height:100%;position:absolute;inset:0;transform:rotate(-90deg)}#splash circle{fill:none;stroke-width:6px}#splash .track{stroke:var(--action-go,#f4b73f);stroke-opacity:.2}#splash .fill{stroke:var(--action-go,#f4b73f);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100px}@font-face{font-family:SplashFigures;src:url(crash-ui/assets/fonts/uploads/Satoshi-Variable.woff2)format("woff2");font-weight:300 900;font-display:swap}#splash .pct{color:var(--action-go,#f4b73f);font-variant-numeric:tabular-nums;justify-content:center;align-items:center;font:500 24px/1 SplashFigures,system-ui,sans-serif;display:flex;position:absolute;inset:0}#splash.waiting .fill{transition:none;stroke-dasharray:25 75!important;stroke-dashoffset:0!important}#splash.waiting svg{animation:1s linear infinite splash-turn}#splash.waiting .pct{visibility:hidden}@keyframes splash-turn{0%{transform:rotate(-90deg)}to{transform:rotate(270deg)}}@media (prefers-reduced-motion:reduce){#splash.waiting svg{animation:none}#splash.waiting .fill{stroke-dasharray:100}}#splash.done{opacity:0;pointer-events:none}</style>
 <!-- The kit's tokens first: the splash reads the tenant table (CrashTokens.TENANTS). -->
-<script src="crash-ui/tokens.js?v=4178e9e48a7f"></script><script src="reviewed-design.js"></script>
+<script src="crash-ui/tokens.js?v=3fba8210d5f2"></script><script src="reviewed-design.js"></script>
+<!-- The Lotomobil app's frame (crash-ui/host.js): inside the app it says APP_READY once the splash
+     is done and puts the app's mute on the menu's sound switches; anywhere else it does nothing. -->
+<script src="crash-ui/host.js?v=3fba8210d5f2"></script>
 <link rel="stylesheet" href="reviewed-design.css">
-  <script type="module" crossorigin src="./assets/index-Dd2UtdzA.js"></script>
+  <script type="module" crossorigin src="./assets/index-pnlcm8vo.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/CanvasPool-BQVbuTbb.js">
   <link rel="modulepreload" crossorigin href="./assets/Filter-zmD8iVhN.js">
   <link rel="modulepreload" crossorigin href="./assets/canvasUtils-CNUsJj9-.js">
@@ -25,7 +28,7 @@
   <link rel="modulepreload" crossorigin href="./assets/GraphicsContext-DP6BFyTV.js">
   <link rel="modulepreload" crossorigin href="./assets/CanvasRenderer-CeYonNfP.js">
   <link rel="modulepreload" crossorigin href="./assets/BitmapFont-DM5uqeOf.js">
-  <link rel="stylesheet" crossorigin href="./assets/index-CvX23DTp.css">
+  <link rel="stylesheet" crossorigin href="./assets/index-CCHsN02b.css">
 </head>
 <body>
 <div id="splash"><div class="ring"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="46"/><circle class="fill" cx="50" cy="50" r="46" pathLength="100"/></svg><span class="pct">0%</span></div></div>
@@ -65,7 +68,7 @@
   requestAnimationFrame(frame)
 })()
 </script>
-<!-- The scene: under the kit's header, the recent results, the board and the bet panel. -->
+<!-- The scene: under the kit's header and round history, the board and the bet panel. -->
 <main id="stage">
   <div class="scene-art" aria-hidden="true">
     <div class="scene-bay"></div>
@@ -73,10 +76,11 @@
     <div class="scene-decor decor-right"></div>
   </div>
   <section id="play" aria-label="Plinko">
-    <div class="recent" data-slot="recent" aria-label="Recent results"></div>
     <section class="board" data-slot="board" aria-label="Board"></section>
   </section>
 </main>
-<script src="crash-ui/ui.js?v=4178e9e48a7f"></script>
+<script src="crash-ui/ui.js?v=3fba8210d5f2"></script>
+<!-- Tenant and theme pictures (public/skins.json): window.CrashSkins. -->
+<script src="crash-ui/skins.js?v=3fba8210d5f2"></script>
 </body>
 </html>
