@@ -6931,12 +6931,13 @@
         "mopyon_cascades"
       ],
       "usage": [
-        "text"
+        "unused"
       ],
       "presets": [
         "tabbed-shell-v1"
       ],
-      "previewWindow": "menu"
+      "previewWindow": "menu",
+      "unusedReason": "Mòpyon Cascades has one look, graph paper: the look picker is gone."
     },
     "paper_22d507": {
       "source": "Paper",
@@ -6948,12 +6949,13 @@
         "mopyon_cascades"
       ],
       "usage": [
-        "text"
+        "unused"
       ],
       "presets": [
         "tabbed-shell-v1"
       ],
-      "previewWindow": "menu"
+      "previewWindow": "menu",
+      "unusedReason": "Mòpyon Cascades has one look, graph paper: the look picker is gone."
     },
     "now_low_rows_rows_b28d8d": {
       "source": "Now: Low, {rows} rows",

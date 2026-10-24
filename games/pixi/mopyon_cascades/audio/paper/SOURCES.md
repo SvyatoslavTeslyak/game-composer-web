@@ -5,10 +5,7 @@ Generated with ElevenLabs sound effects (`eleven_text_to_sound_v2`) on 2026-09-2
 
 | File | Prompt |
 |---|---|
-| strike_0/1 | Quick ballpoint pen stroke drawn fast across paper, crisp scratchy swipe, close-mic |
 | erase_0/1 | Rubber eraser rubbing fast on paper, short brisk back-and-forth scrubbing, close-mic |
-| land_0/1 | Small cardboard tile tapped down onto a wooden desk, soft dry click, very short |
-| fall_0/1 | Handful of small paper cards dropped and cascading onto a wooden table, light fluttering patter |
 | step_0/1 | Single bright steel drum note, clean Caribbean steel pan hit, short ringing tail |
 | reward_0 | Short cheerful reward jingle for a casual game: three quick rising warm marimba notes with a soft bell ping on the last note, under one second, crisp clean ending, no long reverb tail, no harsh highs |
 | dead_0 | Pencil tapping twice on paper, soft dull taps, quiet |

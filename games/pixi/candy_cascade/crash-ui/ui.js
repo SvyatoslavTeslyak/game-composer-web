@@ -624,11 +624,17 @@ class GameUI {
  clearToasts(){clearTimeout(this.messageTimer);this.messageShown?.remove();this.messageShown=null;for(const m of this.messages||[])m.resolve();this.messages=[]}
  /**
   * The app's mute (host.js, inside the Lotomobil app only, when the game does not listen for it
-  * itself): the menu's sound switches follow it, as a press on them would.
+  * itself): the menu's sound switches follow it, as a press on them would. A mute remembers the
+  * switches the player had and the unmute gives them back, so Music the player turned off stays
+  * off; with nothing to give back, the unmute turns Sound on.
   */
  applyHostMute(muted){
   const keys=(this.config.menuSettings||['sound','music','haptics']).filter(k=>k==='sound'||k==='music');
-  for(const key of keys)if(this.state.settings?.[key]!==!muted)this.send('setting',{key,value:!muted});
+  const now=Object.fromEntries(keys.map(k=>[k,!!this.state.settings?.[k]])),some=v=>keys.some(k=>v[k]);
+  let want;
+  if(muted){if(some(now))this.hostMuteBefore=now;want=Object.fromEntries(keys.map(k=>[k,false]))}
+  else{const before=this.hostMuteBefore;this.hostMuteBefore=null;want=before&&some(before)?before:some(now)?now:Object.fromEntries(keys.map(k=>[k,k==='sound']))}
+  for(const key of keys)if(this.state.settings?.[key]!==want[key])this.send('setting',{key,value:want[key]});
  }
  // The player's switch, told to the app as one mute: muted once every sound switch is off.
  reportMute(key,on){
