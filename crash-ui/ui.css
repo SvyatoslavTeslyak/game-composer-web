@@ -1417,3 +1417,75 @@
 @keyframes big-win-shake{0%,100%{translate:0 0}20%{translate:calc(var(--space-8) * -1) var(--space-4)}40%{translate:var(--space-6) calc(var(--space-4) * -1)}60%{translate:calc(var(--space-4) * -1) var(--space-4)}80%{translate:var(--space-4) 0}}
 .crash-ui.reduced .big-win *,.crash-ui.reduced .big-win{animation:none!important}
 @media(prefers-reduced-motion:reduce){.crash-ui .big-win,.crash-ui .big-win *{animation:none!important}}
+/* --- Two bets on one run, and the run's players (controlsVariant 'bet-slots', BetSlotsControls) ---
+   One rhythm: blocks and everything inside a card stand --bs-gap apart, a card holds its contents
+   --bs-pad in, and text sits --bs-text in from its cell, so the bets' labels and the table's first
+   column line up. Radii are concentric: a card's is its contents' plus its padding. The rules go
+   through .bet-slots (and .bs-*) so the kit's own wider-screen rules for its tabbed panel, which
+   move .actions and .wager about, never reach this arrangement; only the look is shared. */
+.crash-ui .bet-slots,.crash-ui .bet-slots-list{position:fixed;z-index:0;pointer-events:auto;--bs-gap:var(--space-8);--bs-pad:var(--space-8);--bs-text:var(--space-12);--bs-inner:var(--radius-16);--bs-outer:var(--radius-24);--bs-action:calc(var(--tap-min) + var(--space-16))}
+.crash-ui.has-bet-slots .bottom{z-index:var(--layer-raised)}
+.crash-ui.has-bet-slots .bottom>.multiplier{display:none} /* each bet shows its own amount on its button */
+.crash-ui .bet-slots>.bs-sheet.controls{display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:var(--bs-gap);width:100%;max-width:none;min-height:0;margin:0 auto;height:var(--bs-height,auto);padding:0 var(--space-12);border-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0;box-shadow:var(--elevation-panel);overflow:hidden;transition:height var(--motion-fast-ms) ease-out}
+.crash-ui .bet-slots.is-dragging>.bs-sheet.controls{transition:none}
+.crash-ui .bet-slots .bs-grip{flex:none;display:flex;justify-content:center;align-items:center;height:var(--space-16);cursor:grab;touch-action:none}
+.crash-ui .bet-slots .bs-grip i{display:block;width:var(--space-40);height:var(--space-4);border-radius:var(--radius-pill);background:var(--border)}
+.crash-ui .bet-slots .bs-slot{flex:none;display:grid;grid-template-columns:minmax(0,1fr);gap:var(--bs-gap);min-width:0;padding:var(--bs-pad);border-radius:var(--bs-outer);background:var(--surface-inset)}
+.crash-ui .bet-slots .bs-slot[hidden],.crash-ui .bet-slots .bs-fold[hidden]{display:none}
+.crash-ui .bet-slots .bs-main,.crash-ui .bet-slots .bs-autos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--bs-gap);min-width:0}
+.crash-ui .bet-slots .bs-slot .wager{display:grid;align-content:center;min-width:0;width:auto;height:auto;padding:0;margin:0;border:0;background:none;grid-column:auto;grid-row:auto}
+.crash-ui .bet-slots .bs-slot .wager .stake{display:grid;grid-template-columns:var(--tap-min) minmax(0,1fr) var(--tap-min);gap:var(--space-4);padding:0;margin:0}
+.crash-ui .bet-slots .bs-slot .wager .stake .button{min-height:var(--tap-min);height:var(--tap-min);width:var(--tap-min);padding:0;border-radius:var(--bs-inner);font-size:var(--type-32);line-height:var(--leading-none)}
+.crash-ui .bet-slots .bs-slot .wager-amount{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:auto;min-width:0;min-height:var(--tap-min);height:auto}
+.crash-ui .bet-slots .bs-slot .wager-amount .money{font-size:var(--type-24)}
+.crash-ui .bet-slots .bs-caption{font:var(--weight-regular) var(--type-12)/var(--leading-tight) var(--font-body),sans-serif;color:var(--text-muted)}
+.crash-ui .bet-slots .bs-slot .actions{display:grid;grid-template-columns:minmax(0,1fr);min-width:0;min-height:0;width:auto;height:auto;margin:0;align-self:stretch;grid-column:auto;grid-row:auto}
+.crash-ui .bet-slots .bs-slot .actions .action{min-height:var(--bs-action);height:auto;width:auto;gap:0;padding:var(--stroke-2) var(--space-8);border-radius:var(--bs-inner)}
+.crash-ui .bet-slots .bs-slot .actions .action .money{font-size:var(--type-24)}
+.crash-ui .bet-slots .bs-slot .actions .action .action-title{font-size:var(--type-16)}
+.crash-ui .bet-slots .bs-slot .actions .action.go.is-stop:not(:disabled){color:var(--on-cash);border-color:var(--danger-edge);background:linear-gradient(var(--danger-top),var(--danger-bottom))}
+.crash-ui .bet-slots .bs-note{font:var(--weight-regular) var(--type-12)/var(--leading-tight) var(--font-body),sans-serif;opacity:var(--opacity-muted)}
+.crash-ui .bet-slots .bs-note[hidden],.crash-ui .bet-slots .bs-slot .action .money[hidden]{display:none}
+.crash-ui .bet-slots .bs-autos{font:var(--weight-regular) var(--type-14)/var(--leading-tight) var(--font-body),sans-serif;color:var(--text-muted)}
+.crash-ui .bet-slots .bs-toggle{display:flex;align-items:center;justify-content:space-between;gap:var(--space-8);min-width:0;min-height:var(--tap-min);padding:0 var(--bs-text);border:0;border-radius:var(--bs-inner);background:var(--surface-raised);color:inherit;font:inherit;white-space:nowrap;cursor:pointer}
+.crash-ui .bet-slots .bs-toggle>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.crash-ui .bet-slots .bs-toggle[aria-pressed=true]{color:var(--text)}
+.crash-ui .bet-slots .bs-toggle .auto-switch{flex:none;width:var(--web-bet-slots-switch-width);height:var(--space-24)}
+.crash-ui .bet-slots .bs-toggle .auto-switch .knob{width:var(--space-16);height:var(--space-16);margin-top:calc(var(--space-16) / -2)}
+.crash-ui .bet-slots .bs-toggle[aria-pressed=true] .auto-switch .knob{transform:translateX(calc(var(--web-bet-slots-switch-width) - var(--space-16) - 2 * var(--space-4)))}
+.crash-ui .bet-slots .bs-value{flex:none;padding:var(--stroke-2) var(--space-8);border-radius:var(--radius-pill);background:var(--surface-inset);color:var(--text-muted);font:var(--weight-regular) var(--type-14)/var(--leading-tight) var(--font-numbers),var(--font-body),sans-serif}
+.crash-ui .bet-slots .bs-toggle[aria-pressed=true] .bs-value{background:var(--action-go);color:var(--on-go)}
+.crash-ui .bet-slots .bs-short{display:none}
+.crash-ui .bet-slots .bs-toggle[data-action=slotTarget]{container-type:inline-size}
+@container (max-width:136px){.crash-ui .bet-slots .bs-long{display:none}.crash-ui .bet-slots .bs-short{display:inline}}
+.crash-ui .bet-slots .bs-fold{flex:none;display:flex;align-items:center;justify-content:center;gap:var(--space-8);min-height:var(--tap-min);padding:0 var(--bs-text);border:0;border-radius:var(--bs-outer);background:var(--surface-inset);color:var(--text-muted);font:var(--weight-regular) var(--type-14)/var(--leading-tight) var(--font-body),sans-serif;cursor:pointer}
+.crash-ui .bet-slots .bs-fold .chevron{width:var(--space-12);height:var(--space-12)}
+.crash-ui :is(.bet-slots,.bet-slots-list) .bs-players{flex:1 1 auto;min-height:0;overflow:auto;padding-bottom:var(--bs-tabs,0);scroll-padding-bottom:var(--bs-tabs,0);overscroll-behavior:contain;scrollbar-width:none;border-radius:var(--bs-outer) var(--bs-outer) 0 0;background:var(--surface-inset);--table-inset:calc(var(--bs-pad) + var(--bs-text))}
+.crash-ui :is(.bet-slots,.bet-slots-list) .bs-players::-webkit-scrollbar{display:none}
+.crash-ui .bet-slots .bs-players thead{cursor:grab;touch-action:none}
+.crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .bets-table thead th{height:var(--tap-min);padding-block:0;border-bottom:0;background:var(--surface-raised)}
+.crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .bets-table tbody td{padding-block:var(--space-6)}
+.crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .bet-player{display:flex;align-items:center;gap:var(--space-8);min-width:0}
+.crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .bet-player span:last-child{overflow:hidden;text-overflow:ellipsis}
+.crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .avatar{width:var(--web-avatar-md);height:var(--web-avatar-md)}
+.crash-ui :is(.bet-slots,.bet-slots-list) .bs-none{color:var(--text-muted)}
+.crash-ui .bet-slots.is-phone{left:0;right:0;bottom:0;top:auto}
+.crash-ui.has-bet-slots .bottom>.controls.tabbed-controls.navigation-only{background:linear-gradient(to top,var(--surface) 50%,transparent);box-shadow:none}
+.crash-ui .bet-slots.is-wide{left:var(--space-16);right:var(--space-16);bottom:var(--space-16);top:auto;width:auto;container-type:inline-size}
+.crash-ui .bet-slots.is-wide>.bs-sheet.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;height:auto;max-width:var(--web-bet-slots-wide-max-width);padding:var(--bs-pad);border-bottom:var(--stroke-1) solid var(--border);border-radius:var(--web-panel-radius)}
+@container (max-width:704px){.crash-ui .bet-slots.is-wide>.bs-sheet.controls{grid-template-columns:minmax(0,1fr)}}
+.crash-ui .bet-slots.is-wide .bs-grip{display:none}
+.crash-ui .bet-slots.is-tall{left:var(--space-16);right:var(--space-16);bottom:var(--space-16);top:auto;width:auto;container-type:inline-size}
+.crash-ui .bet-slots.is-tall>.bs-sheet.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto auto minmax(0,1fr);align-content:start;max-width:var(--web-bet-slots-wide-max-width);padding:0 var(--bs-pad) var(--bs-pad);border-bottom:var(--stroke-1) solid var(--border);border-radius:var(--web-panel-radius)}
+@container (max-width:704px){.crash-ui .bet-slots.is-tall>.bs-sheet.controls{grid-template-columns:minmax(0,1fr)}}
+.crash-ui .bet-slots.is-tall .bs-grip,.crash-ui .bet-slots.is-tall .bs-players{grid-column:1/-1}
+.crash-ui .bet-slots.is-tall .bs-players{border-radius:var(--bs-outer);padding-bottom:0}
+.crash-ui .bet-slots-list{top:var(--bs-top,var(--space-16));right:var(--space-16);bottom:var(--bs-list-bottom,var(--space-16));width:clamp(var(--web-bet-slots-list-min-width),var(--share-bet-slots-list),var(--web-bet-slots-list-max-width))}
+.crash-ui .bet-slots-list[hidden]{display:none}
+.crash-ui .bet-slots-list>.bs-list-sheet.controls{display:flex;flex-direction:column;width:100%;max-width:none;height:100%;margin:0;padding:var(--bs-pad);border-radius:var(--web-panel-radius)}
+.crash-ui .bet-slots-list .bs-players{border-radius:var(--bs-outer);padding-bottom:0}
+.crash-ui .bet-slots.is-side{top:var(--bs-top,var(--space-16));right:var(--space-12);bottom:var(--space-12);left:auto;width:min(var(--web-bet-slots-list-max-width),var(--share-bet-slots-side))}
+.crash-ui .bet-slots.is-side>.bs-sheet.controls{height:100%;padding:var(--bs-pad);border-bottom:var(--stroke-1) solid var(--border);border-radius:var(--web-panel-radius)}
+.crash-ui .bet-slots.is-side .bs-grip{display:none}
+.crash-ui .bet-slots.is-side .bs-players{border-radius:var(--bs-outer);padding-bottom:0}
+.crash-ui .bet-slots.is-side .bs-players thead{cursor:auto}

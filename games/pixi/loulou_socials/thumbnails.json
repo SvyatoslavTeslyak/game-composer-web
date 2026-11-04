@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "LouLou Socials",
+    "fr": "LouLou Socials",
+    "ht": "LouLou Socials"
+  },
+  "default": "thumbnail.png",
+  "tenants": {
+    "LotomobilPlayers": "thumbnails/LotomobilPlayers.png",
+    "NumbaGhanaPlayers": "thumbnails/NumbaGhanaPlayers.png",
+    "NumbaNigeriaPlayers": "thumbnails/NumbaNigeriaPlayers.png"
+  }
+}
