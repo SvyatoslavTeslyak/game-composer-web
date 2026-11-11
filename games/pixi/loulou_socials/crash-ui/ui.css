@@ -1432,6 +1432,18 @@
 .crash-ui .bet-slots .bs-grip i{display:block;width:var(--space-40);height:var(--space-4);border-radius:var(--radius-pill);background:var(--border)}
 .crash-ui .bet-slots .bs-slot{flex:none;display:grid;grid-template-columns:minmax(0,1fr);gap:var(--bs-gap);min-width:0;padding:var(--bs-pad);border-radius:var(--bs-outer);background:var(--surface-inset)}
 .crash-ui .bet-slots .bs-slot[hidden],.crash-ui .bet-slots .bs-fold[hidden]{display:none}
+/* The risk row over the bets: the tabbed panel's own (.tabbed-controls .risk), across the card. */
+.crash-ui .bet-slots .bs-risk{flex:none;grid-column:1/-1}
+.crash-ui .bet-slots .bs-risk-pct{display:inline-block;width:5ch;text-align:right;font-variant-numeric:tabular-nums}
+/* The meter gives way so the run's level fits at its right on a phone. */
+.crash-ui .bet-slots .bs-risk{gap:var(--space-12);min-width:0}
+.crash-ui .bet-slots .bs-risk .risk-meter{flex:1 1 auto;width:auto;max-width:calc(10 * var(--space-16) + 9 * var(--space-4))}
+.crash-ui .bet-slots .bs-level{flex:none;padding:var(--stroke-2) var(--space-8);border:var(--stroke-1) solid color-mix(in srgb,currentColor calc(var(--alpha-soft) * 100%),transparent);border-radius:var(--radius-pill);background:var(--surface-inset);font:var(--weight-regular) var(--type-14)/var(--leading-tight) var(--font-numbers),var(--font-body),sans-serif;letter-spacing:var(--tracking-sm);text-transform:uppercase;white-space:nowrap}
+.crash-ui .bet-slots .bs-level[data-tier=low]{color:var(--success)}
+.crash-ui .bet-slots .bs-level[data-tier=mid]{color:var(--warning)}
+.crash-ui .bet-slots .bs-level[data-tier=high]{color:var(--danger)}
+/* An option sheet's pages (GameUI.openOptions with pages): the rules pages' switch, over the list. */
+.crash-ui .option-pages{position:sticky;top:0;z-index:var(--layer-sticky);margin-bottom:var(--space-16)}
 .crash-ui .bet-slots .bs-main,.crash-ui .bet-slots .bs-autos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--bs-gap);min-width:0}
 .crash-ui .bet-slots .bs-slot .wager{display:grid;align-content:center;min-width:0;width:auto;height:auto;padding:0;margin:0;border:0;background:none;grid-column:auto;grid-row:auto}
 .crash-ui .bet-slots .bs-slot .wager .stake{display:grid;grid-template-columns:var(--tap-min) minmax(0,1fr) var(--tap-min);gap:var(--space-4);padding:0;margin:0}
@@ -1440,9 +1452,15 @@
 .crash-ui .bet-slots .bs-slot .wager-amount .money{font-size:var(--type-24)}
 .crash-ui .bet-slots .bs-caption{font:var(--weight-regular) var(--type-12)/var(--leading-tight) var(--font-body),sans-serif;color:var(--text-muted)}
 .crash-ui .bet-slots .bs-slot .actions{display:grid;grid-template-columns:minmax(0,1fr);min-width:0;min-height:0;width:auto;height:auto;margin:0;align-self:stretch;grid-column:auto;grid-row:auto}
-.crash-ui .bet-slots .bs-slot .actions .action{min-height:var(--bs-action);height:auto;width:auto;gap:0;padding:var(--stroke-2) var(--space-8);border-radius:var(--bs-inner)}
+/* The button keeps one size whatever it says, 64 px: room for its tallest face (the amount over
+   the title, 63.6), so BET, CANCEL with its note, CASH OUT and NEXT RUN never move the panel. */
+.crash-ui .bet-slots .bs-slot .actions .action{min-height:0;height:calc(var(--bs-action) + var(--space-4));width:auto;gap:0;padding:var(--stroke-2) var(--space-8);border-radius:var(--bs-inner);overflow:hidden}
 .crash-ui .bet-slots .bs-slot .actions .action .money{font-size:var(--type-24)}
 .crash-ui .bet-slots .bs-slot .actions .action .action-title{font-size:var(--type-16)}
+/* Under an amount, the button's word reads like WAGER beside it: the same caption on the same
+   line. Both amounts take the same line box, so the two captions meet whatever the font. */
+.crash-ui .bet-slots .bs-slot :is(.wager-amount,.actions .action) .money{line-height:var(--space-32)}
+.crash-ui .bet-slots .bs-slot .actions .action:has(>.money:not([hidden])) .action-title{font:var(--weight-regular) var(--type-12)/var(--leading-tight) var(--font-body),sans-serif;opacity:var(--opacity-muted)}
 .crash-ui .bet-slots .bs-slot .actions .action.go.is-stop:not(:disabled){color:var(--on-cash);border-color:var(--danger-edge);background:linear-gradient(var(--danger-top),var(--danger-bottom))}
 .crash-ui .bet-slots .bs-note{font:var(--weight-regular) var(--type-12)/var(--leading-tight) var(--font-body),sans-serif;opacity:var(--opacity-muted)}
 .crash-ui .bet-slots .bs-note[hidden],.crash-ui .bet-slots .bs-slot .action .money[hidden]{display:none}
@@ -1464,7 +1482,9 @@
 .crash-ui :is(.bet-slots,.bet-slots-list) .bs-players::-webkit-scrollbar{display:none}
 .crash-ui .bet-slots .bs-players thead{cursor:grab;touch-action:none}
 .crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .bets-table thead th{height:var(--tap-min);padding-block:0;border-bottom:0;background:var(--surface-raised)}
-.crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .bets-table tbody td{padding-block:var(--space-6)}
+.crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .bets-table tbody td{padding-block:var(--space-6);border-bottom:var(--stroke-1) solid transparent}
+/* Every row carries the line the player's own row shows, so a bet appearing in the list never grows it. */
+.crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .bets-table tbody .is-mine td{border-bottom-color:var(--border)}
 .crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .bet-player{display:flex;align-items:center;gap:var(--space-8);min-width:0}
 .crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .bet-player span:last-child{overflow:hidden;text-overflow:ellipsis}
 .crash-ui :is(.bet-slots,.bet-slots-list) .bs-players .avatar{width:var(--web-avatar-md);height:var(--web-avatar-md)}
@@ -1478,6 +1498,9 @@
 .crash-ui .bet-slots.is-tall{left:var(--space-16);right:var(--space-16);bottom:var(--space-16);top:auto;width:auto;container-type:inline-size}
 .crash-ui .bet-slots.is-tall>.bs-sheet.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto auto minmax(0,1fr);align-content:start;max-width:var(--web-bet-slots-wide-max-width);padding:0 var(--bs-pad) var(--bs-pad);border-bottom:var(--stroke-1) solid var(--border);border-radius:var(--web-panel-radius)}
 @container (max-width:704px){.crash-ui .bet-slots.is-tall>.bs-sheet.controls{grid-template-columns:minmax(0,1fr)}}
+.crash-ui .bet-slots.has-one-bet:is(.is-wide,.is-tall)>.bs-sheet.controls{grid-template-columns:minmax(0,1fr)}
+.crash-ui .bet-slots.has-one-bet.is-wide>.bs-sheet.controls{max-width:calc(var(--web-bet-slots-wide-max-width) / 2)}
+.crash-ui .bet-slots.is-tall.has-risk>.bs-sheet.controls{grid-template-rows:auto auto auto minmax(0,1fr)}
 .crash-ui .bet-slots.is-tall .bs-grip,.crash-ui .bet-slots.is-tall .bs-players{grid-column:1/-1}
 .crash-ui .bet-slots.is-tall .bs-players{border-radius:var(--bs-outer);padding-bottom:0}
 .crash-ui .bet-slots-list{top:var(--bs-top,var(--space-16));right:var(--space-16);bottom:var(--bs-list-bottom,var(--space-16));width:clamp(var(--web-bet-slots-list-min-width),var(--share-bet-slots-list),var(--web-bet-slots-list-max-width))}

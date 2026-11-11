@@ -25,7 +25,7 @@
         "Upload the three animated WebPs in the Hero section. Composer cuts them into the sheets the game plays: Idle as a 4 × 3 grid of 256 × 256 px frames; from the jump, the three poses in the air as Jump and four touchdown poses as Landing, 2 × 2 grids of 400 × 400 px frames; from the look, the five frames of the turn as Look up, a 3 × 2 grid of 400 × 400 px frames; all scaled to stand exactly where the idle stands. Check the picked frames and change them if a clip moves differently.",
         "Look up must start in the idle's pose and end with the head turned all the way: the game plays its frames forward to turn the head, holds the last while the hero watches, and plays them back to face on again.",
         "Idle plays over and over while the hero waits, so its last frame must flow back into its first.",
-        "Before saving, play the clips next to each other: the face, the ears and the body must not change between frames, and the jump must not turn the head toward the viewer. A hop lasts a fifth of a second, so any jump in shape between frames reads as a glitch.",
+        "Before saving, play the clips next to each other: the face, the ears, the horns and the body must not change between frames, and the jump must not turn the head toward the viewer. A hop lasts a fifth of a second, so any jump in shape between frames reads as a glitch.",
         "A sheet can still be uploaded by itself: a grid of square frames as listed under each picture, the hero horizontally centred in each cell with the feet on the same line near the bottom edge.",
         "Check it in the preview: stand, press PLAY, step a few lanes and lose once."
       ]
@@ -62,13 +62,13 @@
         "about": "The hero is made in SpriteCook in two steps: first one still picture of the character, then three animations made from that still: the idle, the jump and the look up the road. Upload them here and Composer cuts them into the four sheets the game plays; the one jump animation makes both Jump and Landing.",
         "still": {
           "title": "1. The hero, still",
-          "prompt": "Full-body game character, side view facing right, standing calmly on all four legs: [a lanky Haitian street dog (chen peyi) with spotted tan fur, big round eyes, a goofy grin and a Haitian-flag bandana]. The whole body in the picture from the ears to the paws and the tail, nothing cropped, centred, the feet at the bottom. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. Transparent background, no ground shadow, no text.",
+          "prompt": "Full-body game character, side view facing right, standing calmly on all four legs: [a skinny black-and-white Haitian countryside goat (kabrit) with goofy bulging eyes, a buck-toothed grin, long droopy ears, a straw hat tilted between its horns and a Haitian-flag bandana]. The whole body in the picture from the horns to the hooves and the tail, nothing cropped, centred, the feet at the bottom. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. Transparent background, no ground shadow, no text.",
           "settings": "In SpriteCook, generate a still: detailed art (not pixel), model gemini-3.1-flash-image, square 1:1, transparent background, smart crop on. Pick the variation that is clearly side-on, then remove anything extra (a second tongue, a stray paw) with an edit before animating."
         },
         "padded": {
           "title": "2. A copy with room to move",
           "share": 0.64,
-          "about": "A jump or a head turn animated from the tight still loses the ears and the tail at the frame edge. Make a copy with the hero at 64% of a 1024 × 1024 canvas here, upload it to SpriteCook and animate the jump and the look up from that copy."
+          "about": "A jump or a head turn animated from the tight still loses the horns and the tail at the frame edge. Make a copy with the hero at 64% of a 1024 × 1024 canvas here, upload it to SpriteCook and animate the jump and the look up from that copy."
         },
         "list": [
           {
@@ -76,7 +76,7 @@
             "title": "3. Idle",
             "slot": "hero-idle",
             "frames": 12,
-            "prompt": "Idle loop: [breathing, a blink, the ears and the tongue wobbling]. The character stays in place on the same spot. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer. The last frame flows back into the first.",
+            "prompt": "Idle loop: [breathing, a blink, a lazy chew, the ears wobbling]. The character stays in place on the same spot. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer. The last frame flows back into the first.",
             "settings": "In SpriteCook, animate the still: detailed mode, 12 frames, output WebP, background removal Basic."
           },
           {
@@ -85,7 +85,7 @@
             "frames": 12,
             "from": "padded",
             "match": "idle",
-            "prompt": "A forward bound, as if over a puddle: [a short crouch, a leap with the legs stretched out, the front paws landing first, then back to standing]. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer.",
+            "prompt": "A forward bound, as if over a puddle: [a short crouch, a leap with the legs stretched out, the front hooves landing first, then back to standing]. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer.",
             "settings": "In SpriteCook, animate the padded copy: model pixel-engine-v1.5 in detailed mode, 12 frames, output WebP, background removal Basic. The default model turns heads toward the viewer mid-jump. This one animation makes both Jump and Landing.",
             "split": [
               {
@@ -117,7 +117,7 @@
             "frames": 12,
             "from": "padded",
             "match": "idle",
-            "prompt": "A look up the road: [the head and neck turn up and back over the shoulder, away from the viewer, as if watching a car coming down the road, hold that look, then turn back to the side profile]. The body, legs, paws, bandana and tail stay perfectly still with the feet planted; the character keeps its ears, face and markings and the same size in every frame.",
+            "prompt": "A look up the road: [the head and neck turn up and back over the shoulder, away from the viewer, as if watching a car coming down the road, hold that look, then turn back to the side profile]. The body, legs, hooves, bandana and tail stay perfectly still with the feet planted; the character keeps its horns, hat, ears, face and markings and the same size in every frame.",
             "settings": "In SpriteCook, animate the padded copy: model pixel-engine-v1.5 in detailed mode, 12 frames, output WebP, background removal Basic.",
             "split": [
               {
@@ -125,10 +125,10 @@
                 "title": "The turn",
                 "frames": [
                   0,
-                  1,
                   2,
                   3,
-                  4
+                  4,
+                  5
                 ],
                 "about": "From the side profile to the head turned all the way; the game holds the last frame while the hero watches."
               }
@@ -171,7 +171,7 @@
       "id": "hero-idle",
       "group": "hero",
       "title": "Idle",
-      "file": "art/goat/atlas/dog/idle.webp",
+      "file": "art/goat/atlas/goat/idle.webp",
       "size": [
         1024,
         768
@@ -182,13 +182,13 @@
         "frames": 12,
         "fps": 8
       },
-      "prompt": "Idle loop: [breathing, a blink, the ears and the tongue wobbling]. The character stays in place on the same spot. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer. The last frame flows back into the first."
+      "prompt": "Idle loop: [breathing, a blink, a lazy chew, the ears wobbling]. The character stays in place on the same spot. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer. The last frame flows back into the first."
     },
     {
       "id": "hero-jump",
       "group": "hero",
       "title": "Jump",
-      "file": "art/goat/atlas/dog/jump.webp",
+      "file": "art/goat/atlas/goat/jump.webp",
       "size": [
         800,
         800
@@ -199,13 +199,13 @@
         "frames": 3,
         "fps": 8
       },
-      "prompt": "A forward bound, as if over a puddle: [a short crouch, a leap with the legs stretched out, the front paws landing first, then back to standing]. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer."
+      "prompt": "A forward bound, as if over a puddle: [a short crouch, a leap with the legs stretched out, the front hooves landing first, then back to standing]. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer."
     },
     {
       "id": "hero-landing",
       "group": "hero",
       "title": "Landing",
-      "file": "art/goat/atlas/dog/landing.webp",
+      "file": "art/goat/atlas/goat/landing.webp",
       "size": [
         800,
         800
@@ -216,13 +216,13 @@
         "frames": 4,
         "fps": 18
       },
-      "prompt": "A forward bound, as if over a puddle: [a short crouch, a leap with the legs stretched out, the front paws landing first, then back to standing]. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer."
+      "prompt": "A forward bound, as if over a puddle: [a short crouch, a leap with the legs stretched out, the front hooves landing first, then back to standing]. The character stays the same size and keeps its body, ears and markings in every frame; the head stays in side profile, never turning toward the viewer."
     },
     {
       "id": "hero-look-up",
       "group": "hero",
       "title": "Look up",
-      "file": "art/goat/atlas/dog/look_up.webp",
+      "file": "art/goat/atlas/goat/look_up.webp",
       "size": [
         1200,
         800
@@ -233,7 +233,7 @@
         "frames": 5,
         "fps": 8
       },
-      "prompt": "A look up the road: [the head and neck turn up and back over the shoulder, away from the viewer, as if watching a car coming down the road, hold that look, then turn back to the side profile]. The body, legs, paws, bandana and tail stay perfectly still with the feet planted; the character keeps its ears, face and markings and the same size in every frame."
+      "prompt": "A look up the road: [the head and neck turn up and back over the shoulder, away from the viewer, as if watching a car coming down the road, hold that look, then turn back to the side profile]. The body, legs, hooves, bandana and tail stay perfectly still with the feet planted; the character keeps its horns, hat, ears, face and markings and the same size in every frame."
     },
     {
       "id": "vehicle-tap-tap",
@@ -487,12 +487,12 @@
       "id": "win-rain-1",
       "group": "celebration",
       "title": "Win rain, first",
-      "file": "art/celebration/dog.png",
+      "file": "art/celebration/goat.png",
       "size": [
         192,
         192
       ],
-      "prompt": "A single small game icon, 192 × 192 px, transparent background: [the hero, a lanky cartoon street dog with spotted tan fur, big round eyes and a blue-and-red bandana, leaping happily with its legs stretched out], side view, centred, filling the frame. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+      "prompt": "A single small game icon, 192 × 192 px, transparent background: [the hero, a skinny black-and-white cartoon goat in a straw hat and a blue-and-red bandana, leaping happily with its legs stretched out], side view, centred, filling the frame. Bold cartoon mobile-game art: thick dark-brown outlines, saturated colours, soft cel shading, light from the top left. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
     },
     {
       "id": "win-rain-2",

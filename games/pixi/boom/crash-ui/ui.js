@@ -417,6 +417,190 @@ class TabbedControls {
   for(const t of this.tabs.children)t.disabled=!!s.win;
  }
 }
+/**
+ * Two bets on one run, then everyone on the run (controlsVariant 'bet-slots', LouLou Socials'):
+ * the kit's own parts — the stake section (− the stake +), the action button, the Auto switch, the
+ * Top bets table — in an arrangement of their own. Each bet is a card: its stake and its button
+ * side by side, Auto play and Auto cash out a light line along its foot.
+ *
+ * The game passes, per frame:
+ * - `slots`: one entry per bet, {bet, title, amount (null for none), note, face ('go', 'cash' or
+ *   'stop'), canPress, canStake, autoBet, autoCash, target};
+ * - `autoTargets`: the multipliers Auto cash out offers; `presets`: the stakes the sheet offers;
+ * - `tableRows`: the run's players, {name, face (a cell of `faceSheet`, or none for the kit's
+ *   avatar), wager, multiplier, payout (null while riding), mine}; `tablePlayers`: their count;
+ * - `faceSheet`: {url, columns, rows}, the game's sheet of faces.
+ * It answers with `slotGo`, `slotStake` {slot, press: 'minus'|'plus'}, `slotBet` {slot, value},
+ * `slotAutoBet` {slot, on} and `slotTarget` {slot, value} (null: Auto cash out off).
+ *
+ * Three layouts, by the screen: on a phone along the bottom, under the kit's tabs (their strip
+ * fades into it), the list pulled up over the scene by its grip or its head, the second bet
+ * folded to one line on a short phone until it is opened or busy; on a wide screen the bets
+ * side by side in a card centred along the bottom and the list in a panel at the right, from
+ * under the header to just above them; on a phone on its side a column at the right. The kit's
+ * `layout` message then says where the scene ends: `bottom` (the panel's top) and `right` (what
+ * a side panel or the list takes).
+ */
+class BetSlotsControls {
+ constructor(kit){
+  this.kit=kit;this.shown=[];this.slotEls=[];this.tableShown='';this.mode='phone';this.short=false;this.tabs=0;this.closed=0;this.open=false;this.folded=true;this.busy=false;
+  const chevron='<svg class="chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 6 8 10 12 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  this.chevron=chevron;
+  this.element=document.createElement('div');this.element.className='bet-slots is-phone';
+  this.element.innerHTML='<section class="controls panel tabbed-controls bs-sheet" aria-label="Your bets and the run\'s players"><div class="bs-grip" role="button" tabindex="0" aria-label="Show the players"><i></i></div><div class="risk bs-risk" hidden><div class="risk-label">RISK <span class="bs-risk-pct"></span></div><div class="risk-meter" aria-hidden="true">'+'<i></i>'.repeat(10)+'</div><span class="bs-level" hidden></span></div><button type="button" class="bs-fold" data-action="slotFold" hidden>Second bet'+chevron+'</button><div class="bs-players"></div></section>';
+  this.list=document.createElement('div');this.list.className='bet-slots-list';this.list.hidden=true;
+  this.list.innerHTML='<section class="controls panel tabbed-controls bs-list-sheet" aria-label="The run\'s players"></section>';
+  this.sheet=this.element.querySelector('.bs-sheet');this.players=this.element.querySelector('.bs-players');this.fold=this.element.querySelector('.bs-fold');this.risk=this.element.querySelector('.bs-risk');this.riskShown=null;
+  this.pullable(this.element.querySelector('.bs-grip'));
+ }
+ /** One card per bet, made when the game first says how many it has. */
+ build(count){
+  for(let i=this.slotEls.length;i<count;i++){
+   const el=document.createElement('div');el.className='bs-slot';el.dataset.slot=String(i);
+   el.innerHTML='<div class="bs-main"><div class="wager"><div class="stake" aria-label="Bet amount">'+
+    '<button type="button" class="button" data-action="slotMinus" data-value="'+i+'">−</button>'+
+    '<button type="button" class="wager-amount stake-pick" data-action="slotPick" data-value="'+i+'" aria-label="Choose bet amount"><output class="money coin-amount"></output><span class="bs-caption">WAGER</span></button>'+
+    '<button type="button" class="button" data-action="slotPlus" data-value="'+i+'">+</button></div></div>'+
+    '<div class="actions"><button type="button" class="button action go" data-action="slotGo" data-value="'+i+'"><span class="money coin-amount"></span><span class="action-title"></span><span class="bs-note"></span></button></div></div>'+
+    '<div class="bs-autos"><button type="button" class="bs-toggle" data-action="slotAutoBet" data-value="'+i+'"><span>Auto play</span><span class="auto-switch" aria-hidden="true"><span class="knob"></span></span></button>'+
+    '<button type="button" class="bs-toggle" data-action="slotTarget" data-value="'+i+'"><span><span class="bs-long">Auto cash out</span><span class="bs-short">Cash out</span></span><span class="bs-value"></span></button></div>';
+   this.players.before(el);this.slotEls.push(el);this.shown.push('');
+  }
+  this.slotEls[1]?.before(this.fold);
+ }
+ /** A press on the panel: the kit routes every slot* action here. */
+ press(action,value){
+  const i=Number(value),s=this.kit.state,view=s.slots?.[i];
+  if(action==='slotFold'){this.kit.bettingSound.play('auto');this.folded=false;this.applyFold();this.measure();return}
+  if(!view)return;
+  this.kit.bettingSound.play(action==='slotGo'?(view.face==='cash'?'cash':'go'):action==='slotMinus'?'minus':action==='slotPlus'?'plus':'auto');
+  if(action==='slotGo')this.kit.send('slotGo',{slot:i});
+  else if(action==='slotMinus'||action==='slotPlus')this.kit.send('slotStake',{slot:i,press:action==='slotMinus'?'minus':'plus'});
+  else if(action==='slotAutoBet')this.kit.send('slotAutoBet',{slot:i,on:!view.autoBet});
+  else if(action==='slotPick'){const presets=s.presets||[];this.kit.openOptions({title:'Bet amount',selected:presets.indexOf(view.bet),options:presets.map(v=>({title:money(v)})),choose:k=>this.kit.send('slotBet',{slot:i,value:presets[k]})})}
+  else if(action==='slotTarget'){
+   // A target per level (`targets`, one per `difficulties`): a tab for each, the run's level open first.
+   const targets=s.autoTargets||[],names=s.difficulties||[],perLevel=Array.isArray(view.targets)&&names.length>1&&view.targets.length===names.length;
+   const options=[{title:'Off'},...targets.map(t=>({title:t+'×',reward:money(view.bet*t)}))],at=t=>t===null||t===undefined?0:targets.indexOf(t)+1;
+   if(perLevel)this.kit.openOptions({title:'Auto cash out',page:Math.max(0,Number(s.difficulty)||0),pages:names.map((name,level)=>({title:name,head:'Cashes out at',selected:at(view.targets[level]),options})),choose:(k,level)=>this.kit.send('slotTarget',{slot:i,value:k>0?targets[k-1]:null,level})});
+   else this.kit.openOptions({title:'Auto cash out',head:'Cashes out at',selected:view.autoCash?at(view.target):0,options,choose:k=>this.kit.send('slotTarget',{slot:i,value:k>0?targets[k-1]:null})});
+  }
+ }
+ sync(s){
+  const views=Array.isArray(s.slots)?s.slots:[];this.build(views.length);
+  // A single bet takes the card on its own: wide, the panel narrows to one bet's width.
+  const one=views.length===1;if(this.element.classList.contains('has-one-bet')!==one){this.element.classList.toggle('has-one-bet',one);this.measure()}
+  views.forEach((v,i)=>this.syncSlot(i,v));
+  // The second bet opens by itself once it has something on it.
+  const second=views[1],busy=!!second&&(second.face!=='go'||!!second.autoBet||!!second.autoCash);
+  if(busy!==this.busy){this.busy=busy;if(this.applyFold())this.measure()}
+  this.syncRisk(s);
+  this.syncTable(s);
+ }
+ /**
+  * The risk row over the bets, as the tabbed panel's: `riskRow` true shows it always, false never,
+  * else with a risk. `riskLevel` names the level at its right, coloured by where `difficulty`
+  * stands among `difficulties` (the lowest green, the highest red).
+  */
+ syncRisk(s){
+  const level=this.risk.querySelector('.bs-level'),name=typeof s.riskLevel==='string'?s.riskLevel:'',count=(s.difficulties||[]).length,at=Number(s.difficulty);
+  const tier=count>1&&Number.isFinite(at)?(at<=0?'low':at>=count-1?'high':'mid'):'mid';
+  if(level.textContent!==name)level.textContent=name;level.hidden=!name;if(level.dataset.tier!==tier)level.dataset.tier=tier;
+  const has=typeof s.risk==='number'&&Number.isFinite(s.risk),row=option(this.kit.config,'riskRow'),show=row===true||(row!==false&&has);
+  if(this.risk.hidden===show){this.risk.hidden=!show;this.element.classList.toggle('has-risk',show);this.measure()}
+  const pct=has?Math.round(Math.min(1,Math.max(0,s.risk))*100):0;if(pct===this.riskShown)return;this.riskShown=pct;
+  this.risk.querySelector('.bs-risk-pct').textContent=pct+' %';const lit=Math.round(pct/10);
+  [...this.risk.querySelector('.risk-meter').children].forEach((seg,i)=>{seg.className=i<lit?'on tier-'+(i<3?'low':i<6?'mid':'high'):''});
+ }
+ syncSlot(i,v){
+  const key=JSON.stringify(v);if(key===this.shown[i])return;this.shown[i]=key;
+  const el=this.slotEls[i],q=sel=>el.querySelector(sel);
+  q('.stake-pick output').textContent=coinAmount(v.bet);
+  for(const sel of ['[data-action=slotMinus]','[data-action=slotPlus]','[data-action=slotPick]'])q(sel).disabled=!v.canStake;
+  const go=q('[data-action=slotGo]');go.disabled=!v.canPress;go.classList.toggle('cash',v.face==='cash');go.classList.toggle('is-stop',v.face==='stop');
+  const amount=go.querySelector('.money');amount.hidden=v.amount===null||v.amount===undefined;amount.textContent=amount.hidden?'':coinAmount(v.amount);
+  go.querySelector('.action-title').textContent=v.title||'';
+  const note=go.querySelector('.bs-note');note.hidden=!v.note;note.textContent=v.note||'';
+  q('[data-action=slotAutoBet]').setAttribute('aria-pressed',String(!!v.autoBet));
+  q('[data-action=slotTarget]').setAttribute('aria-pressed',String(!!v.autoCash));
+  q('.bs-value').textContent=v.autoCash?v.target+'×':'Off';
+ }
+ syncTable(s){
+  const rows=Array.isArray(s.tableRows)?s.tableRows:[],sheet=s.faceSheet,key=JSON.stringify([rows,s.tablePlayers,sheet]);if(key===this.tableShown)return;this.tableShown=key;
+  const face=row=>{if(!sheet||typeof row.face!=='number')return avatar(row.name,s.players);const cols=sheet.columns||1,lines=sheet.rows||1,x=cols>1?(row.face%cols)/(cols-1)*100:0,y=lines>1?Math.floor(row.face/cols)/(lines-1)*100:0;return '<span class="avatar" role="img" aria-label="'+esc(row.name)+'" style="background-image:url('+encodeURI(sheet.url)+');background-size:'+cols*100+'% '+lines*100+'%;background-position:'+x+'% '+y+'%"></span>'};
+  const none='<span class="bs-none">—</span>';
+  const body=rows.map((r,i)=>'<tr'+(r.mine?' class="is-mine"':'')+'><td class="bet-rank">'+(i+1)+'</td><td><span class="bet-player">'+face(r)+'<span title="'+esc(r.name)+'">'+esc(r.name)+'</span></span></td><td><span class="coin-amount">'+esc(coinAmount(r.wager))+'</span></td><td>'+(r.multiplier===null||r.multiplier===undefined?none:Number(r.multiplier).toFixed(2))+'</td><td class="bet-prize">'+(r.payout===null||r.payout===undefined?none:'<span class="coin-amount">'+esc(coinAmount(r.payout))+'</span>')+'</td></tr>').join('');
+  this.players.innerHTML='<table class="data-table bets-table top-bets"><thead><tr><th scope="col" class="bet-rank">#</th><th scope="col">('+Number(s.tablePlayers||rows.length)+') Players</th><th scope="col">Wager</th><th scope="col">X</th><th scope="col">Cash out</th></tr></thead><tbody>'+body+'</tbody></table>';
+  if(!this.closed&&this.mode!=='side')this.measure();
+ }
+ /**
+  * Takes the place the screen gives it and says where the scene is: {bottom, right, left}, in CSS
+  * pixels. `top` is where the kit's header ends; `tabs` the kit's tab strip. Where the tabs stand
+  * as a column at the left (a wide screen, a phone on its side), the scene starts right of it,
+  * so the game frames nothing of its own under them.
+  */
+ place(top,tabs){
+  const side=innerWidth>innerHeight&&innerHeight<CrashTokens.CRASH_MEDIUM_BREAKPOINT;
+  // A wide screen keeps the list at the right only when it is wider than tall: on a tablet held
+  // upright that list would leave the scene a narrow strip and the road small, so there the list
+  // goes under the bets ('tall'), pulled up as on a phone.
+  this.mode=side?'side':innerWidth>=CrashTokens.CRASH_MEDIUM_BREAKPOINT?(innerWidth>=innerHeight?'wide':'tall'):'phone';
+  this.short=innerHeight<CrashTokens.WEB_BET_SLOTS_SHORT_HEIGHT;
+  this.tabs=this.mode==='phone'&&tabs?Math.max(0,innerHeight-tabs.top):0;
+  for(const m of ['phone','wide','tall','side'])this.element.classList.toggle('is-'+m,this.mode===m);
+  this.element.style.setProperty('--bs-tabs',this.tabs+'px');this.element.style.setProperty('--bs-top',top+'px');this.list.style.setProperty('--bs-top',top+'px');
+  // Wide, the list stands in its own panel at the right; otherwise it closes the bet panel.
+  this.list.hidden=this.mode!=='wide';
+  const home=this.mode==='wide'?this.list.firstElementChild:this.sheet;if(this.players.parentElement!==home)home.append(this.players);
+  this.applyFold();this.measure();
+  const column=this.kit.tabbed?.tabs?.getBoundingClientRect(),left=column&&column.height>column.width?Math.ceil(column.right):0;
+  if(this.mode==='side')return {bottom:innerHeight,right:innerWidth-this.element.getBoundingClientRect().left,left};
+  const sheetTop=this.sheet.getBoundingClientRect().top;
+  if(this.mode==='wide')return {bottom:sheetTop,right:innerWidth-this.list.getBoundingClientRect().left,left};
+  if(this.mode==='tall')return {bottom:this.element.getBoundingClientRect().bottom-this.closed,right:0,left};
+  return {bottom:innerHeight-this.closed,right:0,left:0};
+ }
+ /** Folds the second bet on a short phone, or one on its side, while it has nothing on it; true if that changed. */
+ applyFold(){
+  const slot=this.slotEls[1];if(!slot)return false;
+  const tight=(this.mode==='phone'&&this.short)||this.mode==='side',fold=tight&&this.folded&&!this.busy;
+  if(slot.hidden===fold)return false;slot.hidden=fold;this.fold.hidden=!fold;return true;
+ }
+ /**
+  * The height with the list down: everything above the table, its head and its first rows (two,
+  * one on a short screen), and on a phone the tabs over its foot (a tablet held upright: the same
+  * without them). Wide, the bets alone, and the list ends above them. Changing it lays the kit out again, so the scene follows.
+  */
+ measure(){
+  const before=this.closed;
+  if(this.mode==='side'){this.sheet.style.removeProperty('--bs-height');this.closed=0}
+  else if(this.mode==='wide'){this.sheet.style.setProperty('--bs-height','auto');const r=this.sheet.getBoundingClientRect();this.closed=Math.ceil(r.height);this.list.style.setProperty('--bs-list-bottom',(innerHeight-r.top+CrashTokens.SPACE_16)+'px')}
+  else{
+   const head=this.players.querySelector('thead');if(!head)return;
+   this.sheet.style.setProperty('--bs-height','auto');
+   const top=this.sheet.getBoundingClientRect().top,h=head.getBoundingClientRect(),row=this.players.querySelector('tbody tr')?.getBoundingClientRect().height,pad=parseFloat(getComputedStyle(this.sheet).paddingBottom)||0;
+   this.closed=Math.ceil(h.bottom-top+(row||h.height)*(this.short?1:2)+pad+this.tabs);
+   this.setHeight(this.open?this.openHeight():this.closed);
+  }
+  if(this.closed!==before)requestAnimationFrame(()=>this.kit.layout());
+ }
+ openHeight(){return Math.max(this.closed,innerHeight*CrashTokens.SHARE_BET_SLOTS_OPEN/100)}
+ setHeight(px){this.sheet.style.setProperty('--bs-height',Math.round(px)+'px')}
+ /**
+  * The grip and the table's head are the handle: pulled, the list follows the finger and settles
+  * open or closed; tapped, it toggles (the head makes the target a finger's size).
+  */
+ pullable(grip){
+  let start=null;
+  const settle=open=>{this.open=open;this.setHeight(open?this.openHeight():this.closed);grip.setAttribute('aria-label',open?'Hide the players':'Show the players')};
+  this.sheet.addEventListener('pointerdown',e=>{if((this.mode!=='phone'&&this.mode!=='tall')||!e.target.closest('.bs-grip,thead'))return;start={y:e.clientY,height:this.sheet.getBoundingClientRect().height};this.sheet.setPointerCapture(e.pointerId);this.element.classList.add('is-dragging')});
+  this.sheet.addEventListener('pointermove',e=>{if(!start)return;this.setHeight(Math.min(this.openHeight(),Math.max(this.closed,start.height+(start.y-e.clientY))))});
+  const end=e=>{if(!start)return;const moved=start.y-e.clientY,height=start.height+moved;start=null;this.element.classList.remove('is-dragging');settle(Math.abs(moved)<CrashTokens.WEB_SWIPE_SLOP?!this.open:height>(this.closed+this.openHeight())/2)};
+  this.sheet.addEventListener('pointerup',end);this.sheet.addEventListener('pointercancel',end);
+  grip.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;e.preventDefault();settle(!this.open)});
+ }
+ remove(){this.element.remove();this.list.remove()}
+}
 class MultiBetControls {
  constructor(){
   this.element=document.createElement('section');this.element.className='controls panel multi-bet-controls';this.element.setAttribute('aria-label','Three position betting controls');this.cards={};
@@ -520,6 +704,10 @@ class GameUI {
   if(multi)this.multiBet.element.prepend(this.betSettings);
   else this.betSettings.remove();
   if(!multi&&this.multiBet){this.resize?.unobserve(this.multiBet.element);this.multiBet.element.remove();this.multiBet=null}
+  // 'bet-slots': two bets on one run and its players, beside the tabs (BetSlotsControls).
+  const slotsVariant=variant==='bet-slots';this.host.classList.toggle('has-bet-slots',slotsVariant);
+  if(slotsVariant&&!this.betSlots){this.betSlots=new BetSlotsControls(this);this.q('.modal-layer').before(this.betSlots.element,this.betSlots.list)}
+  if(!slotsVariant&&this.betSlots){this.betSlots.remove();this.betSlots=null}
  }
  q(s){return this.host.querySelector(s)}
  /** A game option as the kit applies it: the game's config, else the kit's default. Composer reads the kit's choice through it. */
@@ -646,7 +834,13 @@ class GameUI {
   * head, options: [{title, reward, html}], selected, action}. A pick reaches the game as
   * `action` (default 'option') with {index}.
   */
+ /**
+  * The kit's option sheet with a game's choices: {title, head, options, selected, choose(index)}.
+  * With `pages` ([{title, head, options, selected, choose}]) it shows them as tabs over the list,
+  * `page` open first, and a choice keeps the sheet open: choose(index, page).
+  */
  openOptions(spec){this.optionSpec=spec||{};this.open('options')}
+ optionPage(){const pages=this.optionSpec?.pages||[];return Math.min(pages.length-1,Math.max(0,Number(this.optionSpec?.page)||0))}
  /**
   * The kit's stake section - MIN, −, the stake (it opens the sheet of ready amounts), +, MAX -
   * placed in a game's own bet panel, for a game on controlsVariant 'none'. It is the very
@@ -675,6 +869,8 @@ class GameUI {
   // Header back leaves the game inside the Lotomobil app: the host takes the player home. Outside
   // it there is nowhere defined to go, so the button stays inert and the game never hears it.
   if(action==='leave'){if(window.CrashHost?.active){this.bettingSound.play(action);window.CrashHost.home()}return}
+  // The bet-slots panel's presses carry their bet's index; the panel sends them on and sounds them.
+  if(this.betSlots&&/^slot[A-Z]/.test(action)){this.betSlots.press(action,value);return}
   this.bettingSound.play(action);
   if(action==='drawerTab'){this.rulesFrom='tab';this.open(value);return}
   if(action==='menu'&&this.config.presentationPreset==='menu-drawer-v1'){if(this.q('.modal-layer').classList.contains('is-menu-drawer')&&this.modal)this.close();else this.open(this.drawerSelection||'topbets');return}
@@ -707,7 +903,9 @@ class GameUI {
   if(action==='chooseLimit'){const [key,raw]=JSON.parse(value);const chosen=key==='theme'?raw:Number(raw);this.state.settings={...this.state.settings,[key]:chosen};this.send('setting',{key,value:chosen});this.open('menu');return}
   if(action==='stake'){if(this.state?.canBet)this.open('stake');return}
   if(action==='chooseStake'){this.send('bet',{value:Number(value)});this.close();return}
-  if(action==='chooseOption'){this.send(this.optionSpec?.action||'option',{index:Number(value)});this.close();return}
+  // A sheet with pages (tabs) stays open on a choice, so each page can be set in turn; choose(index, page).
+  if(action==='chooseOption'){const spec=this.optionSpec,index=Number(value),pages=Array.isArray(spec?.pages)&&spec.pages.length?spec.pages:null;if(pages){const at=this.optionPage(),page=pages[at];page.selected=index;this.open('options');const choose=page.choose||spec.choose;if(typeof choose==='function')choose(index,at);return}this.close();if(typeof spec?.choose==='function')spec.choose(index);else this.send(spec?.action||'option',{index});return}
+  if(action==='optionPage'){if(this.optionSpec)this.optionSpec.page=Number(value);this.open('options');return}
   // MIN and MAX from the stake sheet do what the panel's do, then the sheet steps aside.
   if((action==='min'||action==='max')&&this.modal==='stake'){this.send(action,{});this.close();return}
   if(action==='chooseDifficulty'){this.send('difficulty',{index:Number(value)});this.close();return}
@@ -745,6 +943,7 @@ class GameUI {
   this.ladder(s.ladder,flags.multiplier_ladder!==false);
   if(this.modal==='rules')this.syncPayTable();
   if(this.tabbed)this.tabbed.sync(s,this.features(),this.config);
+  if(this.betSlots)this.betSlots.sync(s);
   // Operator features remove whole groups; the grid releases their tracks.
   const features=this.features(),controls=this.multiBet?.element,settingsVisible=features.auto||features.difficulty;
   // On a phone the preset row stays away unless the embed asks for it (?presets=1): the bet stepper is enough there.
@@ -1098,8 +1297,8 @@ class GameUI {
   // A game's own choice in the kit's option sheet (GameUI.openOptions): the level sheet's look,
   // the game's title, head and options; an option's trusted html sits between name and reward.
   if(kind==='options'){
-   const o=this.optionSpec||{},list=Array.isArray(o.options)?o.options:[];
-   body.innerHTML=(o.head?'<div class="level-sheet-head" aria-hidden="true">'+esc(o.head)+'</div>':'')+'<div class="option-list level-sheet" role="radiogroup" aria-label="'+esc(o.title||'')+'">'+list.map((v,i)=>this.radioOption('chooseOption',i,i===o.selected,v.title,'',v.reward,'')).join('')+'</div>';
+   const spec=this.optionSpec||{},paged=Array.isArray(spec.pages)&&spec.pages.length>0,o=paged?spec.pages[this.optionPage()]:spec,list=Array.isArray(o.options)?o.options:[],head=o.head??spec.head;
+   body.innerHTML=(head?'<div class="level-sheet-head" aria-hidden="true">'+esc(head)+'</div>':'')+'<div class="option-list level-sheet" role="radiogroup" aria-label="'+esc(o.title||spec.title||'')+'">'+list.map((v,i)=>this.radioOption('chooseOption',i,i===o.selected,v.title,'',v.reward,'')).join('')+'</div>';
    body.querySelectorAll('.radio-option').forEach((option,i)=>{if(list[i]?.html)option.querySelector('.option-details')?.insertAdjacentHTML('afterend',list[i].html)});
   }
   // A game's own window on the kit's sheet (GameUI.openSheet): its trusted html or node, then its actions.
@@ -1188,7 +1387,8 @@ class GameUI {
    drawerBody.before(nav);drawerBody.id='drawer-panel';drawerBody.setAttribute('role','tabpanel');drawerBody.setAttribute('aria-labelledby','drawer-panel-'+kind);this.q('.modal h2').textContent=kind==='menu'?'Settings':kind==='rules'?'Rules':this.betsTitle(kind);
   }
   // The two pages' switch sits above the scrolling page, so it stays in view while the page scrolls.
-  this.q('.rules-pages')?.remove();
+  this.q('.rules-pages')?.remove();this.q('.option-pages')?.remove();
+  if(kind==='options'&&this.optionSpec?.pages?.length)this.q('.modal-body').before(segmented('option-pages',this.optionSpec.title||'Pages',this.optionSpec.pages.map((p,i)=>[String(i),esc(p.title||'')]),String(this.optionPage()),'optionPage'));
   if(kind==='rules'&&this.hasPayTable())this.q('.modal-body').before(segmented('rules-pages','Rules',[['rules','How to play'],['paytable','Pay table']],this.rulesPage==='paytable'?'paytable':'rules','rulesPage'));
   const tabView=!drawer&&!!this.tabbed&&['topbets','mybets','rules'].includes(kind)&&(kind!=='rules'||this.rulesFrom==='tab');
   layer.classList.toggle('is-tab-view',tabView);
@@ -1334,6 +1534,9 @@ class GameUI {
   const sceneTop=this.state.game==='gold'?account.getBoundingClientRect().bottom:
    ['haul','catch'].includes(this.state.game)&&wide?Math.max(a.bottom,winners.getBoundingClientRect().bottom):a.bottom;
   const bounds={top:Math.round(sceneTop+12),bottom:Math.round(b.top),width:innerWidth,height:innerHeight};
+  // The bet-slots panel says where the scene is: above it, beside it (`right`), and right of the
+  // tab column (`left`).
+  if(this.betSlots){const edges=this.betSlots.place(bounds.top,b);bounds.bottom=Math.round(Math.max(bounds.top,edges.bottom));bounds.right=Math.round(edges.right);bounds.left=Math.round(edges.left)}
   this.host.style.setProperty('--scene-top',bounds.top+'px');
   this.host.style.setProperty('--scene-bottom',bounds.bottom+'px');
   const key=JSON.stringify(bounds);if(key!==this.lastBounds){this.lastBounds=key;this.send('layout',bounds)}

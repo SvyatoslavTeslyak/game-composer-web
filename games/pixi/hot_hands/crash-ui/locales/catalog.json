@@ -7,7 +7,8 @@
       "fr": "CASH OUT",
       "group": "Bet panel & messages",
       "games": [
-        "road"
+        "road",
+        "loulou_socials"
       ],
       "ht": "CASH OUT",
       "usage": [
@@ -259,7 +260,8 @@
       "fr": "MISER",
       "group": "Bet panel & messages",
       "games": [
-        "catch"
+        "catch",
+        "loulou_socials"
       ],
       "ht": "MIZE",
       "usage": [
@@ -731,7 +733,8 @@
         "haul",
         "gold",
         "boom",
-        "fuel"
+        "fuel",
+        "loulou_socials"
       ],
       "ht": "Dezaktive",
       "usage": [
@@ -2494,7 +2497,8 @@
       "fr": "ANNULER",
       "group": "Bet panel & messages",
       "games": [
-        "catch"
+        "catch",
+        "loulou_socials"
       ],
       "ht": "ANILE",
       "usage": [
@@ -4890,7 +4894,8 @@
         "candy_cascade",
         "mopyon_cascades",
         "plinko",
-        "road"
+        "road",
+        "loulou_socials"
       ],
       "usage": [
         "aria-label"
@@ -8771,7 +8776,8 @@
       "ht": "Pran lajan",
       "group": "Rules",
       "games": [
-        "hot_hands"
+        "hot_hands",
+        "loulou_socials"
       ],
       "usage": [
         "text"
@@ -8865,6 +8871,149 @@
         "tabbed-shell-v1"
       ],
       "previewWindow": "rules"
+    },
+    "next_run_635816": {
+      "source": "NEXT RUN",
+      "en": "NEXT RUN",
+      "fr": "PROCHAINE COURSE",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "PWOCHEN KOUS",
+      "usage": [
+        "text"
+      ]
+    },
+    "auto_play_14f5d3": {
+      "source": "Auto play",
+      "en": "Auto play",
+      "fr": "Jeu auto",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "Jwe otomatik",
+      "usage": [
+        "text"
+      ]
+    },
+    "auto_cash_out_9b3c0d": {
+      "source": "Auto cash out",
+      "en": "Auto cash out",
+      "fr": "Encaissement auto",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "Pran lajan otomatik",
+      "usage": [
+        "text"
+      ]
+    },
+    "second_bet_9a680a": {
+      "source": "Second bet",
+      "en": "Second bet",
+      "fr": "Deuxième mise",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "Dezyèm miz",
+      "usage": [
+        "text"
+      ]
+    },
+    "waiting_for_the_next_run_0bcd0d": {
+      "source": "Waiting for the next run",
+      "en": "Waiting for the next run",
+      "fr": "En attente de la prochaine course",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "N ap tann pwochen kous la",
+      "usage": [
+        "text"
+      ]
+    },
+    "cashes_out_at_bc4dba": {
+      "source": "Cashes out at",
+      "en": "Cashes out at",
+      "fr": "Encaisse à",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "Pran lajan nan",
+      "usage": [
+        "text"
+      ]
+    },
+    "value_players_f47f48": {
+      "source": "({value}) Players",
+      "en": "({value}) Players",
+      "fr": "({value}) Joueurs",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "({value}) Jwè",
+      "usage": [
+        "text"
+      ]
+    },
+    "show_the_players_277a48": {
+      "source": "Show the players",
+      "en": "Show the players",
+      "fr": "Afficher les joueurs",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "Montre jwè yo",
+      "usage": [
+        "aria-label"
+      ]
+    },
+    "hide_the_players_49e2e5": {
+      "source": "Hide the players",
+      "en": "Hide the players",
+      "fr": "Masquer les joueurs",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "Kache jwè yo",
+      "usage": [
+        "aria-label"
+      ]
+    },
+    "your_bets_and_the_run_s_players_fffe5e": {
+      "source": "Your bets and the run's players",
+      "en": "Your bets and the run's players",
+      "fr": "Vos mises et les joueurs de la course",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "Miz ou yo ak jwè kous la",
+      "usage": [
+        "aria-label"
+      ]
+    },
+    "the_run_s_players_785dd5": {
+      "source": "The run's players",
+      "en": "The run's players",
+      "fr": "Les joueurs de la course",
+      "group": "Bet panel & messages",
+      "games": [
+        "loulou_socials"
+      ],
+      "ht": "Jwè kous la",
+      "usage": [
+        "aria-label"
+      ]
     }
   }
 }

@@ -447,10 +447,10 @@ class BetSlotsControls {
   const chevron='<svg class="chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 6 8 10 12 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   this.chevron=chevron;
   this.element=document.createElement('div');this.element.className='bet-slots is-phone';
-  this.element.innerHTML='<section class="controls panel tabbed-controls bs-sheet" aria-label="Your bets and the run\'s players"><div class="bs-grip" role="button" tabindex="0" aria-label="Show the players"><i></i></div><button type="button" class="bs-fold" data-action="slotFold" hidden>Second bet'+chevron+'</button><div class="bs-players"></div></section>';
+  this.element.innerHTML='<section class="controls panel tabbed-controls bs-sheet" aria-label="Your bets and the run\'s players"><div class="bs-grip" role="button" tabindex="0" aria-label="Show the players"><i></i></div><div class="risk bs-risk" hidden><div class="risk-label">RISK <span class="bs-risk-pct"></span></div><div class="risk-meter" aria-hidden="true">'+'<i></i>'.repeat(10)+'</div><span class="bs-level" hidden></span></div><button type="button" class="bs-fold" data-action="slotFold" hidden>Second bet'+chevron+'</button><div class="bs-players"></div></section>';
   this.list=document.createElement('div');this.list.className='bet-slots-list';this.list.hidden=true;
   this.list.innerHTML='<section class="controls panel tabbed-controls bs-list-sheet" aria-label="The run\'s players"></section>';
-  this.sheet=this.element.querySelector('.bs-sheet');this.players=this.element.querySelector('.bs-players');this.fold=this.element.querySelector('.bs-fold');
+  this.sheet=this.element.querySelector('.bs-sheet');this.players=this.element.querySelector('.bs-players');this.fold=this.element.querySelector('.bs-fold');this.risk=this.element.querySelector('.bs-risk');this.riskShown=null;
   this.pullable(this.element.querySelector('.bs-grip'));
  }
  /** One card per bet, made when the game first says how many it has. */
@@ -478,15 +478,39 @@ class BetSlotsControls {
   else if(action==='slotMinus'||action==='slotPlus')this.kit.send('slotStake',{slot:i,press:action==='slotMinus'?'minus':'plus'});
   else if(action==='slotAutoBet')this.kit.send('slotAutoBet',{slot:i,on:!view.autoBet});
   else if(action==='slotPick'){const presets=s.presets||[];this.kit.openOptions({title:'Bet amount',selected:presets.indexOf(view.bet),options:presets.map(v=>({title:money(v)})),choose:k=>this.kit.send('slotBet',{slot:i,value:presets[k]})})}
-  else if(action==='slotTarget'){const targets=s.autoTargets||[];this.kit.openOptions({title:'Auto cash out',head:'Cashes out at',selected:view.autoCash?targets.indexOf(view.target)+1:0,options:[{title:'Off'},...targets.map(t=>({title:t+'×',reward:money(view.bet*t)}))],choose:k=>this.kit.send('slotTarget',{slot:i,value:k>0?targets[k-1]:null})})}
+  else if(action==='slotTarget'){
+   // A target per level (`targets`, one per `difficulties`): a tab for each, the run's level open first.
+   const targets=s.autoTargets||[],names=s.difficulties||[],perLevel=Array.isArray(view.targets)&&names.length>1&&view.targets.length===names.length;
+   const options=[{title:'Off'},...targets.map(t=>({title:t+'×',reward:money(view.bet*t)}))],at=t=>t===null||t===undefined?0:targets.indexOf(t)+1;
+   if(perLevel)this.kit.openOptions({title:'Auto cash out',page:Math.max(0,Number(s.difficulty)||0),pages:names.map((name,level)=>({title:name,head:'Cashes out at',selected:at(view.targets[level]),options})),choose:(k,level)=>this.kit.send('slotTarget',{slot:i,value:k>0?targets[k-1]:null,level})});
+   else this.kit.openOptions({title:'Auto cash out',head:'Cashes out at',selected:view.autoCash?at(view.target):0,options,choose:k=>this.kit.send('slotTarget',{slot:i,value:k>0?targets[k-1]:null})});
+  }
  }
  sync(s){
   const views=Array.isArray(s.slots)?s.slots:[];this.build(views.length);
+  // A single bet takes the card on its own: wide, the panel narrows to one bet's width.
+  const one=views.length===1;if(this.element.classList.contains('has-one-bet')!==one){this.element.classList.toggle('has-one-bet',one);this.measure()}
   views.forEach((v,i)=>this.syncSlot(i,v));
   // The second bet opens by itself once it has something on it.
   const second=views[1],busy=!!second&&(second.face!=='go'||!!second.autoBet||!!second.autoCash);
   if(busy!==this.busy){this.busy=busy;if(this.applyFold())this.measure()}
+  this.syncRisk(s);
   this.syncTable(s);
+ }
+ /**
+  * The risk row over the bets, as the tabbed panel's: `riskRow` true shows it always, false never,
+  * else with a risk. `riskLevel` names the level at its right, coloured by where `difficulty`
+  * stands among `difficulties` (the lowest green, the highest red).
+  */
+ syncRisk(s){
+  const level=this.risk.querySelector('.bs-level'),name=typeof s.riskLevel==='string'?s.riskLevel:'',count=(s.difficulties||[]).length,at=Number(s.difficulty);
+  const tier=count>1&&Number.isFinite(at)?(at<=0?'low':at>=count-1?'high':'mid'):'mid';
+  if(level.textContent!==name)level.textContent=name;level.hidden=!name;if(level.dataset.tier!==tier)level.dataset.tier=tier;
+  const has=typeof s.risk==='number'&&Number.isFinite(s.risk),row=option(this.kit.config,'riskRow'),show=row===true||(row!==false&&has);
+  if(this.risk.hidden===show){this.risk.hidden=!show;this.element.classList.toggle('has-risk',show);this.measure()}
+  const pct=has?Math.round(Math.min(1,Math.max(0,s.risk))*100):0;if(pct===this.riskShown)return;this.riskShown=pct;
+  this.risk.querySelector('.bs-risk-pct').textContent=pct+' %';const lit=Math.round(pct/10);
+  [...this.risk.querySelector('.risk-meter').children].forEach((seg,i)=>{seg.className=i<lit?'on tier-'+(i<3?'low':i<6?'mid':'high'):''});
  }
  syncSlot(i,v){
   const key=JSON.stringify(v);if(key===this.shown[i])return;this.shown[i]=key;
@@ -810,7 +834,13 @@ class GameUI {
   * head, options: [{title, reward, html}], selected, action}. A pick reaches the game as
   * `action` (default 'option') with {index}.
   */
+ /**
+  * The kit's option sheet with a game's choices: {title, head, options, selected, choose(index)}.
+  * With `pages` ([{title, head, options, selected, choose}]) it shows them as tabs over the list,
+  * `page` open first, and a choice keeps the sheet open: choose(index, page).
+  */
  openOptions(spec){this.optionSpec=spec||{};this.open('options')}
+ optionPage(){const pages=this.optionSpec?.pages||[];return Math.min(pages.length-1,Math.max(0,Number(this.optionSpec?.page)||0))}
  /**
   * The kit's stake section - MIN, −, the stake (it opens the sheet of ready amounts), +, MAX -
   * placed in a game's own bet panel, for a game on controlsVariant 'none'. It is the very
@@ -873,7 +903,9 @@ class GameUI {
   if(action==='chooseLimit'){const [key,raw]=JSON.parse(value);const chosen=key==='theme'?raw:Number(raw);this.state.settings={...this.state.settings,[key]:chosen};this.send('setting',{key,value:chosen});this.open('menu');return}
   if(action==='stake'){if(this.state?.canBet)this.open('stake');return}
   if(action==='chooseStake'){this.send('bet',{value:Number(value)});this.close();return}
-  if(action==='chooseOption'){const spec=this.optionSpec,index=Number(value);this.close();if(typeof spec?.choose==='function')spec.choose(index);else this.send(spec?.action||'option',{index});return}
+  // A sheet with pages (tabs) stays open on a choice, so each page can be set in turn; choose(index, page).
+  if(action==='chooseOption'){const spec=this.optionSpec,index=Number(value),pages=Array.isArray(spec?.pages)&&spec.pages.length?spec.pages:null;if(pages){const at=this.optionPage(),page=pages[at];page.selected=index;this.open('options');const choose=page.choose||spec.choose;if(typeof choose==='function')choose(index,at);return}this.close();if(typeof spec?.choose==='function')spec.choose(index);else this.send(spec?.action||'option',{index});return}
+  if(action==='optionPage'){if(this.optionSpec)this.optionSpec.page=Number(value);this.open('options');return}
   // MIN and MAX from the stake sheet do what the panel's do, then the sheet steps aside.
   if((action==='min'||action==='max')&&this.modal==='stake'){this.send(action,{});this.close();return}
   if(action==='chooseDifficulty'){this.send('difficulty',{index:Number(value)});this.close();return}
@@ -1265,8 +1297,8 @@ class GameUI {
   // A game's own choice in the kit's option sheet (GameUI.openOptions): the level sheet's look,
   // the game's title, head and options; an option's trusted html sits between name and reward.
   if(kind==='options'){
-   const o=this.optionSpec||{},list=Array.isArray(o.options)?o.options:[];
-   body.innerHTML=(o.head?'<div class="level-sheet-head" aria-hidden="true">'+esc(o.head)+'</div>':'')+'<div class="option-list level-sheet" role="radiogroup" aria-label="'+esc(o.title||'')+'">'+list.map((v,i)=>this.radioOption('chooseOption',i,i===o.selected,v.title,'',v.reward,'')).join('')+'</div>';
+   const spec=this.optionSpec||{},paged=Array.isArray(spec.pages)&&spec.pages.length>0,o=paged?spec.pages[this.optionPage()]:spec,list=Array.isArray(o.options)?o.options:[],head=o.head??spec.head;
+   body.innerHTML=(head?'<div class="level-sheet-head" aria-hidden="true">'+esc(head)+'</div>':'')+'<div class="option-list level-sheet" role="radiogroup" aria-label="'+esc(o.title||spec.title||'')+'">'+list.map((v,i)=>this.radioOption('chooseOption',i,i===o.selected,v.title,'',v.reward,'')).join('')+'</div>';
    body.querySelectorAll('.radio-option').forEach((option,i)=>{if(list[i]?.html)option.querySelector('.option-details')?.insertAdjacentHTML('afterend',list[i].html)});
   }
   // A game's own window on the kit's sheet (GameUI.openSheet): its trusted html or node, then its actions.
@@ -1355,7 +1387,8 @@ class GameUI {
    drawerBody.before(nav);drawerBody.id='drawer-panel';drawerBody.setAttribute('role','tabpanel');drawerBody.setAttribute('aria-labelledby','drawer-panel-'+kind);this.q('.modal h2').textContent=kind==='menu'?'Settings':kind==='rules'?'Rules':this.betsTitle(kind);
   }
   // The two pages' switch sits above the scrolling page, so it stays in view while the page scrolls.
-  this.q('.rules-pages')?.remove();
+  this.q('.rules-pages')?.remove();this.q('.option-pages')?.remove();
+  if(kind==='options'&&this.optionSpec?.pages?.length)this.q('.modal-body').before(segmented('option-pages',this.optionSpec.title||'Pages',this.optionSpec.pages.map((p,i)=>[String(i),esc(p.title||'')]),String(this.optionPage()),'optionPage'));
   if(kind==='rules'&&this.hasPayTable())this.q('.modal-body').before(segmented('rules-pages','Rules',[['rules','How to play'],['paytable','Pay table']],this.rulesPage==='paytable'?'paytable':'rules','rulesPage'));
   const tabView=!drawer&&!!this.tabbed&&['topbets','mybets','rules'].includes(kind)&&(kind!=='rules'||this.rulesFrom==='tab');
   layer.classList.toggle('is-tab-view',tabView);

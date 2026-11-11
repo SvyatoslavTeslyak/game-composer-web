@@ -241,6 +241,13 @@
 --web-winner-payout-min-width:72px;
 --web-dev-top:260px;
 --web-dev-top-phone:240px;
+--web-bet-slots-list-min-width:336px;
+--web-bet-slots-list-max-width:360px;
+--web-bet-slots-wide-max-width:768px;
+--share-bet-slots-open:80%;
+--share-bet-slots-list:34%;
+--share-bet-slots-side:48%;
+--web-bet-slots-switch-width:40px;
 --font-body:CrashBody;
 --font-numbers:CrashNumbers;
 --surface:#17130c;
