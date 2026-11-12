@@ -54,6 +54,13 @@ const pick=name=>PAIRED.test(name)?name.replace(PAIRED,webp?'.webp':'.png'):name
 const webpProbe=new Promise(resolve=>{const probe=new Image();probe.onload=probe.onerror=()=>resolve(probe.width===1);probe.src='data:image/webp;base64,UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA=='});
 webpProbe.then(decodes=>{if(decodes===webp)return;webp=decodes;document.querySelectorAll('.crash-ui img[data-pair]').forEach(img=>{img.src=base+img.dataset.pair.replace(/^(.*)\.(webp|png)$/,'$1'+(webp?'.webp':'.png'))+version});document.querySelectorAll('.crash-ui').forEach(host=>host.classList.toggle('no-webp',!webp))});
 const icon=(name)=>'<img class="icon" alt="" src="'+base+'assets/icons/'+pick(name)+(name==='play.svg'?'?v=ink-5':version)+'"'+(PAIRED.test(name)?' data-pair="assets/icons/'+name+'"':'')+'>';
+// The coin the player's amounts are counted in. A game's skins.json may name it as a slot (file
+// `crash-ui/assets/icons/coin.png`): a tenant's or a theme's coin then stands wherever the kit
+// draws one. Read when drawn, so CrashSkins.load() comes before the panel mounts.
+const COIN_FILE='crash-ui/assets/icons/coin.png';
+const ownCoin=()=>{const skins=window.CrashSkins;return skins&&skins.isReplaced(COIN_FILE)?new URL(skins.art(COIN_FILE),document.baseURI).href:''};
+const coinSrc=()=>ownCoin()||base+'assets/icons/'+pick('coin.png')+version;
+const coinIcon=()=>{const own=ownCoin();return own?'<img class="icon" alt="" src="'+own+'">':icon('coin.png')};
 // The notices' marks are fetched while the game is still online and kept as local copies: the
 // "No connection" notice shows exactly when the network is gone, and its mark would not load.
 const NOTICE_MARKS={};
@@ -421,12 +428,16 @@ class TabbedControls {
  * Two bets on one run, then everyone on the run (controlsVariant 'bet-slots', LouLou Socials'):
  * the kit's own parts — the stake section (− the stake +), the action button, the Auto switch, the
  * Top bets table — in an arrangement of their own. Each bet is a card: its stake and its button
- * side by side, Auto play and Auto cash out a light line along its foot.
+ * side by side, Auto play and Auto cash out a light line along its foot. A game that offers no
+ * Auto cash out (no `autoTargets`) has none: the button grows down into its place.
  *
  * The game passes, per frame:
  * - `slots`: one entry per bet, {bet, title, amount (null for none), note, face ('go', 'cash' or
- *   'stop'), canPress, canStake, autoBet, autoCash, target};
- * - `autoTargets`: the multipliers Auto cash out offers; `presets`: the stakes the sheet offers;
+ *   'stop'), canPress, canStake, autoBet, autoCash, target, level}; `level`, an index into
+ *   `difficulties`, names that level on the button, coloured as the risk row's (the run a bet
+ *   waits for, say), null for none;
+ * - `autoTargets`: the multipliers Auto cash out offers (none: no Auto cash out); `presets`: the
+ *   stakes the sheet offers;
  * - `tableRows`: the run's players, {name, face (a cell of `faceSheet`, or none for the kit's
  *   avatar), wager, multiplier, payout (null while riding), mine}; `tablePlayers`: their count;
  * - `faceSheet`: {url, columns, rows}, the game's sheet of faces.
@@ -441,13 +452,18 @@ class TabbedControls {
  * `layout` message then says where the scene ends: `bottom` (the panel's top) and `right` (what
  * a side panel or the list takes).
  */
+/** Where level `at` stands among the state's `difficulties`: 'low' (the first), 'high' (the last) or 'mid'. */
+function levelTier(s,at){
+ const count=(s.difficulties||[]).length,n=Number(at);
+ return count>1&&Number.isFinite(n)?(n<=0?'low':n>=count-1?'high':'mid'):'mid';
+}
 class BetSlotsControls {
  constructor(kit){
   this.kit=kit;this.shown=[];this.slotEls=[];this.tableShown='';this.mode='phone';this.short=false;this.tabs=0;this.closed=0;this.open=false;this.folded=true;this.busy=false;
   const chevron='<svg class="chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 6 8 10 12 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   this.chevron=chevron;
   this.element=document.createElement('div');this.element.className='bet-slots is-phone';
-  this.element.innerHTML='<section class="controls panel tabbed-controls bs-sheet" aria-label="Your bets and the run\'s players"><div class="bs-grip" role="button" tabindex="0" aria-label="Show the players"><i></i></div><div class="risk bs-risk" hidden><div class="risk-label">RISK <span class="bs-risk-pct"></span></div><div class="risk-meter" aria-hidden="true">'+'<i></i>'.repeat(10)+'</div><span class="bs-level" hidden></span></div><button type="button" class="bs-fold" data-action="slotFold" hidden>Second bet'+chevron+'</button><div class="bs-players"></div></section>';
+  this.element.innerHTML='<section class="controls panel tabbed-controls bs-sheet" aria-label="Your bets and the run\'s players"><div class="bs-grip" role="button" tabindex="0" aria-label="Show the players"><i></i></div><div class="risk bs-risk" hidden><span class="bs-level" hidden></span><div class="risk-label">RISK <span class="bs-risk-pct"></span></div><div class="risk-meter" aria-hidden="true">'+'<i></i>'.repeat(10)+'</div></div><button type="button" class="bs-fold" data-action="slotFold" hidden>Second bet'+chevron+'</button><div class="bs-players"></div></section>';
   this.list=document.createElement('div');this.list.className='bet-slots-list';this.list.hidden=true;
   this.list.innerHTML='<section class="controls panel tabbed-controls bs-list-sheet" aria-label="The run\'s players"></section>';
   this.sheet=this.element.querySelector('.bs-sheet');this.players=this.element.querySelector('.bs-players');this.fold=this.element.querySelector('.bs-fold');this.risk=this.element.querySelector('.bs-risk');this.riskShown=null;
@@ -461,7 +477,7 @@ class BetSlotsControls {
     '<button type="button" class="button" data-action="slotMinus" data-value="'+i+'">−</button>'+
     '<button type="button" class="wager-amount stake-pick" data-action="slotPick" data-value="'+i+'" aria-label="Choose bet amount"><output class="money coin-amount"></output><span class="bs-caption">WAGER</span></button>'+
     '<button type="button" class="button" data-action="slotPlus" data-value="'+i+'">+</button></div></div>'+
-    '<div class="actions"><button type="button" class="button action go" data-action="slotGo" data-value="'+i+'"><span class="money coin-amount"></span><span class="action-title"></span><span class="bs-note"></span></button></div></div>'+
+    '<div class="actions"><button type="button" class="button action go" data-action="slotGo" data-value="'+i+'"><span class="money coin-amount"></span><span class="action-title"></span><span class="bs-note"></span><span class="bs-level" hidden></span></button></div></div>'+
     '<div class="bs-autos"><button type="button" class="bs-toggle" data-action="slotAutoBet" data-value="'+i+'"><span>Auto play</span><span class="auto-switch" aria-hidden="true"><span class="knob"></span></span></button>'+
     '<button type="button" class="bs-toggle" data-action="slotTarget" data-value="'+i+'"><span><span class="bs-long">Auto cash out</span><span class="bs-short">Cash out</span></span><span class="bs-value"></span></button></div>';
    this.players.before(el);this.slotEls.push(el);this.shown.push('');
@@ -490,7 +506,10 @@ class BetSlotsControls {
   const views=Array.isArray(s.slots)?s.slots:[];this.build(views.length);
   // A single bet takes the card on its own: wide, the panel narrows to one bet's width.
   const one=views.length===1;if(this.element.classList.contains('has-one-bet')!==one){this.element.classList.toggle('has-one-bet',one);this.measure()}
-  views.forEach((v,i)=>this.syncSlot(i,v));
+  // Auto cash out only where the game offers targets; without it the button takes its place.
+  const cashOut=(s.autoTargets||[]).length>0;
+  this.slotEls.forEach(el=>{if(el.classList.contains('no-auto-cash')===cashOut){el.classList.toggle('no-auto-cash',!cashOut);el.querySelector('[data-action=slotTarget]').hidden=!cashOut;this.measure()}});
+  views.forEach((v,i)=>this.syncSlot(i,v,s));
   // The second bet opens by itself once it has something on it.
   const second=views[1],busy=!!second&&(second.face!=='go'||!!second.autoBet||!!second.autoCash);
   if(busy!==this.busy){this.busy=busy;if(this.applyFold())this.measure()}
@@ -499,12 +518,11 @@ class BetSlotsControls {
  }
  /**
   * The risk row over the bets, as the tabbed panel's: `riskRow` true shows it always, false never,
-  * else with a risk. `riskLevel` names the level at its right, coloured by where `difficulty`
+  * else with a risk. `riskLevel` names the level before the label, coloured by where `difficulty`
   * stands among `difficulties` (the lowest green, the highest red).
   */
  syncRisk(s){
-  const level=this.risk.querySelector('.bs-level'),name=typeof s.riskLevel==='string'?s.riskLevel:'',count=(s.difficulties||[]).length,at=Number(s.difficulty);
-  const tier=count>1&&Number.isFinite(at)?(at<=0?'low':at>=count-1?'high':'mid'):'mid';
+  const level=this.risk.querySelector('.bs-level'),name=typeof s.riskLevel==='string'?s.riskLevel:'',tier=levelTier(s,s.difficulty);
   if(level.textContent!==name)level.textContent=name;level.hidden=!name;if(level.dataset.tier!==tier)level.dataset.tier=tier;
   const has=typeof s.risk==='number'&&Number.isFinite(s.risk),row=option(this.kit.config,'riskRow'),show=row===true||(row!==false&&has);
   if(this.risk.hidden===show){this.risk.hidden=!show;this.element.classList.toggle('has-risk',show);this.measure()}
@@ -512,15 +530,18 @@ class BetSlotsControls {
   this.risk.querySelector('.bs-risk-pct').textContent=pct+' %';const lit=Math.round(pct/10);
   [...this.risk.querySelector('.risk-meter').children].forEach((seg,i)=>{seg.className=i<lit?'on tier-'+(i<3?'low':i<6?'mid':'high'):''});
  }
- syncSlot(i,v){
-  const key=JSON.stringify(v);if(key===this.shown[i])return;this.shown[i]=key;
+ syncSlot(i,v,s){
+  const names=s.difficulties||[],key=JSON.stringify([v,names]);if(key===this.shown[i])return;this.shown[i]=key;
   const el=this.slotEls[i],q=sel=>el.querySelector(sel);
   q('.stake-pick output').textContent=coinAmount(v.bet);
   for(const sel of ['[data-action=slotMinus]','[data-action=slotPlus]','[data-action=slotPick]'])q(sel).disabled=!v.canStake;
   const go=q('[data-action=slotGo]');go.disabled=!v.canPress;go.classList.toggle('cash',v.face==='cash');go.classList.toggle('is-stop',v.face==='stop');
   const amount=go.querySelector('.money');amount.hidden=v.amount===null||v.amount===undefined;amount.textContent=amount.hidden?'':coinAmount(v.amount);
+  // A long amount steps its size down so it stays on the button: by its digits, as the tabbed panel's.
+  const digits=(amount.textContent.match(/\d/g)||[]).length;amount.dataset.fit=digits>8?'xs':digits>6?'s':digits>4?'m':'';
   go.querySelector('.action-title').textContent=v.title||'';
   const note=go.querySelector('.bs-note');note.hidden=!v.note;note.textContent=v.note||'';
+  const level=go.querySelector('.bs-level'),name=Number.isInteger(v.level)?names[v.level]||'':'';level.hidden=!name;level.textContent=name;level.dataset.tier=levelTier(s,v.level);
   q('[data-action=slotAutoBet]').setAttribute('aria-pressed',String(!!v.autoBet));
   q('[data-action=slotTarget]').setAttribute('aria-pressed',String(!!v.autoCash));
   q('.bs-value').textContent=v.autoCash?v.target+'×':'Off';
@@ -630,7 +651,7 @@ class GameUI {
   // One shell for every game, the tabbed one: the header, and the panel's tabs along the bottom.
   config.presentationPreset='tabbed-shell-v1';GameUI.setBrand(config.brand||GameUI.queryBrand()||document.documentElement.dataset.brand||'default');GameUI.setTheme(config.theme||new URLSearchParams(location.search).get('theme')||document.documentElement.dataset.theme||'');this.state={};this.modal='';this.lastFocus=null;this.lastWins='';this.lastHistory='';this.bettingSound=new BettingSound(config.soundOverrides);if(config.cashReadyOnPress!==undefined)this.bettingSound.cashReadyOnPress=!!config.cashReadyOnPress;this.winSound=new WinSound();
   if(!instance&&!config.demo){instance=this;window.CrashHost?.attach?.(this)}
-  host.className='crash-ui'+(webp?'':' no-webp');host.innerHTML='<div class="top"><section class="account panel" aria-label="Player and records"><div class="profile"><button class="identity" data-action="account"><span data-slot="avatar"></span><span><strong>You</strong><span class="level" data-slot="level"></span></span></button>'+(config.balanceTopUp?'<button type="button" class="balance" data-action="wallet" aria-label="Balance">':'<div class="balance" aria-label="Balance">')+icon('coin.png')+'<span class="money" data-slot="balance"></span>'+(config.balanceTopUp?'</button>':'</div>')+'<button class="icon-button" data-action="menu" aria-label="Menu">'+icon('menu.svg')+'</button></div><section class="records"><div class="records-heading">'+icon('trophy.svg')+'<span>Your best</span></div><div class="records-line"><span class="money record-value personal" data-slot="personal"></span><div class="record-top"><span class="record-summary-label">Top</span><span class="money record-value" data-slot="top"></span><span class="record-by">by</span><span class="owner-name" data-slot="owner"></span></div></div></section><div class="history" aria-label="Round history"></div></section><section class="winners panel"><div class="wins-head"><strong>Live Wins</strong><span class="online"><span class="dot"></span><span data-slot="online"></span></span><button class="text-button" data-action="wins">See all ›</button></div><div class="wins-list"></div></section></div><div class="bottom"><div class="multiplier"></div></div><button class="dev" data-action="dev" hidden>DEV · UI</button><div class="toast" role="status" hidden></div><div class="modal-layer" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="crash-modal-title"><header><h2 id="crash-modal-title"></h2><button class="icon-button" data-action="close" aria-label="Close">'+icon('close.svg')+'</button></header><div class="modal-body"></div></section></div>';
+  host.className='crash-ui'+(webp?'':' no-webp');{const own=ownCoin(),page=document.documentElement.style;if(own)page.setProperty('--own-coin','url("'+own+'")');else page.removeProperty('--own-coin')}host.innerHTML='<div class="top"><section class="account panel" aria-label="Player and records"><div class="profile"><button class="identity" data-action="account"><span data-slot="avatar"></span><span><strong>You</strong><span class="level" data-slot="level"></span></span></button>'+(config.balanceTopUp?'<button type="button" class="balance" data-action="wallet" aria-label="Balance">':'<div class="balance" aria-label="Balance">')+coinIcon()+'<span class="money" data-slot="balance"></span>'+(config.balanceTopUp?'</button>':'</div>')+'<button class="icon-button" data-action="menu" aria-label="Menu">'+icon('menu.svg')+'</button></div><section class="records"><div class="records-heading">'+icon('trophy.svg')+'<span>Your best</span></div><div class="records-line"><span class="money record-value personal" data-slot="personal"></span><div class="record-top"><span class="record-summary-label">Top</span><span class="money record-value" data-slot="top"></span><span class="record-by">by</span><span class="owner-name" data-slot="owner"></span></div></div></section><div class="history" aria-label="Round history"></div></section><section class="winners panel"><div class="wins-head"><strong>Live Wins</strong><span class="online"><span class="dot"></span><span data-slot="online"></span></span><button class="text-button" data-action="wins">See all ›</button></div><div class="wins-list"></div></section></div><div class="bottom"><div class="multiplier"></div></div><button class="dev" data-action="dev" hidden>DEV · UI</button><div class="toast" role="status" hidden></div><div class="modal-layer" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="crash-modal-title"><header><h2 id="crash-modal-title"></h2><button class="icon-button" data-action="close" aria-label="Close">'+icon('close.svg')+'</button></header><div class="modal-body"></div></section></div>';
   // A game whose round climbs a fixed table of steps shows them beside the scene. It is the
   // kit's panel, not the game's canvas, so brands and themes reach it like everything else.
   const ladder=document.createElement('section');ladder.className='ladder';ladder.hidden=true;
@@ -986,7 +1007,7 @@ class GameUI {
   toast.style.setProperty('--win-flip-at',WIN_FLIP_AT+'ms');toast.style.setProperty('--win-flip-ms',WIN_FLIP_MS+'ms');
   // Splashes: a dozen drops thrown out from the centre as the card lands, each on its own bearing.
   const splash=Array.from({length:16},(_,i)=>{const a=(i/16)*Math.PI*2+(i%2?.2:0),d=(i%3?120:170);return '<i'+(i%4===3?' class="win-splash-star"':'')+' style="--dx:'+Math.round(Math.cos(a)*d)+'px;--dy:'+Math.round(Math.sin(a)*d*.7)+'px;--win-splash-delay:'+(i%4)*35+'ms">'+(i%4===3?'✦':'')+'</i>'}).join('');
-  toast.innerHTML='<span class="win-splash" aria-hidden="true">'+splash+'</span><div class="win-toast-card"><span class="win-flip" aria-hidden="true"><img class="win-mark" src="'+base+'assets/icons/'+pick('cashed-out.webp')+version+'" alt=""><img class="win-coin" src="'+base+'assets/icons/'+pick('coin.png')+'" alt=""></span><div><strong>'+esc(s.winToastLabel||'Cashed out')+(Number.isFinite(multiplier)?'<span class="win-multiple" data-no-translate> · '+Number(multiplier).toFixed(2)+'×</span>':'')+'</strong><span>+'+money(amount)+'</span></div></div>';
+  toast.innerHTML='<span class="win-splash" aria-hidden="true">'+splash+'</span><div class="win-toast-card"><span class="win-flip" aria-hidden="true"><img class="win-mark" src="'+base+'assets/icons/'+pick('cashed-out.webp')+version+'" alt=""><img class="win-coin" src="'+coinSrc()+'" alt=""></span><div><strong>'+esc(s.winToastLabel||'Cashed out')+(Number.isFinite(multiplier)?'<span class="win-multiple" data-no-translate> · '+Number(multiplier).toFixed(2)+'×</span>':'')+'</strong><span>+'+money(amount)+'</span></div></div>';
   this.host.append(toast);this.winToast=toast;
   const id=s.winId;
   queueMicrotask(()=>{if(this.state.win&&this.state.winId===id)this.send('dismissWin',{})});
@@ -1038,7 +1059,7 @@ class GameUI {
   // The game's symbols tumble down with confetti in the brand's colours; no coins, which belong to
   // the win toast that carries them to the balance afterwards. Every tier climbed throws in
   // another handful, so EPIC is thicker than BIG.
-  const images=rain.length?rain:[base+'assets/icons/'+pick('coin.png')];
+  const images=rain.length?rain:[coinSrc()];
   const confettiColours=['var(--gold)','var(--success)','var(--cyan)','var(--danger)','var(--highlight)','var(--action-go-edge)'];
   const shower=(symbols,confetti,delay)=>Array.from({length:symbols},(_,i)=>'<img class="big-win-drop" src="'+esc(images[Math.floor(Math.random()*images.length)])+'" alt="" style="--x:'+Math.round(Math.random()*100)+'%;--d:'+(delay+Math.random()*1.4).toFixed(2)+'s;--t:'+(1.6+Math.random()*1.6).toFixed(2)+'s;--s:'+Math.round(28+Math.random()*34)+'px;--r:'+Math.round(Math.random()*720-360)+'deg">').join('')
    +Array.from({length:confetti},()=>'<i class="big-win-confetti" style="--x:'+Math.round(Math.random()*100)+'%;--d:'+(delay+Math.random()*1.8).toFixed(2)+'s;--t:'+(2.4+Math.random()*2).toFixed(2)+'s;--c:'+confettiColours[Math.floor(Math.random()*confettiColours.length)]+';--w:'+Math.round(6+Math.random()*6)+'px;--h:'+Math.round(10+Math.random()*8)+'px;--sway:'+Math.round(20+Math.random()*40)+'px;--spin:'+Math.round(360+Math.random()*720)+'deg"></i>').join('');
@@ -1111,7 +1132,7 @@ class GameUI {
   const source=toast?this.winToast?.querySelector('.win-coin'):this.q('.win-coin'),target=this.q('.balance .icon');
   if(!source||!target){if(toast)this.releaseWinBalance();return;}
   const layer=document.createElement('div');layer.className='win-coin-flight';layer.setAttribute('aria-hidden','true');this.host.append(layer);this.coinLayer=layer;
-  const coins=Array.from({length:CrashTokens.WEB_WIN_COIN_COUNT},()=>{const coin=document.createElement('img');coin.src=base+'assets/icons/'+pick('coin.png')+version;coin.alt='';layer.append(coin);return coin});
+  const coins=Array.from({length:CrashTokens.WEB_WIN_COIN_COUNT},()=>{const coin=document.createElement('img');coin.src=coinSrc();coin.alt='';layer.append(coin);return coin});
   const speed=Math.max(0.5,Math.min(2,Number(this.config.winCoinSpeed)||1));
   const duration=CrashTokens.WEB_WIN_COIN_DURATION_MS/speed,stagger=CrashTokens.WEB_WIN_COIN_STAGGER_MS/speed;
   const arrived=new Set();
@@ -1375,7 +1396,7 @@ class GameUI {
   if(kind==='wins')body.innerHTML=this.winRows(s.wins||[])||'<p class=muted>No wins yet.</p>';
   if(kind==='dev')body.innerHTML=Object.entries({leaderboard:'Leaderboard / live wins',history:'Round history',personal_record:'My record',online_count:'Online count',...(s.game==='market_stack'?{multiplier_ladder:'Multiplier ladder'}:{})}).map(([k,v])=>'<label class="setting">'+v+'<input class="switch" type="checkbox" role="switch" data-flag="'+k+'" '+(s.flags?.[k]!==false?'checked':'')+'></label>').join('');
   if(kind==='win'){
-   body.innerHTML=(this.tabbed?'<div class="win-emblem" aria-hidden="true"><span class="win-spark win-spark-left">✦</span>':'')+'<img class="win-coin" src="'+base+'assets/icons/coin.png'+version+'" alt="">'+(this.tabbed?'<span class="win-spark win-spark-right">✦</span></div>':'')+'<div class="win-total">'+money(s.winAmount)+'</div>'+(this.tabbed?'':'<div class="win-subtitle">'+esc(s.winSubtitle||'Well played!')+'</div>');
+   body.innerHTML=(this.tabbed?'<div class="win-emblem" aria-hidden="true"><span class="win-spark win-spark-left">✦</span>':'')+'<img class="win-coin" src="'+coinSrc()+'" alt="">'+(this.tabbed?'<span class="win-spark win-spark-right">✦</span></div>':'')+'<div class="win-total">'+money(s.winAmount)+'</div>'+(this.tabbed?'':'<div class="win-subtitle">'+esc(s.winSubtitle||'Well played!')+'</div>');
    if(!s.settings?.reduced_motion){const fx=document.createElement('div');fx.className='confetti';fx.innerHTML=Array.from({length:32},(_,i)=>'<i style="--angle:'+i*13+'deg;--x:'+((Math.random()-.5)*600)+'px;--y:'+(Math.random()*400-240)+'px"></i>').join('');layer.append(fx);setTimeout(()=>fx.remove(),CrashTokens.MOTION_CONFETTI_CLEAR_MS)}
   }
   this.q('.drawer-sections')?.remove();

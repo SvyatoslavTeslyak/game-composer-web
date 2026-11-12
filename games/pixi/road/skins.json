@@ -168,6 +168,18 @@
       "prompt": "A square game thumbnail for LouLou, 512 × 512 px, shown as the game's tile in an app's lobby, on the showcase and in link previews: [the game's hero and its world in one bold, readable picture, with the game's name LouLou in big playful letters]. Bright, saturated cartoon mobile-game art, thick dark outlines, soft cel shading, light from the top left. Fills the square edge to edge, no rounded corners, no border, no transparent margins."
     },
     {
+      "id": "coin",
+      "group": "game",
+      "title": "Coin",
+      "file": "crash-ui/assets/icons/coin.png",
+      "size": [
+        256,
+        256
+      ],
+      "hint": "The coin of the balance, of every stake and of a win: in the header, beside each bet amount, on the win toast and flying to the balance.",
+      "prompt": "A single game icon, 256 × 256 px, transparent background: [a shiny gold coin with a raised letter P], turned slightly to the right so its ridged edge shows, centred, filling most of the frame. Bright cartoon mobile-game art: saturated golds, soft cel shading, a clean highlight on the rim, light from the top left, no outline. One single picture of one object, not a sprite sheet: no extra copies, poses or views."
+    },
+    {
       "id": "hero-idle",
       "group": "hero",
       "title": "Idle",
@@ -520,13 +532,15 @@
   "brands": {
     "numba-ghana": {
       "slots": {
+        "coin": "art/skins/numba-ghana/coin-ee08a62f98098201.png",
         "hero-idle": "art/skins/numba-ghana/hero-idle-a49e112609f42521.png",
         "hero-jump": "art/skins/numba-ghana/hero-jump-58cb7d5f0fbed70e.png",
         "hero-landing": "art/skins/numba-ghana/hero-landing-47ba5f5eb1fd21a3.png",
         "hero-look-up": "art/skins/numba-ghana/hero-look-up-2a39ca676ac8ac30.png",
         "street-barrier": "art/skins/numba-ghana/street-barrier-b50f43186a23a66a.png",
         "vehicle-tap-tap": "art/skins/numba-ghana/vehicle-tap-tap-a8a41e25ace9f240.png",
-        "win-rain-1": "art/skins/numba-ghana/win-rain-1-b7a0d8c43c5e89ae.png"
+        "win-rain-1": "art/skins/numba-ghana/win-rain-1-b7a0d8c43c5e89ae.png",
+        "win-rain-2": "art/skins/numba-ghana/win-rain-2-cc947a82dbbdbc20.png"
       }
     },
     "numba-nigeria": {
