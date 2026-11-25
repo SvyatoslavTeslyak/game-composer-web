@@ -12,8 +12,12 @@ window.addEventListener('resize',fitGame);fitGame();
 // service both on this machine, which is the local preview proxying (or mocking) Lotomobil.
 const LOCAL=/^(127\.0\.0\.1|localhost|\[::1\])$/;
 function endpoint(base,path){const url=new URL(base);const local=url.protocol==='http:'&&LOCAL.test(url.hostname)&&LOCAL.test(location.hostname);if(!(url.protocol==='https:'||local)||url.username||url.password)throw Error('Lotomobil login is not configured.');return new URL(path.replace(/^\//,''),url.href.replace(/\/?$/,'/')).href}
-let ready=false;
-try{endpoint(config.authBaseUrl,'login/me');endpoint(config.apiBaseUrl,'v1/betting/runner/checkouts');const game=new URL(config.gameUrl);if(game.origin!==location.origin)throw Error();ready=!params.has('game')||params.get('game')==='road'}catch{}
+// The games this page opens (?game=, LouLou without it), each with the API it may call.
+const GAMES={road:{title:'LouLou',api:/^\/v[12]\/betting\/runner\/(initial-state|top-bets|game-configurations|checkouts)(?:[/?]|$)/},loulou_socials:{title:'LouLou Socials',api:/^\/v[12]\/betting\/runner-social\/(initial-state|games|bets|game-configurations|checkouts)(?:[/?]|$)/}};
+const gameId=params.get('game')||'road',chosen=Object.hasOwn(GAMES,gameId)?GAMES[gameId]:null;
+let ready=false,gameUrl='';
+try{endpoint(config.authBaseUrl,'login/me');endpoint(config.apiBaseUrl,'v1/betting/runner/checkouts');const game=new URL(config.gameUrl);if(game.origin!==location.origin)throw Error();game.pathname=game.pathname.replace(/\/road\/(index\.html)?$/,'/'+gameId+'/$1');gameUrl=game.href;ready=!!chosen}catch{}
+if(chosen){document.title='Lotomobil account · '+chosen.title;document.querySelectorAll('[data-game-title]').forEach(node=>{node.textContent=chosen.title});const stage=document.getElementById('game-stage'),frame=document.getElementById('game');if(stage)stage.setAttribute('aria-label',chosen.title);if(frame)frame.title=chosen.title}
 const sessionKey='lotomobil-player-session-v1:'+JSON.stringify([config.authBaseUrl,config.apiBaseUrl]);
 function forgetSession(){try{sessionStorage.removeItem(sessionKey)}catch{}}
 function restoreSession(){
@@ -21,7 +25,7 @@ function restoreSession(){
  forgetSession();return false;
 }
 function openGame(){
- const url=new URL(config.gameUrl);url.searchParams.set('api','1');
+ const url=new URL(gameUrl);url.searchParams.set('api','1');
  if(params.get('debug')==='1')url.searchParams.set('debug','1');
  for(const key of ['lang','tenantId','brand','theme']){const value=params.get(key);if(value&&/^[a-zA-Z0-9_-]{1,80}$/.test(value))url.searchParams.set(key,value)}
  $('login').hidden=true;$('credentials').elements.pin.value='';$('game').src=url.href;$('game').hidden=false;$('game-stage').hidden=false;fitGame();
@@ -45,9 +49,10 @@ $('credentials').onsubmit=event=>{event.preventDefault();run(async()=>{
 })};
 // A deposit page is offered only when one is configured, and only over https.
 const depositUrl=(()=>{try{const url=new URL(config.depositUrl);return url.protocol==='https:'?url.href:''}catch{return ''}})();
-window.Lotomobil={get player(){return phone},...(depositUrl?{deposit(){window.open(depositUrl,'_blank','noopener')}}:{}),async request(path,options={}){
+// A game whose API speaks over a socket opens it itself, at socketBase with the token of headers().
+window.Lotomobil={get player(){return phone},get socketBase(){return config.apiBaseUrl},headers(){return session?{Authentication:session.auth}:{}},...(depositUrl?{deposit(){window.open(depositUrl,'_blank','noopener')}}:{}),async request(path,options={}){
  if(!session)throw Error('Log in to Lotomobil first.');
- if(path!=='/payment/account'&&(!/^\/v[12]\/betting\/runner\/(initial-state|top-bets|game-configurations|checkouts)(?:[/?]|$)/.test(path)||path.includes('..')))throw Error('Unsupported game endpoint.');
+ if(path!=='/payment/account'&&(!chosen||!chosen.api.test(path)||path.includes('..')))throw Error('Unsupported game endpoint.');
  if(path==='/payment/account'&&options.method&&options.method!=='GET')throw Error('Unsupported account method.');
  const current=session;
  try{return await request(config.apiBaseUrl,path,{...options,headers:{...options.headers,Authentication:current.auth}})}catch(error){if((error.status===401||error.status===403)&&session===current)login('Your session expired. Log in again to resume your game.');throw error}

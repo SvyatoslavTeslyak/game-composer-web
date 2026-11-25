@@ -171,6 +171,17 @@ async function request(path,options={}){
  return data;
 }
 
+/**
+ * What a socket's CONNECT carries for the player (a STOMP endpoint of the game's API): the token
+ * once AUTH has arrived, with the OTP token and the agent when the app sent them. `renew` first
+ * trades the token for a new one, for a socket the server closed on an expired token.
+ */
+async function socketHeaders(renew=false){
+ await authorized;
+ if(renew)await refresh();
+ return {Authentication:tokens.auth,...(tokens.otpAuth?{'OTP-Authentication':tokens.otpAuth}:{}),...(tokens.agent?{agent:tokens.agent}:{})};
+}
+
 window.CrashHost={
  active,parentOrigin,tenant,brand,
  /** The API base the parent named, or '' (the game then supplies its own). */
@@ -185,6 +196,7 @@ window.CrashHost={
  get muted(){return muted},
  get insets(){return {...insets}},
  request,
+ socketHeaders,
  ready(){manualReady=true;post('APP_READY',true)},
  failed(){manualReady=true;post('APP_FAILED',false)},
  home,
